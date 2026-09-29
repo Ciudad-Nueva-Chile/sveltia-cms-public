@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="es-CL">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Panel de inventario · Ciudad Nueva Chile</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="img/isotipo.png">
+  <link rel="stylesheet" href="panel.css">
+</head>
+<body>
+  <header class="cabecera">
+    <div class="marco cabecera-fila">
+      <div class="marca">
+        <img src="img/isotipo.png" alt="" width="36" height="34">
+        <div>
+          <strong>Panel de inventario</strong>
+          <span>Ciudad Nueva Chile</span>
+        </div>
+      </div>
+      <div class="meta">
+        <span class="etiqueta-datos" id="etiqueta-datos"></span>
+        <span>Corte: <strong id="fecha-corte">—</strong></span>
+      </div>
+    </div>
+    <nav class="marco pestanas" aria-label="Secciones">
+      <a href="#resumen">Resumen</a>
+      <a href="#pedido">Pedido sugerido</a>
+      <a href="#demanda">Demanda</a>
+      <a href="#titulos">Títulos</a>
+    </nav>
+  </header>
+
+  <main class="marco">
+    <p class="aviso-error" id="error-carga" hidden></p>
+
+    <section id="resumen" class="seccion">
+      <div class="tiles" id="tiles"></div>
+      <div class="avisos-datos" id="avisos-datos" hidden></div>
+    </section>
+
+    <section id="pedido" class="seccion">
+      <div class="seccion-cabecera">
+        <h2>Pedido sugerido por origen</h2>
+        <p>Lo que falta para llegar al stock objetivo de cada título, más el adelanto necesario para completar el mínimo de embarque.</p>
+      </div>
+      <div class="origenes" id="origenes"></div>
+    </section>
+
+    <section id="demanda" class="seccion">
+      <div class="seccion-cabecera">
+        <h2>Comportamiento de la demanda</h2>
+        <p>Cada punto es un título con al menos dos meses de demanda. Las líneas marcan los cortes de Syntetos, Boylan y Croston (ADI 1,32 y CV² 0,49).</p>
+      </div>
+      <div class="dos">
+        <figure class="tarjeta grafico">
+          <figcaption>
+            <strong>Patrón de demanda por título</strong>
+            <span class="leyenda" id="leyenda-abc"></span>
+          </figcaption>
+          <div class="lienzo" id="dispersion"></div>
+        </figure>
+        <figure class="tarjeta">
+          <figcaption><strong>Títulos por clase ABC y clase de demanda</strong><span class="nota">Clic en una celda para filtrar la tabla</span></figcaption>
+          <div id="matriz"></div>
+        </figure>
+      </div>
+    </section>
+
+    <section id="titulos" class="seccion">
+      <div class="seccion-cabecera">
+        <h2>Títulos</h2>
+      </div>
+      <div class="filtros">
+        <input type="search" id="buscar" placeholder="Buscar título o código" aria-label="Buscar título o código">
+        <select id="f-abc" aria-label="Clase ABC"><option value="">ABC: todas</option><option>A</option><option>B</option><option>C</option></select>
+        <select id="f-clase" aria-label="Clase de demanda"><option value="">Demanda: todas</option></select>
+        <select id="f-politica" aria-label="Política"><option value="">Política: todas</option></select>
+        <label class="casilla"><input type="checkbox" id="f-alertas"> Solo con alertas</label>
+        <button type="button" class="enlace" id="limpiar">Limpiar</button>
+      </div>
+      <p class="contador" id="contador"></p>
+      <div class="tabla-envoltura">
+        <table class="tabla" id="tabla">
+          <thead>
+            <tr>
+              <th data-orden="titulo">Título</th>
+              <th data-orden="abc">ABC</th>
+              <th data-orden="clase">Demanda</th>
+              <th data-orden="bodega" class="num">Bodega</th>
+              <th data-orden="consignacion" class="num">Consig.</th>
+              <th data-orden="pronostico_mensual" class="num">Pronóst./mes</th>
+              <th data-orden="stock_objetivo" class="num">Objetivo</th>
+              <th data-orden="sugerido" class="num">Pedir</th>
+              <th data-orden="politica">Política</th>
+              <th>Alertas</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <dialog class="detalle" id="detalle">
+    <form method="dialog"><button class="cerrar" aria-label="Cerrar">×</button></form>
+    <div id="detalle-contenido"></div>
+  </dialog>
+
+  <div class="tooltip" id="tooltip" role="tooltip" hidden></div>
+
+  <footer class="marco pie">
+    Modelo: existencias desde movimientos · ABC por valor de venta · patrón ADI/CV² · pronóstico SBA · stock objetivo por remuestreo al nivel de servicio configurado.
+  </footer>
+
+  <script src="panel.js"></script>
+</body>
+</html>

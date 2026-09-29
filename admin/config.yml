@@ -1,0 +1,55 @@
+# Sveltia CMS: edita los parámetros del modelo de inventario (config/parametros.yml).
+# Los movimientos, el stock y los costos NO van aquí: viven en la Google Sheet privada.
+#
+# Para probar sin iniciar sesión: abre /admin/ en Chrome o Edge y elige «Work with Local Repository».
+# Para usarlo en línea hay que configurar el autenticador (ver docs/CONFIGURAR.md, paso 5).
+
+backend:
+  name: github
+  repo: Ciudad-Nueva-Chile/sveltia-cms-public
+  branch: main
+  base_url: REEMPLAZAR-worker-url
+  commit_messages:
+    update: "Parámetros del inventario: {{slug}}"
+
+logo_url: ../img/isotipo.png
+site_url: https://ciudad-nueva-chile.github.io/sveltia-cms-public/
+media_folder: panel/img
+public_folder: /img
+
+collections:
+  - name: modelo
+    label: Modelo de inventario
+    description: "Cada guardado queda en el historial y el próximo cálculo semanal usa los valores nuevos."
+    files:
+      - name: parametros
+        label: Parámetros
+        file: config/parametros.yml
+        fields:
+          - label: Nivel de servicio
+            name: nivel_servicio
+            widget: number
+            value_type: float
+            min: 0.5
+            max: 0.99
+            step: 0.01
+            hint: "Probabilidad de no quedarse sin stock mientras llega el pedido. 0,90 = 90 %. Más alto significa más stock."
+          - { label: "Revisión (semanas)", name: revision_semanas, widget: number, value_type: int, min: 1, max: 26, hint: "Cada cuánto se revisa y se decide un pedido." }
+          - label: Orígenes
+            name: origenes
+            widget: list
+            summary: "{{fields.nombre}} · {{fields.plazo_semanas}} sem. · mínimo US$ {{fields.minimo_embarque_usd}}"
+            fields:
+              - { label: "Nombre (igual que en la columna «origen» de la planilla)", name: nombre, widget: string }
+              - { label: "Plazo de reposición (semanas)", name: plazo_semanas, widget: number, value_type: float, min: 0.5 }
+              - { label: "Mínimo de embarque (US$)", name: minimo_embarque_usd, widget: number, value_type: int, min: 0 }
+          - { label: "Meses de historia", name: historia_meses, widget: number, value_type: int, min: 6, max: 60 }
+          - { label: "Meses para la clasificación ABC", name: abc_meses, widget: number, value_type: int, min: 3, max: 36 }
+          - { label: "Corte A (participación acumulada)", name: abc_corte_a, widget: number, value_type: float, min: 0.5, max: 0.95, step: 0.01 }
+          - { label: "Corte B (participación acumulada)", name: abc_corte_b, widget: number, value_type: float, min: 0.6, max: 0.99, step: 0.01 }
+          - { label: "Corte ADI", name: corte_adi, widget: number, value_type: float, step: 0.01, hint: "Syntetos, Boylan y Croston (2005): 1,32" }
+          - { label: "Corte CV²", name: corte_cv2, widget: number, value_type: float, step: 0.01, hint: "Syntetos, Boylan y Croston (2005): 0,49" }
+          - { label: "Suavizamiento (alfa)", name: alfa_suavizado, widget: number, value_type: float, min: 0.05, max: 0.5, step: 0.01 }
+          - { label: "Simulaciones", name: simulaciones, widget: number, value_type: int, min: 200, max: 20000 }
+          - { label: "Meses sin movimiento para liquidar o revisar", name: meses_sin_movimiento, widget: number, value_type: int, min: 3 }
+          - { label: "Días para alertar una consignación abierta", name: dias_consignacion_antigua, widget: number, value_type: int, min: 30 }

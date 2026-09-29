@@ -1,0 +1,33 @@
+# Lee la Google Sheet privada, calcula y escribe los resultados en la misma planilla.
+# Los resultados NO se guardan en el repositorio ni se imprimen en el registro (el repositorio es público).
+# Requiere dos secretos: GOOGLE_CREDENCIALES (JSON de la cuenta de servicio) e ID_PLANILLA.
+name: Cálculo semanal del inventario
+
+on:
+  schedule:
+    - cron: "0 11 * * 1"   # lunes 08:00 en Chile (horario de verano; 07:00 en invierno)
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  calcular:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Calcular con la planilla privada
+        env:
+          GOOGLE_CREDENCIALES: ${{ secrets.GOOGLE_CREDENCIALES }}
+          ID_PLANILLA: ${{ secrets.ID_PLANILLA }}
+        run: |
+          if [ -z "$GOOGLE_CREDENCIALES" ] || [ -z "$ID_PLANILLA" ]; then
+            echo "::notice::Faltan los secretos GOOGLE_CREDENCIALES o ID_PLANILLA. Ver docs/CONFIGURAR.md."
+            exit 0
+          fi
+          python -m inventario --fuente sheets

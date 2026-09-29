@@ -1,0 +1,18 @@
+# Entorno
+.venv/
+__pycache__/
+*.pyc
+node_modules/
+.DS_Store
+
+# Resultados generados: nunca se suben (con datos reales serían públicos)
+salida/
+panel/datos.json
+_site/
+
+# Credenciales de Google: jamás al repositorio
+*credenciales*.json
+*service-account*.json
+.env
+admin/sveltia-cms.js
+admin/chunks/

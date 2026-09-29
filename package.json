@@ -1,0 +1,11 @@
+{
+  "name": "inventario-ciudad-nueva",
+  "private": true,
+  "description": "Panel de administración (Sveltia CMS) de los parámetros del modelo de inventario",
+  "scripts": {
+    "admin": "mkdir -p admin && cp node_modules/@sveltia/cms/dist/sveltia-cms.js admin/ && rm -rf admin/chunks && cp -R node_modules/@sveltia/cms/dist/chunks admin/chunks"
+  },
+  "dependencies": {
+    "@sveltia/cms": "0.220.0"
+  }
+}

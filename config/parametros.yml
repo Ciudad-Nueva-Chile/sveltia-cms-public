@@ -1,0 +1,31 @@
+# Parámetros del modelo de inventario. Se editan desde /admin (Sveltia CMS).
+# Aquí solo van valores que no son sensibles: los costos viven en la planilla privada (pestaña Costos).
+
+historia_meses: 24            # meses de historia que se usan para clasificar y pronosticar
+abc_meses: 12                 # ventana para la clasificación ABC por valor
+abc_corte_a: 0.80             # los títulos que acumulan el 80 % del valor son A
+abc_corte_b: 0.95             # hasta el 95 % son B; el resto, C
+
+# Clasificación de patrones de demanda (Syntetos, Boylan y Croston, 2005)
+corte_adi: 1.32
+corte_cv2: 0.49
+
+# Pronóstico
+alfa_suavizado: 0.15          # parámetro de suavizamiento para SBA y suavizamiento exponencial
+
+# Reposición
+nivel_servicio: 0.90          # probabilidad de no quebrar stock durante el plazo de reposición más la revisión
+revision_semanas: 4           # cada cuánto se revisa y se decide un pedido
+simulaciones: 2000            # remuestreos para estimar la demanda del periodo de protección
+
+# Alertas
+meses_sin_movimiento: 18      # con stock y sin salidas en este plazo: revisar o liquidar
+dias_consignacion_antigua: 365
+
+origenes:
+  - nombre: España
+    plazo_semanas: 1          # courier, puerta a puerta
+    minimo_embarque_usd: 700
+  - nombre: Argentina
+    plazo_semanas: 1
+    minimo_embarque_usd: 700
