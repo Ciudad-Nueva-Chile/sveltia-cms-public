@@ -1,0 +1,20 @@
+{
+  "lista": [
+    { "nombre": "Patrística — Padres de la Iglesia", "corto": "Patrística", "descripcion": "Los textos de los primeros siglos del cristianismo, en traducción al castellano.", "color": "#8a5a2b" },
+    { "nombre": "Espiritualidad y vida cristiana", "corto": "Vida cristiana", "descripcion": "Lecturas para la fe vivida en lo cotidiano.", "color": "#2f5d8a" },
+    { "nombre": "Espiritualidad de la unidad (Chiara Lubich / Focolares)", "corto": "Espiritualidad de la unidad", "descripcion": "Chiara Lubich y el carisma de los Focolares.", "color": "#b0413e" },
+    { "nombre": "Espiritualidad y oración", "corto": "Oración", "descripcion": "Meditaciones, oraciones y caminos de interioridad.", "color": "#5b4a8b" },
+    { "nombre": "Biografías, santos y testimonios", "corto": "Santos y testimonios", "descripcion": "Vidas que inspiran: santos, beatos y testigos de hoy.", "color": "#a0702a" },
+    { "nombre": "Familia, pareja y educación de los hijos", "corto": "Familia", "descripcion": "Para acompañar la vida en pareja y la crianza.", "color": "#3f7d5c" },
+    { "nombre": "Magisterio de la Iglesia y Papas", "corto": "Magisterio y Papas", "descripcion": "Documentos, catequesis y reflexiones de los Papas.", "color": "#7a2e3a" },
+    { "nombre": "Economía de Comunión y humanismo económico", "corto": "Economía de Comunión", "descripcion": "Otra economía es posible: empresa, don y bien común.", "color": "#2d6f73" },
+    { "nombre": "Teología y filosofía", "corto": "Teología y filosofía", "descripcion": "Pensamiento teológico y filosófico contemporáneo.", "color": "#34495e" },
+    { "nombre": "Sociedad, política y fraternidad", "corto": "Sociedad y fraternidad", "descripcion": "La fraternidad como categoría política y social.", "color": "#6b5b3e" },
+    { "nombre": "Biblia y estudios bíblicos", "corto": "Biblia", "descripcion": "Introducciones, comentarios y estudios de la Escritura.", "color": "#7c5a1e" },
+    { "nombre": "Educación y prosocialidad", "corto": "Educación", "descripcion": "Recursos para educadores, colegios y catequistas.", "color": "#4d7a2e" },
+    { "nombre": "Ecumenismo y diálogo interreligioso", "corto": "Diálogo y ecumenismo", "descripcion": "Encuentro entre confesiones cristianas y religiones.", "color": "#3a6186" },
+    { "nombre": "Catequesis y sacramentos", "corto": "Catequesis", "descripcion": "Para preparar y vivir los sacramentos.", "color": "#8b4f6e" },
+    { "nombre": "Doctrina social de la Iglesia", "corto": "Doctrina social", "descripcion": "La enseñanza social de la Iglesia, explicada.", "color": "#5c5c3d" },
+    { "nombre": "Calendarios y papelería", "corto": "Calendarios", "descripcion": "Calendarios, agendas y papelería.", "color": "#6d6d6d" }
+  ]
+}

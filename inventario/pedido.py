@@ -33,14 +33,17 @@ def sugerir(titulos: pd.DataFrame, costos: pd.DataFrame, p: Parametros, fecha_co
     lineas, resumen = [], []
     revision_meses = p.revision_semanas / SEMANAS_POR_MES
 
+    configurados = {o.nombre for o in p.origenes}
     for origen, grupo in titulos.groupby("origen"):
+        if origen not in configurados and not (grupo["sugerido"] > 0).any():
+            continue  # origen sin parámetros y sin nada que pedir: no se informa
         c = costos.loc[origen] if origen in costos.index else pd.Series(dtype=float)
         minimo = p.origen(origen).minimo_embarque_usd
         base = grupo[grupo["sugerido"] > 0]
         for fila in base.itertuples():
             u = costo_usd(fila.precio_lista, c)
             motivo = "Mantener un ejemplar (stock mínimo)" if fila.politica == "Stock mínimo" else "Bajo el stock objetivo"
-            lineas.append({"origen": origen, "id": fila.id, "titulo": fila.titulo, "abc": fila.abc,
+            lineas.append({"origen": origen, "id": fila.id, "isbn": fila.isbn, "titulo": fila.titulo, "abc": fila.abc,
                            "cantidad": int(fila.sugerido), "motivo": motivo,
                            "costo_unitario_usd": round(u, 2) if not math.isnan(u) else "",
                            "subtotal_usd": round(u * fila.sugerido, 2) if not math.isnan(u) else ""})
@@ -63,7 +66,7 @@ def sugerir(titulos: pd.DataFrame, costos: pd.DataFrame, p: Parametros, fecha_co
                     existente["motivo"] += " + adelanto para completar el mínimo"
                     existente["subtotal_usd"] = round(u * existente["cantidad"], 2)
                 else:
-                    lineas.append({"origen": origen, "id": fila.id, "titulo": fila.titulo, "abc": fila.abc,
+                    lineas.append({"origen": origen, "id": fila.id, "isbn": fila.isbn, "titulo": fila.titulo, "abc": fila.abc,
                                    "cantidad": extra, "motivo": "Adelanto para completar el mínimo de embarque",
                                    "costo_unitario_usd": round(u, 2), "subtotal_usd": round(u * extra, 2)})
                 total += u * extra
@@ -93,5 +96,5 @@ def sugerir(titulos: pd.DataFrame, costos: pd.DataFrame, p: Parametros, fecha_co
             "fecha_sugerida": fecha.date().isoformat() if fecha is not None else "",
             "costos_configurados": bool(len(c)),
         })
-    columnas = ["origen", "id", "titulo", "abc", "cantidad", "motivo", "costo_unitario_usd", "subtotal_usd"]
+    columnas = ["origen", "id", "isbn", "titulo", "abc", "cantidad", "motivo", "costo_unitario_usd", "subtotal_usd"]
     return pd.DataFrame(lineas, columns=columnas), pd.DataFrame(resumen)

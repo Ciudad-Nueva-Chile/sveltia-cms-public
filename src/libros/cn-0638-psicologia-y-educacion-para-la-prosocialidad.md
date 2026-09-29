@@ -1,0 +1,15 @@
+---
+id_catalogo: "CN-0638"
+isbn: "9789505861897"
+titulo: "PSICOLOGIA Y EDUCACION PARA LA PROSOCIALIDAD"
+autor: "Robert Roche Olivar"
+origen_editorial: "Ciudad Nueva Argentina"
+coleccion: ""
+num_coleccion: ""
+categoria: "Educación y prosocialidad"
+subcategoria: ""
+precio_iva: 15300
+precio_neto: 12857
+portada: "/assets/portadas/9789505861897.jpg"
+estado_comercial: ""
+---

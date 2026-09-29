@@ -1,0 +1,27 @@
+---
+layout: base.njk
+pagination:
+  data: collections.categorias
+  size: 1
+  alias: cat
+permalink: "/categoria/{{ cat.slug }}/"
+eleventyComputed:
+  titulo_seo: "{{ cat.corto }}"
+  descripcion_seo: "{{ cat.descripcion }} Libros de Editorial Ciudad Nueva en Chile."
+---
+{% from "componentes/libro.njk" import tarjeta with context %}
+<header class="cabecera-pagina cabecera-tema" style="--tono: {{ cat.color }}">
+  <div class="contenedor">
+    <nav class="migas" aria-label="Ruta"><a href="/">Inicio</a><span aria-hidden="true">/</span><a href="/catalogo/">Catálogo</a><span aria-hidden="true">/</span>{{ cat.corto }}</nav>
+    <h1 class="titulo-pagina">{{ cat.corto }}</h1>
+    {% if cat.descripcion %}<p class="bajada-pagina">{{ cat.descripcion }}</p>{% endif %}
+    <p class="meta-pagina">{{ cat.libros.length }} título{% if cat.libros.length != 1 %}s{% endif %} · Precios de lista con IVA, vigentes al {{ sitio.fecha_lista | fecha }}</p>
+  </div>
+</header>
+
+<section class="seccion contenedor">
+  <div class="grilla grilla-ancha">
+    {% for libro in cat.libros %}{{ tarjeta(libro) }}{% endfor %}
+  </div>
+  <p class="volver"><a class="enlace-flecha" href="/catalogo/">Ver todo el catálogo</a></p>
+</section>

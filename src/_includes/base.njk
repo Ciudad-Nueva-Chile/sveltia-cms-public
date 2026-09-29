@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="es-CL">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% set titulo_pagina = (titulo_seo or titulo_visible or titulo) %}
+  <title>{% if titulo_pagina %}{{ titulo_pagina }} · {% endif %}{{ sitio.nombre }} {{ sitio.nombre_pais }}</title>
+  {% if entorno.prueba %}<meta name="robots" content="noindex, nofollow">{% endif %}
+  <meta name="description" content="{{ descripcion_seo or sitio.descripcion }}">
+  <link rel="canonical" href="{{ sitio.url }}{{ page.url }}">
+  <meta property="og:site_name" content="{{ sitio.nombre }} {{ sitio.nombre_pais }}">
+  <meta property="og:title" content="{{ titulo_pagina or (sitio.nombre + ' ' + sitio.nombre_pais) }}">
+  <meta property="og:description" content="{{ descripcion_seo or sitio.descripcion }}">
+  <meta property="og:type" content="{{ 'book' if isbn else 'website' }}">
+  <meta property="og:url" content="{{ sitio.url }}{{ page.url }}">
+  <meta property="og:image" content="{{ sitio.url }}{{ portada or '/assets/img/marca/compartir.jpg' }}">
+  <meta name="theme-color" content="#af0117">
+  <link rel="icon" href="/assets/img/marca/favicon-64.png" type="image/png">
+  <link rel="apple-touch-icon" href="/assets/img/marca/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/estilos.css">
+</head>
+<body class="{{ clase_body }}">
+  <a class="saltar" href="#contenido">Saltar al contenido</a>
+
+  {% if entorno.prueba %}
+  <div class="anuncio anuncio-prueba">Versión de prueba del sitio. Los precios y textos pueden cambiar.</div>
+  {% endif %}
+  {% if sitio.anuncio.activo and sitio.anuncio.texto %}
+  <div class="anuncio">
+    {% if sitio.anuncio.enlace %}<a href="{{ sitio.anuncio.enlace }}">{{ sitio.anuncio.texto }}</a>{% else %}{{ sitio.anuncio.texto }}{% endif %}
+  </div>
+  {% endif %}
+
+  <header class="cabecera" data-cabecera>
+    <div class="contenedor cabecera-fila">
+      <a class="marca" href="/" aria-label="{{ sitio.nombre }} {{ sitio.nombre_pais }}, inicio">
+        <img class="marca-isotipo" src="/assets/img/marca/isotipo-rojo.png" alt="" width="600" height="559">
+        <img class="marca-palabra" src="/assets/img/marca/palabra-negro.png" alt="{{ sitio.nombre }} {{ sitio.nombre_pais }}" width="700" height="213">
+      </a>
+
+      <form class="buscador-cabecera" action="/catalogo/" method="get" role="search">
+        <label class="sr" for="q-cabecera">Buscar en el catálogo</label>
+        <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="q-cabecera" type="search" name="q" placeholder="Título, autor, colección o ISBN">
+      </form>
+
+      <nav class="nav-principal" id="nav-principal" aria-label="Principal">
+        <a href="/catalogo/" {% if page.url.startsWith('/catalogo') %}aria-current="page"{% endif %}>Catálogo</a>
+        <a href="/patristica/" {% if page.url.startsWith('/patristica') %}aria-current="page"{% endif %}>Patrística</a>
+        <a href="/instituciones/" {% if page.url.startsWith('/instituciones') %}aria-current="page"{% endif %}>Librerías e instituciones</a>
+        <a href="/nosotros/" {% if page.url.startsWith('/nosotros') %}aria-current="page"{% endif %}>Nosotros</a>
+      </nav>
+
+      <a class="boton-solicitud" href="/solicitud/" aria-label="Mi solicitud de pedido">
+        <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h5"/></svg>
+        <span class="boton-solicitud-texto">Mi solicitud</span>
+        <span class="contador" data-contador hidden>0</span>
+      </a>
+
+      <button class="menu-movil" type="button" aria-controls="nav-principal" aria-expanded="false" data-menu>
+        <span class="sr">Menú</span><span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <main id="contenido">
+    {{ content | safe }}
+  </main>
+
+  <footer class="pie">
+    <div class="contenedor pie-grilla">
+      <div class="pie-marca">
+        <a class="marca-pie" href="/">
+          <img src="/assets/img/marca/logo-blanco.png" alt="{{ sitio.nombre }} {{ sitio.nombre_pais }}" width="1000" height="648">
+        </a>
+        <p>Libros de Editorial Ciudad Nueva, distribuidos en Chile por la Fundación Mariápolis, organización sin fines de lucro vinculada al Movimiento de los Focolares.</p>
+      </div>
+      <div>
+        <h2 class="pie-titulo">Catálogo</h2>
+        <ul>
+          <li><a href="/catalogo/">Todos los títulos</a></li>
+          <li><a href="/patristica/">Patrística</a></li>
+          {% for c in collections.categorias | tomar(4) %}{% if c.corto != 'Patrística' %}<li><a href="/categoria/{{ c.slug }}/">{{ c.corto }}</a></li>{% endif %}{% endfor %}
+        </ul>
+      </div>
+      <div>
+        <h2 class="pie-titulo">Cómo comprar</h2>
+        <ul>
+          <li><a href="/instituciones/">Librerías e instituciones</a></li>
+          <li><a href="/solicitud/">Mi solicitud de pedido</a></li>
+          <li><a href="/nosotros/">Quiénes somos</a></li>
+        </ul>
+      </div>
+      <div>
+        <h2 class="pie-titulo">Contacto</h2>
+        <ul>
+          <li><a href="https://wa.me/{{ sitio.whatsapp }}" target="_blank" rel="noopener">WhatsApp</a></li>
+          <li><a href="mailto:{{ sitio.email }}">{{ sitio.email }}</a></li>
+          <li>{{ sitio.ciudad }}</li>
+        </ul>
+      </div>
+    </div>
+    <div class="contenedor pie-legal">
+      <span>© {{ '' | anio }} Fundación Mariápolis · Precios de lista en pesos chilenos, IVA incluido, vigentes al {{ sitio.fecha_lista | fecha }}.</span>
+      {% if sitio.aviso_prototipo %}<span class="pie-aviso">{{ sitio.aviso_prototipo }}</span>{% endif %}
+    </div>
+  </footer>
+
+  {% if page.url != '/solicitud/' %}
+  <a class="whatsapp-flotante" href="https://wa.me/{{ sitio.whatsapp }}?text={{ ('CONSULTA WEB\nHola, les escribo desde ' + sitio.url + page.url) | urlencode }}" target="_blank" rel="noopener" aria-label="Escríbenos por WhatsApp">
+    {% include "componentes/icono-whatsapp.njk" %}<span>¿Te ayudamos?</span>
+  </a>
+  {% endif %}
+
+  <div class="aviso-flotante" role="status" aria-live="polite" data-aviso hidden></div>
+
+  <script>window.SITIO = { base: "{{ '/' | htmlBaseUrl }}", whatsapp: "{{ sitio.whatsapp }}", email: "{{ sitio.email }}", fechaLista: "{{ sitio.fecha_lista | fecha }}" };</script>
+  <script src="/assets/js/sitio.js" defer></script>
+</body>
+</html>

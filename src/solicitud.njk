@@ -1,0 +1,70 @@
+---
+layout: base.njk
+titulo_seo: Mi solicitud de pedido
+permalink: /solicitud/
+---
+<header class="cabecera-pagina">
+  <div class="contenedor">
+    <nav class="migas" aria-label="Ruta"><a href="/">Inicio</a><span aria-hidden="true">/</span>Mi solicitud</nav>
+    <h1 class="titulo-pagina">Mi solicitud de pedido</h1>
+    <p class="bajada-pagina">No es un pago en línea: envías tu lista y te confirmamos disponibilidad, condiciones y entrega antes de facturar.</p>
+  </div>
+</header>
+
+<div class="contenedor solicitud" data-solicitud>
+  <section class="solicitud-lista" aria-labelledby="titulo-lista">
+    <h2 id="titulo-lista" class="titulo-bloque">Títulos <span class="contador-inline" data-total-items></span></h2>
+
+    <div class="vacio" data-vacio hidden>
+      <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5"/></svg>
+      <h3>Tu solicitud está vacía</h3>
+      <p>Agrega libros desde el catálogo con el botón <strong>+</strong> o «Agregar a mi solicitud».</p>
+      <a class="boton boton-primario" href="/catalogo/">Ir al catálogo</a>
+    </div>
+
+    <ul class="items" data-items></ul>
+
+    <div class="resumen" data-resumen hidden>
+      <div class="resumen-fila"><span>Ejemplares</span><strong data-total-unidades>0</strong></div>
+      <div class="resumen-fila resumen-total"><span>Total a precio de lista</span><strong data-total-monto>$0</strong></div>
+      <p class="resumen-nota">Referencial, con IVA. Librerías e instituciones reciben sus condiciones al confirmar el pedido.</p>
+      <button type="button" class="enlace-boton" data-vaciar>Vaciar solicitud</button>
+    </div>
+  </section>
+
+  <section class="solicitud-form" aria-labelledby="titulo-datos">
+    <form class="formulario" data-formulario novalidate>
+      <h2 id="titulo-datos" class="titulo-bloque">Tus datos</h2>
+
+      <fieldset class="tipo-cliente">
+        <legend>Compras como</legend>
+        <label><input type="radio" name="tipo" value="Librería" checked><span>Librería</span></label>
+        <label><input type="radio" name="tipo" value="Institución"><span>Institución</span></label>
+        <label><input type="radio" name="tipo" value="Particular"><span>Particular</span></label>
+      </fieldset>
+
+      <div class="campos">
+        <label class="campo campo-ancho"><span>Nombre o razón social <em>*</em></span><input name="razon" required autocomplete="organization"></label>
+        <label class="campo"><span>RUT <em data-rut-obligatorio>*</em></span><input name="rut" placeholder="12.345.678-9" autocomplete="off" data-rut></label>
+        <label class="campo"><span>Giro</span><input name="giro" placeholder="Ej.: venta de libros"></label>
+        <label class="campo"><span>Persona de contacto <em>*</em></span><input name="contacto" required autocomplete="name"></label>
+        <label class="campo"><span>Teléfono <em>*</em></span><input name="telefono" type="tel" required placeholder="+56 9 …" autocomplete="tel"></label>
+        <label class="campo campo-ancho"><span>Correo <em>*</em></span><input name="email" type="email" required autocomplete="email"></label>
+        <label class="campo campo-ancho"><span>Dirección de entrega</span><input name="direccion" autocomplete="street-address"></label>
+        <label class="campo"><span>Comuna</span><input name="comuna" autocomplete="address-level2"></label>
+        <label class="campo"><span>Región</span><input name="region" autocomplete="address-level1" value="Metropolitana"></label>
+        <label class="campo campo-ancho"><span>Comentarios</span><textarea name="comentarios" rows="3" placeholder="Plazos, orden de compra, títulos que no encontraste…"></textarea></label>
+      </div>
+
+      <p class="error-formulario" data-error role="alert" hidden></p>
+
+      <div class="envio">
+        <button type="submit" class="boton boton-whatsapp boton-bloque" data-enviar="whatsapp">Enviar por WhatsApp</button>
+        <button type="submit" class="boton boton-primario boton-bloque" data-enviar="email">Enviar por correo</button>
+      </div>
+      <p class="nota-privacidad">Tus datos solo se usan para responder esta solicitud. Se guardan en este navegador para que no tengas que escribirlos de nuevo.</p>
+    </form>
+  </section>
+</div>
+
+<script src="/assets/js/solicitud.js" defer></script>

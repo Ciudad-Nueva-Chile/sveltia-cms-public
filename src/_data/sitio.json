@@ -1,0 +1,21 @@
+{
+  "nombre": "Ciudad Nueva",
+  "nombre_pais": "Chile",
+  "url": "https://ciudadnueva.cl",
+  "descripcion": "Libros de patrística, espiritualidad y pensamiento cristiano de Editorial Ciudad Nueva, distribuidos en Chile por la Fundación Mariápolis.",
+  "whatsapp": "56900000000",
+  "email": "contacto@ciudadnueva.cl",
+  "ciudad": "Santiago de Chile",
+  "fecha_lista": "2026-08-26",
+  "aviso_prototipo": "Prototipo navegable del proyecto de título. Las solicitudes no se procesan todavía como pedidos reales.",
+  "portada": {
+    "antetitulo": "Editorial Ciudad Nueva en Chile",
+    "titulo": "Los Padres de la Iglesia y la espiritualidad de la unidad, en tus manos",
+    "bajada": "Patrística, espiritualidad, vidas de santos y pensamiento social cristiano. Ediciones de Ciudad Nueva España y Argentina, para librerías, instituciones y lectores de todo Chile."
+  },
+  "anuncio": {
+    "activo": false,
+    "texto": "",
+    "enlace": ""
+  }
+}

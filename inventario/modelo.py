@@ -84,7 +84,7 @@ def calcular(catalogo: pd.DataFrame, movimientos: pd.DataFrame, transito: pd.Dat
 
         cobertura = (e["bodega"] / pron) if pron > 0 else (math.inf if e["bodega"] > 0 else 0)
         filas.append({
-            "id": fila.id, "titulo": fila.titulo, "origen": fila.origen, "categoria": fila.categoria,
+            "id": fila.id, "isbn": fila.isbn, "titulo": fila.titulo, "origen": fila.origen, "categoria": fila.categoria,
             "precio_lista": fila.precio_lista,
             "bodega": int(e["bodega"]), "consignacion": int(e["consignacion"]), "transito": int(e["transito"]),
             "posicion": int(posicion),
@@ -96,6 +96,9 @@ def calcular(catalogo: pd.DataFrame, movimientos: pd.DataFrame, transito: pd.Dat
             "cobertura_meses": round(cobertura, 1) if math.isfinite(cobertura) else "∞",
             "politica": pol, "punto_pedido": int(math.ceil(pp)), "stock_objetivo": obj, "sugerido": int(sugerido),
             "ultima_salida": e["ultima_salida"].date().isoformat() if not pd.isna(e["ultima_salida"]) else "",
+            "meses_sin_salida": round(meses_sin_salida, 1) if not math.isnan(meses_sin_salida) else "",
+            "dias_consignacion": int(dias_consig),
+            "valor_bodega": int(max(e["bodega"], 0) * fila.precio_lista),
             "alertas": " · ".join(alertas),
         })
 

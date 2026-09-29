@@ -1,0 +1,59 @@
+# Publica en GitHub Pages la versión de prueba:
+#   /            el sitio (no indexable en buscadores mientras sea de prueba)
+#   /admin/      Sveltia CMS: libros, páginas, ajustes y parámetros del inventario
+#   /inventario/ el panel de inventario con DATOS DE EJEMPLO
+# Nunca publica datos reales: el cálculo con la planilla privada es otro flujo (calculo-semanal.yml).
+name: Publicar sitio y panel
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  construir:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: pip install -r requirements.txt
+      - run: npm ci
+      - name: Sitio y panel de administración
+        env:
+          PATH_PREFIX: /${{ github.event.repository.name }}/
+        run: npm run build
+      - name: Panel de inventario con datos de ejemplo
+        run: |
+          mkdir -p _site/inventario
+          cp -R panel/. _site/inventario/
+          python -m inventario --fuente ejemplo --panel _site/inventario/datos.json > /dev/null
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  publicar:
+    needs: construir
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.despliegue.outputs.page_url }}
+    steps:
+      - id: despliegue
+        uses: actions/deploy-pages@v4

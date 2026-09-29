@@ -20,6 +20,7 @@ EFECTOS = {
     "consignacion_devolucion": (+1, -1),
     "consignacion_liquidada": (0, -1),
     "ajuste": (+1, 0),
+    "pedido_en_camino": (0, 0),   # no mueve la bodega: suma a «en tránsito» hasta que llega la importación
 }
 
 # Salida física de bodega que refleja demanda (lo que hay que reponer)
@@ -87,7 +88,14 @@ def existencias(mov: pd.DataFrame, transito: pd.DataFrame, fecha_corte: pd.Times
             "consignacion_desde": abiertas[0][0] if abiertas else pd.NaT,
         })
     ex = pd.DataFrame(filas, columns=["id", "bodega", "consignacion", "ultima_salida", "consignacion_desde"])
-    tr = transito.groupby("id", as_index=False)["cantidad"].sum().rename(columns={"cantidad": "transito"})
+    # En tránsito: lo anotado en la tabla EnTransito más los pedidos hechos que todavía no llegan
+    pedidos = mov[mov["tipo"] == "pedido_en_camino"]
+    desde = pedidos.groupby("id")["fecha"].min()
+    llegadas = mov[(mov["tipo"] == "importacion") & mov["id"].isin(desde.index)]
+    llegadas = llegadas[llegadas["fecha"] >= llegadas["id"].map(desde)]
+    pendiente = (pedidos.groupby("id")["cantidad"].sum() - llegadas.groupby("id")["cantidad"].sum()).fillna(pedidos.groupby("id")["cantidad"].sum()).clip(lower=0)
+    tr = pd.concat([transito[["id", "cantidad"]], pendiente.rename("cantidad").reset_index()])
+    tr = tr.groupby("id", as_index=False)["cantidad"].sum().rename(columns={"cantidad": "transito"})
     ex = ex.merge(tr, on="id", how="outer")
     ex[["bodega", "consignacion", "transito"]] = ex[["bodega", "consignacion", "transito"]].fillna(0)
     return ex

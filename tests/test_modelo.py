@@ -140,3 +140,36 @@ def test_fechas_iso_chilenas_y_numero_de_serie_de_sheets():
     assert list(r[:5]) == [pd.Timestamp("2026-08-21"), pd.Timestamp("2026-08-21"), pd.Timestamp("2026-04-03"),
                            pd.Timestamp("2026-08-21"), pd.Timestamp("2026-08-21")]
     assert pd.isna(r.iloc[5])
+
+
+# ---------- Lenguaje simple ----------
+def test_ritmo_y_motivos():
+    from inventario import lenguaje
+    assert lenguaje.ritmo(3.2) == "≈3 al mes"
+    assert lenguaje.ritmo(0.5) == "≈1 cada 2 meses"
+    assert lenguaje.ritmo(0.05) == "menos de 1 al año"
+    assert lenguaje.ritmo(0) == "—"
+    assert lenguaje.motivo_simple("Bajo el stock objetivo + adelanto para completar el mínimo") == "Se vende y queda poco + Para completar el envío mínimo"
+    assert lenguaje.motivo_simple("Mantener un ejemplar (stock mínimo)") == "Tener 1 en bodega"
+
+
+def test_movimientos_con_nombres_legibles():
+    from inventario.fuentes import _normalizar
+    df = pd.DataFrame({"Fecha": ["21-08-2026", 46255], "Código": ["CN-0016 · CARTAS CRISTOLOGICAS", "CN-0016"],
+                       "Tipo": ["Venta (factura)", "Pedido hecho (viene en camino)"], "Cantidad": ["2", 3],
+                       "Documento": ["", ""], "Cliente": ["", ""]})
+    m = _normalizar("Movimientos", df)
+    assert list(m["id"]) == ["CN-0016", "CN-0016"]
+    assert list(m["tipo"]) == ["venta", "pedido_en_camino"]
+    assert list(m["cantidad"]) == [2, 3]
+
+
+def test_pedido_en_camino_suma_a_transito_hasta_que_llega():
+    mov = _mov([
+        ("2026-01-01", "x", "inventario_inicial", 1),
+        ("2026-02-01", "x", "pedido_en_camino", 5),
+        ("2026-02-10", "x", "importacion", 3),
+    ])
+    ex = stock.existencias(mov, pd.DataFrame(columns=["id", "cantidad"]), pd.Timestamp("2026-03-01")).set_index("id")
+    assert ex.loc["x", "bodega"] == 4
+    assert ex.loc["x", "transito"] == 2

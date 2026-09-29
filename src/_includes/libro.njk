@@ -1,0 +1,110 @@
+---
+layout: base.njk
+---
+{% from "componentes/libro.njk" import cubierta, tarjeta, datosPedido with context %}
+{%- set cat = categoria | infoCategoria(categorias) -%}
+{%- set libro_actual = { page: page, coleccion_visible: coleccion_visible, categoria: categoria } -%}
+{%- set este = { data: { id_catalogo: id_catalogo, titulo_visible: titulo_visible, sigla: sigla, isbn: isbn, precio_iva: precio_iva, portada: portada }, url: page.url, fileSlug: page.fileSlug } -%}
+
+<div class="ficha-fondo" style="--tono: {{ cat.color }}">
+  <div class="contenedor">
+    <nav class="migas" aria-label="Ruta">
+      <a href="/">Inicio</a><span aria-hidden="true">/</span>
+      <a href="/catalogo/">Catálogo</a><span aria-hidden="true">/</span>
+      <a href="/categoria/{{ cat.slug }}/">{{ cat.corto }}</a>
+    </nav>
+
+    <article class="ficha">
+      <div class="ficha-portada">
+        <div class="libro-3d">{{ cubierta({ portada: portada, titulo_visible: titulo_visible, autor_visible: autor_visible, categoria: categoria }, "portada-grande", "eager") }}</div>
+      </div>
+
+      <div class="ficha-info">
+        <a class="etiqueta" href="/categoria/{{ cat.slug }}/" style="--tono: {{ cat.color }}">{{ cat.corto }}</a>
+        <h1 class="ficha-titulo">{{ titulo_visible }}</h1>
+        {% if autor_visible %}<p class="ficha-autor">{{ autor_visible }}</p>{% endif %}
+        {% if coleccion_visible %}
+        <p class="ficha-coleccion">
+          <span>{{ coleccion_visible }}</span>{% if num_coleccion %} <span class="ficha-numero">N.º {{ num_coleccion }}</span>{% endif %}
+        </p>
+        {% endif %}
+
+        <div class="caja-compra">
+          <div class="caja-precio">
+            {% if precio_iva %}
+            <span class="precio-grande">{{ precio_iva | clp }}</span>
+            <span class="precio-nota">Precio de lista con IVA · vigente al {{ sitio.fecha_lista | fecha }}</span>
+            {% else %}
+            <span class="precio-grande precio-consultar">Precio a consultar</span>
+            {% endif %}
+          </div>
+
+          <div class="caja-acciones">
+            <div class="cantidad" data-cantidad>
+              <button type="button" data-menos aria-label="Quitar uno">−</button>
+              <input type="number" value="1" min="1" max="999" inputmode="numeric" aria-label="Cantidad" data-cantidad-input>
+              <button type="button" data-mas aria-label="Agregar uno">+</button>
+            </div>
+            <button class="boton boton-primario boton-agregar-ficha" type="button" {{ datosPedido(este) }} data-con-cantidad>
+              Agregar a mi solicitud
+            </button>
+          </div>
+          <a class="boton boton-whatsapp" href="https://wa.me/{{ sitio.whatsapp }}?text={{ ('CONSULTA WEB · «' + titulo_visible + '» (ISBN ' + isbn + ')\nHola, quiero consultar por este libro: ' + sitio.url + page.url) | urlencode }}" target="_blank" rel="noopener">
+            {% include "componentes/icono-whatsapp.njk" %}
+            Consultar por WhatsApp
+          </a>
+          <a class="enlace-compartir" href="https://wa.me/?text={{ ('«' + titulo_visible + '»' + (' de ' + autor_visible if autor_visible else '') + ' — ' + sitio.url + page.url) | urlencode }}" target="_blank" rel="noopener" data-compartir data-compartir-titulo="{{ titulo_visible }}" data-compartir-url="{{ sitio.url }}{{ page.url }}">
+            <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg>
+            Recomendar este libro por WhatsApp
+          </a>
+          <ul class="garantias">
+            <li>Te confirmamos disponibilidad y plazo antes de facturar.</li>
+            <li>Librerías e instituciones: <a href="/instituciones/">condiciones por volumen</a>.</li>
+          </ul>
+        </div>
+
+        {% if content | striptags | trim %}
+        <div class="ficha-descripcion prosa">
+          <h2>Sobre el libro</h2>
+          {{ content | safe }}
+        </div>
+        {% endif %}
+
+        <dl class="ficha-datos">
+          {% if autor_visible %}<div><dt>Autor</dt><dd>{{ autor_visible }}</dd></div>{% endif %}
+          <div><dt>Edición</dt><dd>{{ sello }}</dd></div>
+          {% if coleccion_visible %}<div><dt>Colección</dt><dd>{{ coleccion_visible }}{% if num_coleccion %}, N.º {{ num_coleccion }}{% endif %}</dd></div>{% endif %}
+          {% if isbn %}<div><dt>ISBN</dt><dd>{{ isbn }}</dd></div>{% endif %}
+          <div><dt>Categoría</dt><dd><a href="/categoria/{{ cat.slug }}/">{{ cat.corto }}</a></dd></div>
+        </dl>
+      </div>
+    </article>
+  </div>
+</div>
+
+{% set relacionados = collections.libros | relacionados(libro_actual, 6) %}
+{% if relacionados.length %}
+<section class="seccion contenedor">
+  <div class="seccion-cabecera">
+    <h2 class="titulo-seccion">{% if coleccion_visible %}Más de {{ coleccion_visible }}{% else %}También en {{ cat.corto }}{% endif %}</h2>
+    <a class="enlace-flecha" href="/categoria/{{ cat.slug }}/">Ver todos</a>
+  </div>
+  <div class="grilla grilla-compacta">
+    {% for libro in relacionados %}{{ tarjeta(libro) }}{% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Book",
+  "name": {{ titulo_visible | dump | safe }},
+  {% if autor_visible %}"author": { "@type": "Person", "name": {{ autor_visible | dump | safe }} },{% endif %}
+  {% if isbn %}"isbn": "{{ isbn }}",{% endif %}
+  {% if portada %}"image": "{{ sitio.url }}{{ portada }}",{% endif %}
+  "publisher": { "@type": "Organization", "name": {{ sello | dump | safe }} },
+  "url": "{{ sitio.url }}{{ page.url }}"{% if precio_iva %},
+  "offers": { "@type": "Offer", "price": {{ precio_iva }}, "priceCurrency": "CLP" }{% endif %}
+}
+</script>

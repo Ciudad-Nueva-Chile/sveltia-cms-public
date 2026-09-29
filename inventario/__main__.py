@@ -13,9 +13,14 @@ from pathlib import Path
 
 import pandas as pd
 
+from . import lenguaje
 from .config import RAIZ, cargar_parametros
-from .fuentes import FuenteCSV, FuenteSheets
+from .fuentes import SEPARADOR_LIBRO, FuenteCSV, FuenteSheets, catalogo_desde_sitio
 from .modelo import Resultado, calcular
+
+# Orden de las pestañas en la planilla. Roberto solo edita «Movimientos».
+ORDEN_PESTANAS = ["Esta semana", "Movimientos", "Pedido sugerido", "Libros",
+                  "Costos", "Análisis técnico", "Indicadores", "Lista de libros"]
 
 
 def datos_panel(r: Resultado, etiqueta: str = "") -> dict:
@@ -25,19 +30,41 @@ def datos_panel(r: Resultado, etiqueta: str = "") -> dict:
             return None
         return v
 
-    titulos = [{k: limpiar(v) for k, v in fila.items()} for fila in r.titulos.to_dict("records")]
+    t = r.titulos.copy()
+    t["que_hacer"] = t["politica"].map(lenguaje.QUE_HACER)
+    t["se_vende"] = t["pronostico_mensual"].map(lenguaje.ritmo)
+    t["como_se_vende"] = t["patron"].map(lenguaje.COMO_SE_VENDE)
+    t["importancia"] = t["abc"].map(lenguaje.IMPORTANCIA)
+    titulos = [{k: limpiar(v) for k, v in fila.items()} for fila in t.to_dict("records")]
+    pedido = r.pedido.copy()
+    pedido["por_que"] = pedido["motivo"].map(lenguaje.motivo_simple) if len(pedido) else []
     series = {i: [int(x) for x in fila] for i, fila in zip(r.series.index, r.series.to_numpy())}
     return {
         "fecha_corte": r.fecha_corte.date().isoformat(),
         "etiqueta": etiqueta,
         "meses": list(r.series.columns),
+        "semana": lenguaje.esta_semana(r.titulos, r.pedido_resumen, r.pedido, r.fecha_corte, r.errores),
         "resumen": r.resumen.to_dict("records"),
-        "pedido": r.pedido.to_dict("records"),
+        "pedido": pedido.to_dict("records"),
         "pedido_resumen": r.pedido_resumen.to_dict("records"),
         "titulos": titulos,
         "series": series,
         "errores": r.errores,
     }
+
+
+def escribir_planilla(fuente, r: Resultado, catalogo: pd.DataFrame) -> None:
+    semana = lenguaje.esta_semana(r.titulos, r.pedido_resumen, r.pedido, r.fecha_corte, r.errores)
+    fuente.escribir("Esta semana", lenguaje.hoja_esta_semana(semana), solo_lectura=True, secciones=True, anchos={0: 380, 1: 560})
+    fuente.escribir("Pedido sugerido", lenguaje.pedido(r.pedido), solo_lectura=True,
+                    anchos={0: 90, 1: 80, 2: 360, 3: 90, 4: 300, 5: 90})
+    fuente.escribir("Libros", lenguaje.libros(r.titulos), solo_lectura=True,
+                    anchos={0: 80, 1: 320, 2: 80, 6: 130, 7: 200, 8: 90, 9: 190, 12: 260})
+    fuente.escribir("Análisis técnico", r.titulos, oculta=True, solo_lectura=True)
+    fuente.escribir("Indicadores", r.resumen, oculta=True, solo_lectura=True, anchos={0: 360, 1: 420})
+    lista = (catalogo["id"] + SEPARADOR_LIBRO + catalogo["titulo"]).sort_values()
+    fuente.escribir("Lista de libros", pd.DataFrame({"Libro": lista}), oculta=True, solo_lectura=True)
+    fuente.ordenar(ORDEN_PESTANAS)
 
 
 def main(argv=None):
@@ -46,6 +73,8 @@ def main(argv=None):
     ap.add_argument("--datos", type=Path, default=RAIZ / "datos_ejemplo", help="carpeta con los CSV de entrada")
     ap.add_argument("--salida", type=Path, default=RAIZ / "salida", help="carpeta para los CSV de resultados")
     ap.add_argument("--planilla", default=os.environ.get("ID_PLANILLA"), help="ID de la Google Sheet")
+    ap.add_argument("--catalogo", choices=["sitio", "fuente"], default=None,
+                    help="de dónde sale el catálogo: los libros del sitio (por omisión con --fuente sheets) o la tabla Catalogo")
     ap.add_argument("--parametros", type=Path, default=RAIZ / "config" / "parametros.yml")
     ap.add_argument("--fecha-corte", help="AAAA-MM-DD; por omisión, la del último movimiento")
     ap.add_argument("--panel", type=Path, help="escribe también los datos del panel en este JSON")
@@ -59,21 +88,30 @@ def main(argv=None):
     else:
         fuente = FuenteCSV(a.datos, a.salida)
 
+    desde_sitio = (a.catalogo or ("sitio" if a.fuente == "sheets" else "fuente")) == "sitio"
+    catalogo = catalogo_desde_sitio(RAIZ / "src" / "libros") if desde_sitio else fuente.leer("Catalogo")
+
     p = cargar_parametros(a.parametros)
-    r = calcular(fuente.leer("Catalogo"), fuente.leer("Movimientos"), fuente.leer("EnTransito"), fuente.leer("Costos"),
+    r = calcular(catalogo, fuente.leer("Movimientos"), fuente.leer("EnTransito"), fuente.leer("Costos"),
                  p, pd.Timestamp(a.fecha_corte) if a.fecha_corte else None)
 
-    fuente.escribir("Resultado_Titulos", r.titulos)
-    fuente.escribir("Resultado_Pedido", r.pedido)
-    fuente.escribir("Resumen", r.resumen)
+    if a.fuente == "sheets":
+        escribir_planilla(fuente, r, catalogo)
+    else:
+        fuente.escribir("Resultado_Titulos", r.titulos)
+        fuente.escribir("Resultado_Pedido", r.pedido)
+        fuente.escribir("Resumen", r.resumen)
+        fuente.escribir("Esta_semana", lenguaje.hoja_esta_semana(
+            lenguaje.esta_semana(r.titulos, r.pedido_resumen, r.pedido, r.fecha_corte, r.errores)))
 
     if a.panel:
         a.panel.parent.mkdir(parents=True, exist_ok=True)
-        a.panel.write_text(json.dumps(datos_panel(r, a.etiqueta if a.etiqueta is not None else ("Datos de ejemplo (sintéticos)" if a.fuente == "ejemplo" else "")), ensure_ascii=False, default=str), encoding="utf-8")
+        etiqueta = a.etiqueta if a.etiqueta is not None else ("Datos de ejemplo (sintéticos)" if a.fuente == "ejemplo" else "")
+        a.panel.write_text(json.dumps(datos_panel(r, etiqueta), ensure_ascii=False, default=str), encoding="utf-8")
 
     if a.fuente == "sheets":
         # Los registros de GitHub Actions de un repositorio público son públicos: no imprimir datos reales.
-        print(f"Resultados escritos en la planilla (corte {r.fecha_corte.date()}). Revisa la pestaña Resumen.")
+        print(f"Resultados escritos en la planilla (corte {r.fecha_corte.date()}). Revisa la pestaña «Esta semana».")
         return
     print(f"Fuente: {fuente.describir()} · corte {r.fecha_corte.date()}")
     for fila in r.resumen.itertuples(index=False):

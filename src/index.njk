@@ -1,0 +1,144 @@
+---
+layout: base.njk
+titulo_seo: Libros de patrística y espiritualidad cristiana en Chile
+permalink: /
+clase_body: es-inicio
+---
+{% from "componentes/libro.njk" import cubierta, tarjeta with context %}
+{% set patristica = collections.libros | deCategoria("Patrística — Padres de la Iglesia") %}
+{% set abanico = collections.destacados | conPortada | tomar(5) %}
+
+<section class="hero">
+  <div class="contenedor hero-grilla">
+    <div class="hero-texto">
+      <p class="antetitulo">{{ sitio.portada.antetitulo }}</p>
+      <h1 class="hero-titulo">{{ sitio.portada.titulo }}</h1>
+      <p class="hero-bajada">{{ sitio.portada.bajada }}</p>
+
+      <form class="buscador-hero" action="/catalogo/" method="get" role="search">
+        <label class="sr" for="q-hero">Buscar en el catálogo</label>
+        <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="q-hero" type="search" name="q" placeholder="Busca por título, autor, colección o ISBN">
+        <button type="submit" class="boton boton-acento">Buscar</button>
+      </form>
+
+      <ul class="hero-cifras">
+        <li><strong>{{ collections.libros.length }}</strong><span>títulos en catálogo</span></li>
+        <li><strong>{{ patristica.length }}</strong><span>obras de patrística</span></li>
+        <li><strong>{{ collections.categorias.length }}</strong><span>áreas temáticas</span></li>
+      </ul>
+    </div>
+
+    <div class="hero-libros" aria-hidden="true">
+      {% for libro in abanico %}
+      <a class="hero-libro hero-libro-{{ loop.index }}" href="{{ libro.url }}" tabindex="-1">{{ cubierta(libro.data, "", "eager") }}</a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="franja-confianza">
+  <div class="contenedor franja-fila">
+    <span><strong>Ediciones originales</strong> de Ciudad Nueva España y Argentina</span>
+    <span><strong>Factura electrónica</strong> para librerías e instituciones</span>
+    <span><strong>Atención directa</strong> por WhatsApp y correo</span>
+  </div>
+</section>
+
+{% if collections.destacados.length %}
+<section class="seccion contenedor">
+  <div class="seccion-cabecera">
+    <div>
+      <p class="antetitulo antetitulo-oscuro">Selección</p>
+      <h2 class="titulo-seccion">Los libros que más se piden</h2>
+    </div>
+    <div class="carrusel-controles">
+      <button type="button" class="boton-circulo" data-carrusel-anterior="destacados" aria-label="Anteriores">‹</button>
+      <button type="button" class="boton-circulo" data-carrusel-siguiente="destacados" aria-label="Siguientes">›</button>
+    </div>
+  </div>
+  <div class="carrusel" id="destacados" tabindex="0" aria-label="Libros destacados">
+    {% for libro in collections.destacados %}{{ tarjeta(libro, "tarjeta-carrusel") }}{% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<section class="banda-patristica">
+  <div class="contenedor patristica-grilla">
+    <div class="patristica-texto">
+      <p class="antetitulo antetitulo-oscuro">Nuestra especialidad</p>
+      <h2 class="titulo-grande">La voz de los Padres de la Iglesia</h2>
+      <p>Orígenes, Agustín, Juan Crisóstomo, Ambrosio, Gregorio Nacianceno. {{ patristica.length }} obras de los primeros siglos del cristianismo, en colecciones pensadas para el estudio, la formación y la lectura espiritual.</p>
+      <a class="boton boton-oscuro" href="/patristica/">Explorar la patrística</a>
+    </div>
+    <div class="colecciones-grilla">
+      {% for col in collections.colecciones | tomar(4) %}
+      <a class="coleccion-tarjeta" href="/patristica/#{{ col.slug }}">
+        <div class="pila" aria-hidden="true">
+          {% for l in col.muestra %}<span class="pila-{{ loop.index }}">{{ cubierta(l.data) }}</span>{% endfor %}
+        </div>
+        <div>
+          <span class="coleccion-sigla">{{ col.sigla }}</span>
+          <h3>{{ col.nombre }}</h3>
+          <p>{{ col.libros.length }} títulos</p>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="seccion contenedor">
+  <div class="seccion-cabecera">
+    <div>
+      <p class="antetitulo antetitulo-oscuro">Explora</p>
+      <h2 class="titulo-seccion">Todo el catálogo, por tema</h2>
+    </div>
+    <a class="enlace-flecha" href="/catalogo/">Ver los {{ collections.libros.length }} títulos</a>
+  </div>
+  <div class="temas-grilla">
+    {% for c in collections.categorias %}
+    <a class="tema" href="/categoria/{{ c.slug }}/" style="--tono: {{ c.color }}">
+      <div class="tema-portadas" aria-hidden="true">
+        {% for l in c.muestra %}<span>{{ cubierta(l.data) }}</span>{% endfor %}
+      </div>
+      <div class="tema-texto">
+        <h3>{{ c.corto }}</h3>
+        <p>{{ c.libros.length }} título{% if c.libros.length != 1 %}s{% endif %}</p>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="seccion contenedor">
+  <div class="pasos-panel">
+    <div class="pasos-intro">
+      <p class="antetitulo">Cómo pedir</p>
+      <h2 class="titulo-grande">Arma tu solicitud en tres pasos</h2>
+      <p>No necesitas cuenta ni pagar en línea. Reúne los títulos que te interesan y nosotros te respondemos con disponibilidad, condiciones y factura.</p>
+    </div>
+    <ol class="pasos">
+      <li><span class="paso-num">1</span><div><h3>Elige tus libros</h3><p>Agrega al botón «Mi solicitud» los títulos y cantidades que necesitas.</p></div></li>
+      <li><span class="paso-num">2</span><div><h3>Envía tu solicitud</h3><p>Completa tus datos de facturación y envíala por WhatsApp o correo.</p></div></li>
+      <li><span class="paso-num">3</span><div><h3>Te confirmamos</h3><p>Respondemos con disponibilidad, condiciones de pago y coordinamos la entrega.</p></div></li>
+    </ol>
+  </div>
+</section>
+
+<section class="seccion contenedor">
+  <div class="dos-columnas">
+    <a class="tarjeta-grande tarjeta-grande-oscura" href="/instituciones/">
+      <p class="antetitulo">Para librerías, parroquias, colegios y bibliotecas</p>
+      <h2>Condiciones especiales por volumen</h2>
+      <p>Descuentos según tipo de cliente y monto de compra, factura electrónica y atención personalizada.</p>
+      <span class="enlace-flecha enlace-claro">Conocer condiciones</span>
+    </a>
+    <a class="tarjeta-grande" href="/nosotros/">
+      <p class="antetitulo antetitulo-oscuro">Quiénes somos</p>
+      <h2>Una editorial al servicio de una espiritualidad</h2>
+      <p>Ciudad Nueva nació para difundir la espiritualidad de la unidad. En Chile la distribuye la Fundación Mariápolis, sin fines de lucro.</p>
+      <span class="enlace-flecha">Conocer la historia</span>
+    </a>
+  </div>
+</section>

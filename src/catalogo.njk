@@ -1,0 +1,83 @@
+---
+layout: base.njk
+titulo_seo: Catálogo
+descripcion_seo: Catálogo completo de Editorial Ciudad Nueva en Chile, con precios de lista. Patrística, espiritualidad, santos, familia, magisterio y más.
+permalink: /catalogo/
+---
+{% from "componentes/libro.njk" import tarjeta with context %}
+{% set sellos = collections.libros | groupby("data.sello") %}
+
+<header class="cabecera-pagina">
+  <div class="contenedor">
+    <nav class="migas" aria-label="Ruta"><a href="/">Inicio</a><span aria-hidden="true">/</span>Catálogo</nav>
+    <h1 class="titulo-pagina">Catálogo</h1>
+    <p class="bajada-pagina">{{ collections.libros.length }} títulos. Precios de lista con IVA, vigentes al {{ sitio.fecha_lista | fecha }}.</p>
+  </div>
+</header>
+
+<div class="contenedor catalogo" data-catalogo>
+  <aside class="filtros" id="filtros" aria-label="Filtros">
+    <div class="filtros-cabecera">
+      <h2>Filtrar</h2>
+      <button type="button" class="enlace-boton" data-limpiar>Limpiar</button>
+    </div>
+
+    <fieldset class="filtro-grupo">
+      <legend>Tema</legend>
+      <label class="opcion"><input type="radio" name="categoria" value="" checked> <span>Todos</span> <small>{{ collections.libros.length }}</small></label>
+      {% for c in collections.categorias %}
+      <label class="opcion"><input type="radio" name="categoria" value="{{ c.nombre }}" data-slug="{{ c.slug }}"> <span><i class="punto" style="--tono: {{ c.color }}"></i>{{ c.corto }}</span> <small>{{ c.libros.length }}</small></label>
+      {% endfor %}
+    </fieldset>
+
+    <fieldset class="filtro-grupo" data-grupo-coleccion>
+      <legend>Colección de patrística</legend>
+      <label class="opcion"><input type="radio" name="coleccion" value="" checked> <span>Todas</span></label>
+      {% for col in collections.colecciones %}
+      <label class="opcion"><input type="radio" name="coleccion" value="{{ col.nombre }}"> <span>{{ col.nombre }}</span> <small>{{ col.libros.length }}</small></label>
+      {% endfor %}
+    </fieldset>
+
+    <fieldset class="filtro-grupo">
+      <legend>Edición</legend>
+      <label class="opcion"><input type="radio" name="sello" value="" checked> <span>Todas</span></label>
+      {% for sello, items in sellos %}
+      <label class="opcion"><input type="radio" name="sello" value="{{ sello }}"> <span>{{ sello }}</span> <small>{{ items.length }}</small></label>
+      {% endfor %}
+    </fieldset>
+  </aside>
+
+  <section class="resultados" aria-label="Resultados">
+    <div class="barra-resultados">
+      <div class="buscador-catalogo">
+        <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <label class="sr" for="filtro-texto">Buscar</label>
+        <input id="filtro-texto" type="search" placeholder="Buscar por título, autor, colección o ISBN" autocomplete="off">
+      </div>
+      <button type="button" class="boton boton-claro boton-filtros" data-abrir-filtros aria-controls="filtros">Filtros</button>
+      <label class="orden">
+        <span class="sr">Ordenar</span>
+        <select id="orden">
+          <option value="titulo">Título (A–Z)</option>
+          <option value="precio-asc">Precio: menor a mayor</option>
+          <option value="precio-desc">Precio: mayor a menor</option>
+        </select>
+      </label>
+    </div>
+    <p class="contador-resultados" id="contador" aria-live="polite"></p>
+
+    <div class="grilla" id="grilla">
+      {% for libro in collections.libros %}{{ tarjeta(libro) }}{% endfor %}
+    </div>
+
+    <div class="sin-resultados" id="sin-resultados" hidden>
+      <h2>No encontramos ese título</h2>
+      <p>Puede que lo tengamos igual o que podamos traerlo. Escríbenos y lo buscamos por ti.</p>
+      <a class="boton boton-whatsapp" href="https://wa.me/{{ sitio.whatsapp }}" target="_blank" rel="noopener" data-consulta-busqueda>Preguntar por WhatsApp</a>
+    </div>
+
+    <div class="cargar-mas"><button type="button" class="boton boton-claro" id="cargar-mas" hidden>Mostrar más títulos</button></div>
+  </section>
+</div>
+
+<script src="/assets/js/catalogo.js" defer></script>

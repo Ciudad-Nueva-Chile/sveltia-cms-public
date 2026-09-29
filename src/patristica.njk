@@ -1,0 +1,45 @@
+---
+layout: base.njk
+titulo_seo: Patrística — Padres de la Iglesia
+descripcion_seo: Biblioteca de Patrística, Fuentes Patrísticas, La Biblia comentada por los Padres y más colecciones de Editorial Ciudad Nueva, disponibles en Chile.
+permalink: /patristica/
+---
+{% from "componentes/libro.njk" import cubierta, tarjeta with context %}
+{% set patristica = collections.libros | deCategoria("Patrística — Padres de la Iglesia") %}
+
+<header class="hero hero-pagina hero-patristica">
+  <div class="contenedor">
+    <nav class="migas migas-claras" aria-label="Ruta"><a href="/">Inicio</a><span aria-hidden="true">/</span>Patrística</nav>
+    <p class="antetitulo">Nuestra especialidad</p>
+    <h1 class="hero-titulo">Patrística: la voz de los Padres de la Iglesia</h1>
+    <p class="hero-bajada">{{ patristica.length }} obras de los primeros siglos del cristianismo, en las colecciones de Editorial Ciudad Nueva. Para seminarios, monasterios, facultades de teología, bibliotecas y lectores.</p>
+    <nav class="saltos" aria-label="Colecciones">
+      {% for col in collections.colecciones %}<a href="#{{ col.slug }}">{{ col.sigla }} · {{ col.nombre }}</a>{% endfor %}
+    </nav>
+  </div>
+</header>
+
+{% for col in collections.colecciones %}
+<section class="seccion contenedor coleccion-seccion" id="{{ col.slug }}">
+  <div class="coleccion-cabecera">
+    <span class="coleccion-sigla coleccion-sigla-grande">{{ col.sigla }}</span>
+    <div>
+      <h2 class="titulo-seccion">{{ col.nombre }}</h2>
+      <p>{{ col.descripcion }} <span class="meta-pagina">{{ col.libros.length }} títulos.</span></p>
+    </div>
+  </div>
+  <div class="grilla grilla-compacta">
+    {% for libro in col.libros %}{{ tarjeta(libro) }}{% endfor %}
+  </div>
+</section>
+{% endfor %}
+
+{% set sueltas = patristica | fueraDe(collections.colecciones) %}
+{% if sueltas.length %}
+<section class="seccion contenedor coleccion-seccion" id="otras">
+  <h2 class="titulo-seccion">Otras obras de patrística</h2>
+  <div class="grilla grilla-compacta">
+    {% for libro in sueltas %}{{ tarjeta(libro) }}{% endfor %}
+  </div>
+</section>
+{% endif %}

@@ -1,8 +1,9 @@
-# Sveltia CMS: edita los parámetros del modelo de inventario (config/parametros.yml).
+# Sveltia CMS: un solo panel para el sitio y para los parámetros del inventario.
 # Los movimientos, el stock y los costos NO van aquí: viven en la Google Sheet privada.
 #
-# Para probar sin iniciar sesión: abre /admin/ en Chrome o Edge y elige «Work with Local Repository».
-# Para usarlo en línea hay que configurar el autenticador (ver docs/CONFIGURAR.md, paso 5).
+# Para probar sin iniciar sesión: abre /admin/ en Chrome o Edge y elige «Trabajar con un repositorio local».
+# Para usarlo en línea hace falta el autenticador (OAuth App de GitHub + sveltia-cms-auth en Cloudflare
+# Workers) y poner su dirección en base_url. Ver docs/CONFIGURAR.md.
 
 backend:
   name: github
@@ -10,14 +11,156 @@ backend:
   branch: main
   base_url: REEMPLAZAR-worker-url
   commit_messages:
-    update: "Parámetros del inventario: {{slug}}"
+    create: "Agrega «{{slug}}»"
+    update: "Actualiza «{{slug}}»"
+    delete: "Elimina «{{slug}}»"
+    uploadMedia: "Sube imagen «{{path}}»"
+    deleteMedia: "Elimina imagen «{{path}}»"
 
-logo_url: ../img/isotipo.png
 site_url: https://ciudad-nueva-chile.github.io/sveltia-cms-public/
-media_folder: panel/img
-public_folder: /img
+display_url: https://ciudad-nueva-chile.github.io/sveltia-cms-public/
+logo_url: ../assets/img/marca/isotipo-rojo.png
+
+media_folder: "src/assets/portadas"
+public_folder: "/assets/portadas"
 
 collections:
+  # ---------------------------------------------------------------- Libros
+  - name: libros
+    label: Libros del catálogo
+    label_singular: Libro
+    description: "Cada libro es una ficha. Para destacarlo en la portada del sitio, marca «Destacar en la portada»."
+    folder: src/libros
+    format: yaml-frontmatter
+    create: true
+    slug: "{{fields.isbn}}"
+    identifier_field: titulo
+    summary: "{{titulo}} — {{autor}} · ${{precio_iva}}"
+    sortable_fields: [titulo, autor, categoria, precio_iva]
+    view_filters:
+      - { label: "Destacados en la portada", field: destacado, pattern: true }
+      - { label: "Sin portada", field: portada, pattern: "^$" }
+      - { label: "Patrística", field: categoria, pattern: "^Patrística" }
+    view_groups:
+      - { label: Categoría, field: categoria }
+      - { label: Colección, field: coleccion }
+    fields:
+      - { name: titulo, label: "Título", widget: string, hint: "Tal como aparece en la lista de precios. Si termina en una sigla como (BP. 46), el sitio la muestra como insignia." }
+      - { name: autor, label: "Autor", widget: string, hint: "Para obras colectivas escribe «Aa.Vv.»; el sitio muestra «Varios autores»." }
+      - { name: isbn, label: "ISBN", widget: string, pattern: ['^\d{10,13}$', "Debe tener 10 a 13 dígitos, sin guiones"] }
+      - { name: portada, label: "Portada", widget: image, required: false, hint: "Foto o imagen de la tapa, vertical. Si no hay, el sitio genera una portada con el título." }
+      - { name: precio_iva, label: "Precio de lista (CLP, con IVA)", widget: number, value_type: int, min: 0, hint: "Si lo dejas en 0 el sitio muestra «Precio a consultar»." }
+      - name: categoria
+        label: "Categoría"
+        widget: relation
+        collection: ajustes
+        file: categorias
+        search_fields: ["lista.*.nombre"]
+        value_field: "lista.*.nombre"
+        display_fields: ["lista.*.nombre"]
+      - { name: destacado, label: "Destacar en la portada", widget: boolean, default: false, required: false }
+      - { name: origen_editorial, label: "Edición", widget: select, options: ["Ciudad Nueva España", "Ciudad Nueva Argentina", "Uruguay", "Otra"], required: false }
+      - { name: coleccion, label: "Colección", widget: string, required: false, hint: "Solo para patrística: por ejemplo «Biblioteca de Patrística»." }
+      - { name: num_coleccion, label: "N.º dentro de la colección", widget: string, required: false }
+      - { name: subcategoria, label: "Subcategoría", widget: string, required: false }
+      - { name: body, label: "Sobre el libro (sinopsis)", widget: markdown, required: false, hint: "Opcional. Si la escribes, aparece en la ficha bajo el título «Sobre el libro»." }
+      - name: inventario_tipo
+        label: "Inventario: tipo especial"
+        widget: select
+        required: false
+        options: ["", "Estacional", "Coyuntural"]
+        hint: "Estacional: calendarios y agendas. Coyuntural: un fenómeno que no se repite (una canonización, una visita). Vacío: el cálculo lo decide solo."
+      - name: inventario_decision
+        label: "Inventario: decisión manual"
+        widget: select
+        required: false
+        options: ["", "Reponer", "Stock mínimo", "A pedido", "Temporada", "No reponer", "Liquidar o revisar"]
+        hint: "Solo si quieres pasar por encima de la recomendación del cálculo. Vacío: la decide el cálculo."
+      - { name: precio_neto, label: "Precio neto (CLP, sin IVA) — uso interno", widget: number, value_type: int, required: false }
+      - { name: estado_comercial, label: "Estado comercial — uso interno", widget: string, required: false }
+      - { name: id_catalogo, label: "ID interno del catálogo", widget: string, required: false }
+
+  # ---------------------------------------------------------------- Páginas
+  - name: paginas
+    label: Páginas del sitio
+    description: "Textos de las páginas «Librerías e instituciones» y «Nosotros»."
+    files:
+      - name: instituciones
+        label: Librerías e instituciones
+        file: src/paginas/instituciones.md
+        fields: &campos_pagina
+          - { name: titulo, label: "Título", widget: string }
+          - { name: titulo_menu, label: "Nombre en el menú", widget: string }
+          - { name: antetitulo, label: "Antetítulo", widget: string, required: false }
+          - { name: bajada, label: "Bajada", widget: text, required: false }
+          - { name: body, label: "Contenido", widget: markdown }
+      - name: nosotros
+        label: Nosotros
+        file: src/paginas/nosotros.md
+        fields: *campos_pagina
+
+  # ---------------------------------------------------------------- Ajustes
+  - name: ajustes
+    label: Ajustes del sitio
+    description: "Contacto, textos de la portada, fecha de la lista de precios, categorías y colecciones."
+    files:
+      - name: sitio
+        label: Contacto y portada
+        file: src/_data/sitio.json
+        fields:
+          - { name: nombre, label: "Nombre del sitio", widget: string }
+          - { name: nombre_pais, label: "País (bajo el nombre)", widget: string }
+          - { name: url, label: "Dirección web", widget: string }
+          - { name: descripcion, label: "Descripción para buscadores", widget: text }
+          - { name: whatsapp, label: "WhatsApp (solo números, con 56)", widget: string, pattern: ['^56\d{9}$', "Ejemplo: 56912345678"] }
+          - { name: email, label: "Correo de contacto", widget: string }
+          - { name: ciudad, label: "Ciudad", widget: string }
+          - { name: fecha_lista, label: "Fecha de vigencia de la lista de precios", widget: datetime, time_format: false, date_format: "DD-MM-YYYY", format: "YYYY-MM-DD", hint: "Actualízala cada vez que cambies precios: se muestra junto a cada precio." }
+          - { name: aviso_prototipo, label: "Aviso al pie (dejar vacío al publicar en serio)", widget: string, required: false }
+          - name: portada
+            label: Portada (inicio)
+            widget: object
+            fields:
+              - { name: antetitulo, label: "Antetítulo", widget: string }
+              - { name: titulo, label: "Título grande", widget: string }
+              - { name: bajada, label: "Bajada", widget: text }
+          - name: anuncio
+            label: Franja de anuncio (arriba de todo)
+            widget: object
+            fields:
+              - { name: activo, label: "Mostrar", widget: boolean, default: false }
+              - { name: texto, label: "Texto", widget: string, required: false }
+              - { name: enlace, label: "Enlace (opcional)", widget: string, required: false }
+      - name: categorias
+        label: Categorías
+        file: src/_data/categorias.json
+        fields:
+          - name: lista
+            label: Categorías
+            label_singular: Categoría
+            widget: list
+            summary: "{{fields.corto}}"
+            hint: "El orden de esta lista es el orden en el sitio. Si cambias un «Nombre», cambia también la categoría de los libros que la usan."
+            fields:
+              - { name: nombre, label: "Nombre (el que usan los libros)", widget: string }
+              - { name: corto, label: "Nombre corto (el que se ve)", widget: string }
+              - { name: descripcion, label: "Descripción", widget: string, required: false }
+              - { name: color, label: "Color", widget: color }
+      - name: colecciones
+        label: Colecciones de patrística
+        file: src/_data/colecciones.json
+        fields:
+          - name: lista
+            label: Colecciones
+            label_singular: Colección
+            widget: list
+            summary: "{{fields.sigla}} · {{fields.nombre}}"
+            fields:
+              - { name: nombre, label: "Nombre (igual al campo «Colección» de los libros)", widget: string }
+              - { name: sigla, label: "Sigla", widget: string }
+              - { name: descripcion, label: "Descripción", widget: text }
+
+  # ---------------------------------------------------------------- Inventario
   - name: modelo
     label: Modelo de inventario
     description: "Cada guardado queda en el historial y el próximo cálculo semanal usa los valores nuevos."

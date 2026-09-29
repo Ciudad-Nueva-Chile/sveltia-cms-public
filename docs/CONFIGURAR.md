@@ -33,21 +33,21 @@ python herramientas/crear_planilla.py --planilla 1AbC…xyz --con-ejemplo
 python -m inventario --fuente sheets --planilla 1AbC…xyz
 ```
 
-La primera orden crea las pestañas (Catalogo, Movimientos, EnTransito, Costos) con listas desplegables y notas
-de ayuda en los encabezados. Sin `--con-ejemplo` quedan vacías, listas para los datos reales.
-La segunda calcula y agrega las pestañas **Resumen**, **Resultado_Titulos** y **Resultado_Pedido**.
+La primera orden prepara la planilla: la pestaña **Movimientos** (la única que se edita, con listas
+desplegables para elegir el libro y el tipo), y las pestañas ocultas **Configuración** (costos por origen) y
+**Lista de libros**. Con `--con-ejemplo` carga movimientos de ejemplo; sin él queda vacía.
+La segunda calcula y escribe **Esta semana**, **Pedido sugerido** y **Libros** (más las ocultas de análisis).
 
 ## 3. Cargar los datos reales
 
-| Pestaña | Qué va | De dónde sale |
-|---|---|---|
-| Catalogo | Un título por fila | `Base_Consolidada_Libros_Mariapolis.xlsx` |
-| Movimientos | Una fila por movimiento | Conteo del 21-08-2026 como `inventario_inicial`; desde ahí, facturas, guías e importaciones |
-| EnTransito | Pedidos hechos que aún no llegan | Roberto |
-| Costos | Un renglón por origen | Análisis de costos de importación del proyecto |
+- **Configuración** (oculta; menú Ver → Hojas ocultas): una fila por origen con FOB / precio neto,
+  costo en bodega / precio neto y pesos por dólar. Se llena una vez con el análisis de costos del proyecto.
+- **Movimientos**: el conteo del 21-08-2026 como «Conteo inicial» y desde ahí cada factura, guía, pedido y llegada.
+- El **catálogo** no se escribe en la planilla: sale del sitio.
 
-Tipos de movimiento: `inventario_inicial`, `importacion`, `venta`, `devolucion_cliente`, `consignacion_salida`,
-`consignacion_devolucion`, `consignacion_liquidada` (la factura de una consignación: no mueve la bodega) y `ajuste`.
+Tipos de movimiento: Venta (factura) · Salida en consignación (guía) · Factura de consignación (no mueve la bodega) ·
+Devuelto de consignación · Pedido hecho (viene en camino) · Llegada de importación · Devolución de un cliente ·
+Conteo inicial · Ajuste de conteo (+ o −).
 
 ## 4. Cálculo automático cada lunes
 
@@ -61,11 +61,11 @@ En GitHub: repositorio → **Settings → Secrets and variables → Actions → 
 Luego **Actions → Cálculo semanal del inventario → Run workflow** para probarlo. Cada lunes se actualizan las
 pestañas de resultados. Los secretos no se muestran nunca y el registro del cálculo no imprime datos.
 
-## 5. Panel de demostración y parámetros (GitHub Pages)
+## 5. Publicación (GitHub Pages)
 
 1. **Settings → Pages → Source: GitHub Actions**.
-2. Con el siguiente push se publica en `https://ciudad-nueva-chile.github.io/sveltia-cms-public/`:
-   el panel con **datos de ejemplo** y, en `/admin/`, el editor de parámetros.
+2. Con cada push se publica el sitio en `https://ciudad-nueva-chile.github.io/sveltia-cms-public/`, el panel de
+   administración en `/admin/` y el panel de inventario con **datos de ejemplo** en `/inventario/`.
 3. Para que Roberto edite los parámetros en línea hace falta el mismo autenticador del sitio
    (OAuth App de GitHub + `sveltia-cms-auth` en Cloudflare Workers) y poner su dirección en `base_url`
    de `admin/config.yml`. Para probar sin eso: `npm install && npm run admin`, servir la carpeta y elegir

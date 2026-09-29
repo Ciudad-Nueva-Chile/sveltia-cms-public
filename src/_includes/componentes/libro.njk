@@ -1,0 +1,43 @@
+{#- Componentes de libro. Importar con: {% from "componentes/libro.njk" import cubierta, tarjeta with context %} -#}
+
+{#- Portada real o, si falta, una portada tipográfica con el color de la categoría -#}
+{% macro cubierta(d, clase="", carga="lazy") %}
+{%- set cat = d.categoria | infoCategoria(categorias) -%}
+{%- if d.portada -%}
+<img class="portada {{ clase }}" src="{{ d.portada }}" alt="Portada de {{ d.titulo_visible }}" loading="{{ carga }}" decoding="async" width="328" height="500">
+{%- else -%}
+<div class="portada portada-tipografica {{ clase }}" style="--tono: {{ cat.color }}" role="img" aria-label="{{ d.titulo_visible }}, portada no disponible">
+  <span class="pt-sello">Ciudad Nueva</span>
+  <span class="pt-titulo">{{ d.titulo_visible }}</span>
+  {% if d.autor_visible %}<span class="pt-autor">{{ d.autor_visible }}</span>{% endif %}
+</div>
+{%- endif -%}
+{% endmacro %}
+
+{#- Datos mínimos que necesita la solicitud de pedido en el navegador -#}
+{% macro datosPedido(libro) -%}
+data-pedido-id="{{ libro.data.id_catalogo or libro.fileSlug }}" data-pedido-titulo="{{ libro.data.titulo_visible }}{% if libro.data.sigla %} ({{ libro.data.sigla }}){% endif %}" data-pedido-isbn="{{ libro.data.isbn }}" data-pedido-precio="{{ libro.data.precio_iva }}" data-pedido-url="{{ libro.url | htmlBaseUrl }}" data-pedido-portada="{{ (libro.data.portada | htmlBaseUrl) if libro.data.portada else '' }}"
+{%- endmacro %}
+
+{% macro tarjeta(libro, clase="") %}
+{%- set d = libro.data -%}
+<article class="tarjeta {{ clase }}"
+  data-texto="{{ [d.titulo, d.autor_visible, d.coleccion_visible, d.isbn, d.sigla, d.subcategoria] | join(' ') | lower }}"
+  data-categoria="{{ d.categoria }}" data-coleccion="{{ d.coleccion_visible }}" data-sello="{{ d.sello }}"
+  data-titulo="{{ d.titulo_visible }}" data-precio="{{ d.precio_iva or 0 }}">
+  <a class="tarjeta-enlace" href="{{ libro.url }}">
+    <div class="tarjeta-portada">
+      {{ cubierta(d) }}
+      {% if d.sigla %}<span class="insignia">{{ d.sigla }}</span>{% endif %}
+    </div>
+    <h3 class="tarjeta-titulo">{{ d.titulo_visible }}</h3>
+    {% if d.autor_visible %}<p class="tarjeta-autor">{{ d.autor_visible }}</p>{% endif %}
+  </a>
+  <div class="tarjeta-pie">
+    <span class="precio">{{ (d.precio_iva | clp) or "Consultar" }}</span>
+    <button class="boton-agregar" type="button" {{ datosPedido(libro) }} aria-label="Agregar «{{ d.titulo_visible }}» a mi solicitud">
+      <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+    </button>
+  </div>
+</article>
+{% endmacro %}

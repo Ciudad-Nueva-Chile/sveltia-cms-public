@@ -1,0 +1,27 @@
+---
+layout: base.njk
+---
+<header class="hero hero-pagina">
+  <div class="contenedor hero-pagina-interior">
+    <nav class="migas migas-claras" aria-label="Ruta"><a href="/">Inicio</a><span aria-hidden="true">/</span>{{ titulo_menu or titulo }}</nav>
+    {% if antetitulo %}<p class="antetitulo">{{ antetitulo }}</p>{% endif %}
+    <h1 class="hero-titulo">{{ titulo }}</h1>
+    {% if bajada %}<p class="hero-bajada">{{ bajada }}</p>{% endif %}
+  </div>
+</header>
+
+<div class="contenedor pagina-cuerpo">
+  <article class="prosa prosa-pagina">
+    {{ content | safe }}
+  </article>
+
+  <aside class="pagina-lateral">
+    <div class="tarjeta-contacto">
+      <h2>¿Conversamos?</h2>
+      <p>Escríbenos y te respondemos con disponibilidad y condiciones.</p>
+      <a class="boton boton-whatsapp boton-bloque" href="https://wa.me/{{ sitio.whatsapp }}?text={{ ('CONSULTA WEB · ' + (titulo_menu or titulo) + '\nHola, les escribo desde ' + sitio.url + page.url) | urlencode }}" target="_blank" rel="noopener">WhatsApp</a>
+      <a class="boton boton-claro boton-bloque" href="mailto:{{ sitio.email }}">{{ sitio.email }}</a>
+      <a class="enlace-flecha" href="/catalogo/">Ver el catálogo</a>
+    </div>
+  </aside>
+</div>

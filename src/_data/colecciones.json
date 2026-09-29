@@ -1,0 +1,12 @@
+{
+  "lista": [
+    { "nombre": "Biblioteca de Patrística", "sigla": "BP", "descripcion": "La colección de referencia: obras completas y escogidas de los Padres, en traducción castellana anotada." },
+    { "nombre": "Fuentes Patrísticas", "sigla": "FP", "descripcion": "Ediciones bilingües con texto original y traducción, para el estudio y la investigación." },
+    { "nombre": "La Biblia comentada por los Padres — Antiguo Testamento", "sigla": "AT", "descripcion": "La Escritura leída libro por libro a través de los comentarios de los Padres." },
+    { "nombre": "La Biblia comentada por los Padres — Nuevo Testamento", "sigla": "NT", "descripcion": "Evangelios y cartas apostólicas con la lectura de los primeros siglos." },
+    { "nombre": "Temas Patrísticos", "sigla": "TP", "descripcion": "Antologías temáticas para acercarse a los Padres por grandes asuntos." },
+    { "nombre": "Estudios Patrísticos", "sigla": "EP", "descripcion": "Estudios y monografías sobre autores y temas de la época patrística." },
+    { "nombre": "Apócrifos Cristianos", "sigla": "AC", "descripcion": "Textos cristianos antiguos fuera del canon." },
+    { "nombre": "Credo", "sigla": "CC", "descripcion": "Los artículos de la fe comentados por los Padres." }
+  ]
+}

@@ -1,17 +1,34 @@
-# Inventario Ciudad Nueva Chile
+# Ciudad Nueva Chile: sitio e inventario
 
-Modelo de inventario para una distribuidora de libros con demanda intermitente: existencias, clasificación ABC,
-patrón de demanda, pronóstico y sugerencia de importación por origen. Los datos viven en una Google Sheet
-privada; este repositorio público contiene solo el código, los parámetros y **datos de ejemplo sintéticos**.
+Repositorio de prueba con dos partes que se publican juntas:
 
-**Panel de demostración:** <https://ciudad-nueva-chile.github.io/sveltia-cms-public/> (datos de ejemplo)
+- **El sitio** (`src/`, Eleventy): catálogo, fichas, solicitud de pedido por WhatsApp o correo. Se edita en `/admin/` con Sveltia CMS.
+- **El inventario** (`inventario/`, Python): existencias, clasificación ABC, patrón de demanda, pronóstico y pedido sugerido por origen.
+  Los datos reales viven en una Google Sheet privada; este repositorio público solo tiene código y **datos de ejemplo sintéticos**.
+
+| Dirección | Qué es |
+|---|---|
+| <https://ciudad-nueva-chile.github.io/sveltia-cms-public/> | El sitio (versión de prueba, no indexada en buscadores) |
+| <https://ciudad-nueva-chile.github.io/sveltia-cms-public/admin/> | Un solo panel para libros, páginas, ajustes y parámetros del inventario |
+| <https://ciudad-nueva-chile.github.io/sveltia-cms-public/inventario/> | Panel de inventario con datos de ejemplo |
+
+## La planilla: Roberto edita una sola pestaña
+
+| Pestaña | Para qué |
+|---|---|
+| **Esta semana** | Qué pedir, qué está sin stock, qué liquidar, qué consignaciones cobrar. Solo lectura |
+| **Movimientos** | **La única que se edita.** Una fila por factura, guía, pedido o llegada; libro y tipo se eligen de listas |
+| **Pedido sugerido** | La lista para cada editorial. Solo lectura |
+| **Libros** | Cada libro con qué hacer, en palabras simples. Solo lectura |
+| Configuración, Análisis técnico, Indicadores, Lista de libros | Ocultas: costos por origen (se fijan una vez) y el detalle técnico |
+
+El catálogo no se escribe en la planilla: sale de los libros del sitio (`src/libros`). Los libros de temporada o
+coyunturales y las decisiones manuales se marcan en la ficha de cada libro, en `/admin/`.
 
 ```
-Google Sheet privada                GitHub Actions (cada lunes)              Google Sheet privada
-Catalogo · Movimientos      ──▶     python -m inventario --fuente sheets ──▶ Resumen · Resultado_Titulos
-EnTransito · Costos                 lee config/parametros.yml                Resultado_Pedido
-                                         ▲
-                     /admin (Sveltia CMS) edita los parámetros
+Sitio (src/libros)  ─┐
+Planilla: Movimientos ├─▶ GitHub Actions, cada lunes ─▶ Planilla: Esta semana · Pedido sugerido · Libros
+Parámetros (/admin) ─┘     python -m inventario --fuente sheets
 ```
 
 ## Qué calcula
@@ -44,19 +61,22 @@ python -m http.server -d panel 8000               # abre http://localhost:8000
 pytest -q                                         # pruebas
 ```
 
+El sitio: `npm install && npm run serve` (abre http://localhost:8080).
+
 Con la planilla real: ver [docs/CONFIGURAR.md](docs/CONFIGURAR.md).
 
 ## Estructura
 
 ```
+src/                        el sitio (Eleventy): libros, páginas, ajustes, estilos
+admin/                      Sveltia CMS: sitio + parámetros del inventario (versión fija en package.json)
 config/parametros.yml       parámetros del modelo (se editan en /admin)
-inventario/                 el modelo (Python)
-panel/                      panel web estático que lee datos.json
-admin/                      Sveltia CMS para editar los parámetros (versión fija en package.json)
+inventario/                 el modelo (Python); lenguaje.py tiene todos los textos que ve Roberto
+panel/                      panel de inventario: «Esta semana», «Libros» y «Análisis»
 herramientas/               generar_ejemplo.py (datos sintéticos) y crear_planilla.py (prepara la Google Sheet)
 datos_ejemplo/              datos sintéticos: los títulos y precios son públicos; clientes, cantidades y costos son inventados
 tests/                      pruebas del modelo
-.github/workflows/          pruebas, publicación del panel de demostración, cálculo semanal con la planilla
+.github/workflows/          pruebas, publicación (sitio + /admin + /inventario), cálculo semanal con la planilla
 ```
 
 ## Privacidad
