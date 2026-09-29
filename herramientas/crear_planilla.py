@@ -96,7 +96,8 @@ def main():
 
     # La hoja inicial vacía que trae toda planilla nueva
     for nombre in ("Hoja 1", "Sheet1"):
-        if nombre in existentes and len(libro.worksheets()) > 1 and len(existentes[nombre].get_all_values()) == 0:
+        vacia = nombre in existentes and not any(any(c for c in fila) for fila in existentes[nombre].get_all_values())
+        if vacia and len(libro.worksheets()) > 1:
             libro.del_worksheet(existentes[nombre])
     if pedidos:
         libro.batch_update({"requests": pedidos})
