@@ -1,3 +1,4 @@
-origen,fob_sobre_precio_neto,costo_sobre_precio_neto,tipo_cambio
-España,0.45,0.58,950
-Argentina,0.4,0.52,950
+origen,edicion,fob_sobre_precio_neto,costo_sobre_precio_neto,tipo_cambio
+España,,0.45,0.6,950
+Argentina,Argentina,0.4,0.5,950
+Argentina,España,0.5,0.57,950

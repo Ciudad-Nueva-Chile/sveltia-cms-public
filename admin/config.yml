@@ -196,3 +196,5 @@ collections:
           - { label: "Simulaciones", name: simulaciones, widget: number, value_type: int, min: 200, max: 20000 }
           - { label: "Meses sin movimiento para liquidar o revisar", name: meses_sin_movimiento, widget: number, value_type: int, min: 3 }
           - { label: "Días para alertar una consignación abierta", name: dias_consignacion_antigua, widget: number, value_type: int, min: 30 }
+          - { label: "Castigo por postergar un libro que hace falta", name: costo_postergar, widget: number, value_type: float, min: 0, max: 2, step: 0.05, hint: "Fracción del precio neto. Más alto: el cálculo prefiere hacer un envío antes que esperar." }
+          - { label: "Castigo por adelantar compras", name: costo_adelantar, widget: number, value_type: float, min: 0, max: 1, step: 0.05, hint: "Fracción del costo de lo comprado antes de tiempo para completar un mínimo de embarque." }

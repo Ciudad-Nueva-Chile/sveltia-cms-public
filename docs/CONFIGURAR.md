@@ -33,23 +33,20 @@ python herramientas/crear_planilla.py --planilla 1AbC…xyz --con-ejemplo
 python -m inventario --fuente sheets --planilla 1AbC…xyz
 ```
 
-La primera orden prepara la planilla: la pestaña **Movimientos** (la única que se edita, con listas
-desplegables para elegir el libro y el tipo), y las pestañas ocultas **Configuración** (costos por origen) y
-**Lista de libros**. Con `--con-ejemplo` carga movimientos de ejemplo; sin él queda vacía.
-La segunda calcula y escribe **Esta semana**, **Pedido sugerido** y **Libros** (más las ocultas de análisis).
+La primera orden prepara lo que no se ve (Registro de movimientos y Configuración, ocultas); la segunda crea la
+pestaña **Inventario** con las existencias que dan los movimientos cargados, más **Esta semana** y **Pedido sugerido**.
 
 ## 3. Cargar los datos reales
 
-- **Configuración** (oculta; menú Ver → Hojas ocultas): una fila por origen con FOB / precio neto,
-  costo en bodega / precio neto y pesos por dólar. Se llena una vez con el análisis de costos del proyecto.
-- **Movimientos**: el conteo del 21-08-2026 como «Conteo inicial» y desde ahí cada factura, guía, pedido y llegada.
-- El **catálogo** no se escribe en la planilla: sale del sitio.
+- **Registro de movimientos** (oculto): la historia de demanda. Se carga una vez desde las facturas, guías y notas de
+  crédito del SII, y el conteo del 21-08-2026 como «Conteo inicial». Desde ahí crece solo con los cambios de «Inventario».
+- **Configuración** (oculta; menú Ver → Hojas ocultas): una fila por origen de compra con FOB / precio neto, costo
+  puesto en bodega / precio neto y pesos por dólar. Si un origen vende libros de otra edición con otras condiciones
+  (por ejemplo, libros españoles comprados en Argentina), se agrega una fila con esa «Edición del libro»; la fila
+  con la edición vacía vale para todo lo demás.
+- **Inventario**: la crea el primer cálculo. Desde entonces Roberto corrige ahí las cantidades.
 
-Tipos de movimiento: Venta (factura) · Salida en consignación (guía) · Factura de consignación (no mueve la bodega) ·
-Devuelto de consignación · Pedido hecho (viene en camino) · Llegada de importación · Devolución de un cliente ·
-Conteo inicial · Ajuste de conteo (+ o −).
-
-## 4. Cálculo automático cada lunes
+## 4. Cálculo automático cada mañana
 
 En GitHub: repositorio → **Settings → Secrets and variables → Actions → New repository secret**.
 
@@ -58,8 +55,8 @@ En GitHub: repositorio → **Settings → Secrets and variables → Actions → 
 | `GOOGLE_CREDENCIALES` | El contenido completo del archivo `.json` (ábrelo con un editor de texto, copia todo) |
 | `ID_PLANILLA` | El ID del paso 2.3 |
 
-Luego **Actions → Cálculo semanal del inventario → Run workflow** para probarlo. Cada lunes se actualizan las
-pestañas de resultados. Los secretos no se muestran nunca y el registro del cálculo no imprime datos.
+Luego **Actions → Cálculo diario del inventario → Run workflow** para probarlo. Cada mañana se detectan los cambios
+de «Inventario» y se actualizan los resultados. Los secretos no se muestran nunca y el registro del cálculo no imprime datos.
 
 ## 5. Publicación (GitHub Pages)
 

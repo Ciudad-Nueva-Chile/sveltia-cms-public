@@ -48,6 +48,10 @@ def elegir_catalogo(libros: pd.DataFrame, rng) -> pd.DataFrame:
     gen = resto[~resto["categoria"].str.startswith("Patrística")].sample(92, random_state=2)
     cat = pd.concat([coy, est, pat, gen]).fillna({"clase_manual": ""})
     cat["politica_manual"] = ""
+    # Uno de cada tres libros españoles también se consigue en Argentina (para mostrar la elección de origen)
+    num = cat["id"].str.extract(r"(\d+)")[0].astype(int)
+    cat["compra_en"] = ""
+    cat.loc[(cat["origen"] == "España") & (num % 3 == 0), "compra_en"] = "España o Argentina"
     return cat.sort_values("id").reset_index(drop=True)
 
 
@@ -146,15 +150,17 @@ def main():
     SALIDA.mkdir(exist_ok=True)
     if a.libros:
         catalogo = elegir_catalogo(leer_libros(a.libros), rng)
-        catalogo[["id", "isbn", "titulo", "origen", "categoria", "precio_lista", "clase_manual", "politica_manual"]] \
+        catalogo[["id", "isbn", "titulo", "origen", "categoria", "precio_lista", "clase_manual", "politica_manual", "compra_en"]] \
             .to_csv(SALIDA / "Catalogo.csv", index=False)
     catalogo = pd.read_csv(SALIDA / "Catalogo.csv", dtype=str, keep_default_na=False)
     movimientos, transito = generar(catalogo, rng)
     movimientos.to_csv(SALIDA / "Movimientos.csv", index=False)
     transito.to_csv(SALIDA / "EnTransito.csv", index=False)
+    # Costos inventados. Un libro español comprado vía Argentina: FOB más alto (menos descuento) pero flete menor
     pd.DataFrame([
-        {"origen": "España", "fob_sobre_precio_neto": 0.45, "costo_sobre_precio_neto": 0.58, "tipo_cambio": 950},
-        {"origen": "Argentina", "fob_sobre_precio_neto": 0.40, "costo_sobre_precio_neto": 0.52, "tipo_cambio": 950},
+        {"origen": "España", "edicion": "", "fob_sobre_precio_neto": 0.45, "costo_sobre_precio_neto": 0.60, "tipo_cambio": 950},
+        {"origen": "Argentina", "edicion": "Argentina", "fob_sobre_precio_neto": 0.40, "costo_sobre_precio_neto": 0.50, "tipo_cambio": 950},
+        {"origen": "Argentina", "edicion": "España", "fob_sobre_precio_neto": 0.50, "costo_sobre_precio_neto": 0.57, "tipo_cambio": 950},
     ]).to_csv(SALIDA / "Costos.csv", index=False)
     print(f"{len(catalogo)} títulos, {len(movimientos)} movimientos, {len(transito)} en tránsito → {SALIDA}")
 

@@ -84,7 +84,8 @@ def calcular(catalogo: pd.DataFrame, movimientos: pd.DataFrame, transito: pd.Dat
 
         cobertura = (e["bodega"] / pron) if pron > 0 else (math.inf if e["bodega"] > 0 else 0)
         filas.append({
-            "id": fila.id, "isbn": fila.isbn, "titulo": fila.titulo, "origen": fila.origen, "categoria": fila.categoria,
+            "id": fila.id, "isbn": fila.isbn, "titulo": fila.titulo, "origen": fila.origen,
+            "compra_en": (getattr(fila, "compra_en", "") if isinstance(getattr(fila, "compra_en", ""), str) else "") or fila.origen, "categoria": fila.categoria,
             "precio_lista": fila.precio_lista,
             "bodega": int(e["bodega"]), "consignacion": int(e["consignacion"]), "transito": int(e["transito"]),
             "posicion": int(posicion),

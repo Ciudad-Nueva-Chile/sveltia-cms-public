@@ -131,6 +131,7 @@ def test_calculo_completo_sugiere_reponer_un_titulo_que_rota():
     assert "Quiebre" in t.loc["r", "alertas"]
     assert t.loc["q", "politica"] == "Liquidar o revisar"
     assert set(r.pedido["id"]) == {"r"}
+    assert set(r.pedido["cuando"]) == {"Próximo envío"}   # unos pocos dólares: no alcanza el mínimo de US$ 700
 
 
 # ---------- Lectura de fechas ----------
@@ -150,6 +151,8 @@ def test_ritmo_y_motivos():
     assert lenguaje.ritmo(0.05) == "menos de 1 al año"
     assert lenguaje.ritmo(0) == "—"
     assert lenguaje.motivo_simple("Bajo el stock objetivo + adelanto para completar el mínimo") == "Se vende y queda poco + Para completar el envío mínimo"
+    assert lenguaje.motivo_simple("Bajo el stock objetivo; conviene Argentina: US$ 5,10 puesto en bodega contra US$ 7,40 en España") == \
+        "Se vende y queda poco. Conviene Argentina: US$ 5,10 puesto en bodega contra US$ 7,40 en España"
     assert lenguaje.motivo_simple("Mantener un ejemplar (stock mínimo)") == "Tener 1 en bodega"
 
 
@@ -173,3 +176,80 @@ def test_pedido_en_camino_suma_a_transito_hasta_que_llega():
     ex = stock.existencias(mov, pd.DataFrame(columns=["id", "cantidad"]), pd.Timestamp("2026-03-01")).set_index("id")
     assert ex.loc["x", "bodega"] == 4
     assert ex.loc["x", "transito"] == 2
+
+
+# ---------- Pestaña Inventario: deducir movimientos de los cambios ----------
+from inventario.planilla import derivar, detectar_cambios  # noqa: E402
+
+
+def _d(b, c, t=0):
+    return {"bodega": b, "consignacion": c, "en_camino": t}
+
+
+@pytest.mark.parametrize("antes,despues,esperado", [
+    (_d(10, 0), _d(8, 0), [("venta", 2)]),
+    (_d(10, 0), _d(7, 3), [("consignacion_salida", 3)]),
+    (_d(7, 3), _d(9, 1), [("consignacion_devolucion", 2)]),
+    (_d(7, 3), _d(7, 1), [("consignacion_liquidada", 2)]),
+    (_d(7, 3), _d(8, 0), [("consignacion_devolucion", 1), ("consignacion_liquidada", 2)]),
+    (_d(2, 0), _d(12, 0), [("importacion", 10)]),
+    (_d(5, 0), _d(5, 0, 4), []),                       # solo cambia «en camino»: no es demanda
+    (_d(10, 0), _d(6, 2), [("consignacion_salida", 2), ("venta", 2)]),
+])
+def test_derivar(antes, despues, esperado):
+    assert derivar(antes, despues) == esperado
+
+
+def test_detectar_cambios_solo_registra_lo_que_cambio():
+    hoy = pd.Timestamp("2026-10-01")
+    inv = pd.DataFrame([{"id": "a", "bodega": 3, "consignacion": 0, "en_camino": 0},
+                        {"id": "b", "bodega": 5, "consignacion": 1, "en_camino": 0},
+                        {"id": "c", "bodega": 2, "consignacion": 0, "en_camino": 0}])
+    hist = pd.DataFrame([{"fecha": pd.Timestamp("2026-09-01"), "id": "a", "bodega": 3, "consignacion": 0, "en_camino": 0},
+                         {"fecha": pd.Timestamp("2026-09-01"), "id": "b", "bodega": 6, "consignacion": 1, "en_camino": 0}])
+    fotos, movs = detectar_cambios(inv, hist, pd.DataFrame(columns=["id", "bodega", "consignacion", "transito"]), hoy)
+    assert set(fotos["id"]) == {"b", "c"}                      # «a» no cambió
+    assert movs[movs["id"] == "b"][["tipo", "cantidad"]].values.tolist() == [["venta", 1]]
+    assert movs[movs["id"] == "c"]["tipo"].tolist() == ["inventario_inicial"]  # libro nuevo: conteo
+
+
+# ---------- Dónde comprar: optimización entre editoriales ----------
+def _titulo(id_, origen, sugerido, precio, compra_en="", abc="A"):
+    return {"id": id_, "isbn": "", "titulo": id_, "origen": origen, "compra_en": compra_en, "precio_lista": precio,
+            "sugerido": sugerido, "politica": "Reponer", "abc": abc, "pronostico_mensual": 0.0, "valor_venta": 0,
+            "posicion": 0, "punto_pedido": 0}
+
+
+COSTOS = pd.DataFrame([
+    {"origen": "España", "edicion": "", "fob_sobre_precio_neto": 0.45, "tipo_cambio": 1000},
+    {"origen": "Argentina", "edicion": "Argentina", "fob_sobre_precio_neto": 0.40, "tipo_cambio": 1000},
+    {"origen": "Argentina", "edicion": "España", "fob_sobre_precio_neto": 0.30, "tipo_cambio": 1000},  # español vía Argentina, más barato
+])
+
+
+def test_libro_en_ambas_va_donde_es_mas_barato_si_ese_envio_se_hace():
+    from inventario import pedido
+    t = pd.DataFrame([
+        _titulo("esp", "España", 10, 119000),              # España: 10 × 45 = 450 US$
+        _titulo("arg", "Argentina", 20, 119000),           # Argentina: 20 × 40 = 800 US$ → ese envío se hace
+        _titulo("x", "España", 5, 119000, "España o Argentina"),  # en España 45 c/u, vía Argentina 30 c/u
+    ])
+    lineas, resumen = pedido.sugerir(t, COSTOS, Parametros(), pd.Timestamp("2026-10-01"))
+    ahora = lineas[lineas["cuando"] == "Ahora"].set_index("id")
+    assert ahora.loc["x", "origen"] == "Argentina"
+    assert resumen.attrs["ahorro_usd"] == pytest.approx(5 * 15, abs=0.1)
+    # España sola no llega a 700 → sus libros esperan el próximo envío
+    assert lineas.set_index("id").loc["esp", "cuando"] == "Próximo envío"
+
+
+def test_si_argentina_no_alcanza_el_minimo_el_libro_se_compra_en_espana():
+    from inventario import pedido
+    t = pd.DataFrame([
+        _titulo("esp", "España", 16, 119000),              # España: 16 × 45 = 720 US$ → ese envío se hace
+        _titulo("arg", "Argentina", 2, 119000),            # Argentina: 80 US$ → no alcanza
+        _titulo("x", "España", 5, 119000, "España o Argentina"),
+    ])
+    lineas, _ = pedido.sugerir(t, COSTOS, Parametros(), pd.Timestamp("2026-10-01"))
+    l = lineas.set_index("id")
+    assert l.loc["x", "origen"] == "España" and l.loc["x", "cuando"] == "Ahora"
+    assert l.loc["arg", "cuando"] == "Próximo envío"

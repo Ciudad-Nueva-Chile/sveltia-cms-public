@@ -31,6 +31,8 @@ class Parametros:
     simulaciones: int = 2000
     meses_sin_movimiento: int = 18
     dias_consignacion_antigua: int = 365
+    costo_postergar: float = 0.30   # castigo por ejemplar necesario que no se pide: fracción de su precio neto
+    costo_adelantar: float = 0.10   # castigo por ejemplar comprado antes de tiempo para completar un mínimo
     origenes: list[Origen] = field(default_factory=lambda: [Origen("España"), Origen("Argentina")])
 
     def origen(self, nombre: str) -> Origen:

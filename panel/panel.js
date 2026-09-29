@@ -65,16 +65,22 @@
           '<div class="barra-texto"><span>US$ ' + fmt.format(Math.round(p.total_usd)) + '</span><span>mínimo US$ ' + fmt.format(p.minimo_usd) + "</span></div>" : "") +
         (lineas.length ?
           '<ul class="lista-pedido">' + lineas.map(function (l) {
-            return '<li><span class="cant">' + l.cantidad + '</span><span class="lp-titulo">' + esc(l.titulo) + '<small>' + esc(l.por_que) + "</small></span></li>";
+            var espera = l.cuando && l.cuando !== "Ahora";
+            return '<li' + (espera ? ' class="espera"' : "") + '><span class="cant">' + l.cantidad + '</span><span class="lp-titulo">' + esc(l.titulo) +
+              (espera ? ' <em class="tag-espera">próximo envío</em>' : "") + '<small>' + esc(l.por_que) + "</small></span></li>";
           }).join("") + "</ul>" +
-          '<button type="button" class="boton-sec" data-copiar="' + esc(p.origen) + '">Copiar lista para la editorial</button>' : "") +
+          (p.tono === "ok" ? '<button type="button" class="boton-sec" data-copiar="' + esc(p.origen) + '">Copiar lista para la editorial</button>' : "") : "") +
         "</article>";
     }).join("") || '<p class="nota">Sin datos de pedido.</p>';
+    if (S.ahorro_usd > 0) {
+      $("#pedidos").insertAdjacentHTML("beforeend", '<p class="ahorro">Comprar cada libro en la editorial que conviene ahorra unos <b>US$ ' +
+        fmt.format(Math.round(S.ahorro_usd)) + "</b> frente a comprarlo en su propia editorial.</p>");
+    }
 
     document.querySelectorAll("[data-copiar]").forEach(function (b) {
       b.addEventListener("click", function () {
         var o = b.dataset.copiar;
-        var texto = "Pedido " + o + " — Ciudad Nueva Chile\n\n" + D.pedido.filter(function (l) { return l.origen === o; })
+        var texto = "Pedido " + o + " — Ciudad Nueva Chile\n\n" + D.pedido.filter(function (l) { return l.origen === o && (!l.cuando || l.cuando === "Ahora"); })
           .map(function (l) { return l.cantidad + " × " + l.titulo + (l.isbn ? " (ISBN " + l.isbn + ")" : ""); }).join("\n");
         navigator.clipboard.writeText(texto).then(function () {
           var a = $("#aviso-copiado");

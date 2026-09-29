@@ -12,24 +12,21 @@ Repositorio de prueba con dos partes que se publican juntas:
 | <https://ciudad-nueva-chile.github.io/sveltia-cms-public/admin/> | Un solo panel para libros, páginas, ajustes y parámetros del inventario |
 | <https://ciudad-nueva-chile.github.io/sveltia-cms-public/inventario/> | Panel de inventario con datos de ejemplo |
 
-## La planilla: Roberto edita una sola pestaña
+## La planilla: una tabla de libros donde Roberto corrige cantidades
 
 | Pestaña | Para qué |
 |---|---|
+| **Inventario** | Un libro por fila: código, ISBN, título, autor, editorial, **se compra en**, categoría, precio de venta, **en bodega**, **en consignación**, **pedido en camino**, última actualización, cómo se vende, qué hacer y **notas**. Roberto solo edita las columnas amarillas; el resto se completa solo y se puede ordenar y filtrar |
 | **Esta semana** | Qué pedir, qué está sin stock, qué liquidar, qué consignaciones cobrar. Solo lectura |
-| **Movimientos** | **La única que se edita.** Una fila por factura, guía, pedido o llegada; libro y tipo se eligen de listas |
 | **Pedido sugerido** | La lista para cada editorial. Solo lectura |
-| **Libros** | Cada libro con qué hacer, en palabras simples. Solo lectura |
-| Configuración, Análisis técnico, Indicadores, Lista de libros | Ocultas: costos por origen (se fijan una vez) y el detalle técnico |
+| Ocultas | Configuración (costos por origen), Registro de movimientos, Historial de fotos, Análisis técnico, Indicadores |
 
-El catálogo no se escribe en la planilla: sale de los libros del sitio (`src/libros`). Los libros de temporada o
-coyunturales y las decisiones manuales se marcan en la ficha de cada libro, en `/admin/`.
+Cada mañana el cálculo compara «Inventario» con la foto anterior y deduce qué pasó: si bajó la bodega y subió la
+consignación, fue una salida en consignación; si bajó la bodega, una venta; si subió, una llegada. Así se arma la
+historia de demanda sin anotar movimientos, y se estampa la fecha de «Última actualización». La historia pasada se
+carga una vez desde las facturas y guías del SII, que son más exactas.
 
-```
-Sitio (src/libros)  ─┐
-Planilla: Movimientos ├─▶ GitHub Actions, cada lunes ─▶ Planilla: Esta semana · Pedido sugerido · Libros
-Parámetros (/admin) ─┘     python -m inventario --fuente sheets
-```
+El catálogo y los precios salen del sitio (`src/libros`): el precio se cambia en `/admin/`, no en la planilla.
 
 ## Qué calcula
 
@@ -42,7 +39,7 @@ Parámetros (/admin) ─┘     python -m inventario --fuente sheets
 | Pronóstico mensual | SBA (Croston con corrección de sesgo) para intermitente y grumosa; suavizamiento exponencial para suave y errática | `inventario/demanda.py` |
 | Stock objetivo | Demanda del plazo de reposición más la revisión, al nivel de servicio elegido, estimada remuestreando meses observados (sin suponer una distribución normal, que no sirve con demanda intermitente) | `inventario/demanda.py` |
 | Política por título | Reponer (A y B), stock mínimo de un ejemplar (C), a pedido (esporádica), temporada, no reponer (coyuntural), liquidar o revisar (con stock y sin salidas en 18 meses). La planilla puede fijarla a mano | `inventario/politica.py` |
-| Pedido por origen | Lo que falta para el objetivo; si no alcanza el mínimo de embarque (US$ 700), propone adelantar demanda de títulos A y B; si aun así no alcanza, acumular | `inventario/pedido.py` |
+| Dónde comprar y pedido por origen | Si un libro está en ambas editoriales («Se compra en»), prueba todas las combinaciones de envíos (ninguno, España, Argentina, ambos) y elige la de menor costo: cada libro va al origen con menor **costo puesto en bodega** entre los que se envían; cada envío debe alcanzar su **mínimo FOB** (US$ 700), completándolo con demanda adelantada de títulos A y B; lo que no cabe espera el próximo envío con un castigo por la espera. Con dos orígenes son cuatro combinaciones: el óptimo es exacto | `inventario/pedido.py` |
 
 Límites que conviene tener presentes:
 - **La demanda observada está censurada:** cuando no hubo stock, la venta perdida no queda registrada. Las consultas por

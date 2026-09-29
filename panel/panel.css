@@ -250,3 +250,7 @@ figcaption { display: flex; justify-content: space-between; align-items: baselin
   .cifras { grid-template-columns: repeat(2, 1fr); }
   .li-dato { white-space: normal; }
 }
+
+.lista-pedido li.espera { opacity: .7; }
+.tag-espera { font-style: normal; font-size: .72rem; font-weight: 600; color: var(--atencion); border: 1px solid currentColor; border-radius: 999px; padding: 0 6px; margin-left: 4px; }
+.ahorro { grid-column: 1 / -1; margin: 0; color: var(--texto-2); font-size: .9rem; }

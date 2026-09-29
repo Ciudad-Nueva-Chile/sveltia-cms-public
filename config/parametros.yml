@@ -22,6 +22,10 @@ simulaciones: 2000            # remuestreos para estimar la demanda del periodo 
 meses_sin_movimiento: 18      # con stock y sin salidas en este plazo: revisar o liquidar
 dias_consignacion_antigua: 365
 
+# Elección de dónde comprar (cuando un libro está en más de una editorial)
+costo_postergar: 0.30         # castigo por dejar para después un ejemplar que hace falta (fracción de su precio neto)
+costo_adelantar: 0.10         # castigo por comprar antes de tiempo para completar un mínimo de embarque
+
 origenes:
   - nombre: España
     plazo_semanas: 1          # courier, puerta a puerta

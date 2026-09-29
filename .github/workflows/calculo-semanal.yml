@@ -1,11 +1,11 @@
 # Lee la Google Sheet privada, calcula y escribe los resultados en la misma planilla.
 # Los resultados NO se guardan en el repositorio ni se imprimen en el registro (el repositorio es público).
 # Requiere dos secretos: GOOGLE_CREDENCIALES (JSON de la cuenta de servicio) e ID_PLANILLA.
-name: Cálculo semanal del inventario
+name: Cálculo diario del inventario
 
 on:
   schedule:
-    - cron: "0 11 * * 1"   # lunes 08:00 en Chile (horario de verano; 07:00 en invierno)
+    - cron: "0 10 * * *"   # todos los días a las 07:00 en Chile (horario de verano; 06:00 en invierno)
   workflow_dispatch:
 
 permissions:

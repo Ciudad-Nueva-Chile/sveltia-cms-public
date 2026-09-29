@@ -18,15 +18,20 @@ import pandas as pd
 from .lenguaje import ENCABEZADOS, TIPO_INTERNO
 
 COLUMNAS = {
-    "Catalogo": ["id", "isbn", "titulo", "origen", "categoria", "precio_lista", "clase_manual", "politica_manual"],
+    "Catalogo": ["id", "isbn", "titulo", "origen", "categoria", "precio_lista", "clase_manual", "politica_manual", "compra_en"],
     "Movimientos": ["fecha", "id", "tipo", "cantidad", "documento", "cliente"],
     "EnTransito": ["id", "cantidad", "origen", "fecha_estimada"],
-    "Costos": ["origen", "fob_sobre_precio_neto", "costo_sobre_precio_neto", "tipo_cambio"],
+    "Costos": ["origen", "edicion", "fob_sobre_precio_neto", "costo_sobre_precio_neto", "tipo_cambio"],
+    "Inventario": ["id", "isbn", "titulo", "autor", "origen", "compra_en", "categoria", "precio_lista",
+                   "bodega", "consignacion", "en_camino", "actualizado", "se_vende", "que_hacer", "notas"],
+    "Historial": ["fecha", "id", "bodega", "consignacion", "en_camino"],
 }
 # Nombre de la pestaña en la planilla (el primero es el que se crea; los demás se aceptan al leer)
 PESTANA = {
     "Catalogo": ["Catálogo", "Catalogo"],
-    "Movimientos": ["Movimientos"],
+    "Movimientos": ["Registro de movimientos", "Movimientos"],
+    "Inventario": ["Inventario"],
+    "Historial": ["Historial"],
     "EnTransito": ["En tránsito", "EnTransito"],
     "Costos": ["Configuración", "Costos"],
 }
@@ -60,12 +65,19 @@ def _normalizar(nombre: str, df: pd.DataFrame) -> pd.DataFrame:
         df["cantidad"] = pd.to_numeric(df["cantidad"], errors="coerce").fillna(0)
         tipo = df["tipo"].astype(str).str.strip()
         df["tipo"] = tipo.str.lower().map(TIPO_INTERNO).fillna(tipo.str.lower())
+    if nombre in ("Inventario", "Historial"):
+        for col in ("bodega", "consignacion", "en_camino"):
+            df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0).astype(int)
+        df = df[df["id"] != ""]
+    if nombre == "Historial":
+        df["fecha"] = _fechas(df["fecha"])
     if nombre == "EnTransito":
         df["cantidad"] = pd.to_numeric(df["cantidad"], errors="coerce").fillna(0)
     if nombre == "Catalogo":
         df["precio_lista"] = pd.to_numeric(df["precio_lista"], errors="coerce").fillna(0)
     if nombre == "Costos":
-        for col in COLUMNAS["Costos"][1:]:
+        df["edicion"] = df["edicion"].astype(str).str.strip()
+        for col in ("fob_sobre_precio_neto", "costo_sobre_precio_neto", "tipo_cambio"):
             df[col] = pd.to_numeric(df[col].astype(str).str.replace(",", "."), errors="coerce")
         df = df[df["origen"].astype(str).str.strip() != ""]
     return df
@@ -88,11 +100,13 @@ def catalogo_desde_sitio(carpeta: Path) -> pd.DataFrame:
             "titulo": campo("titulo"),
             "origen": "Argentina" if "Argentina" in editorial else "España" if "España" in editorial or not editorial else editorial,
             "categoria": campo("categoria"),
+            "autor": campo("autor"),
             "precio_lista": pd.to_numeric(campo("precio_iva"), errors="coerce"),
             "clase_manual": campo("inventario_tipo"),
             "politica_manual": campo("inventario_decision"),
+            "compra_en": "",
         })
-    df = pd.DataFrame(filas, columns=COLUMNAS["Catalogo"])
+    df = pd.DataFrame(filas, columns=COLUMNAS["Catalogo"] + ["autor"])
     df["precio_lista"] = df["precio_lista"].fillna(0)
     return df
 
@@ -141,17 +155,17 @@ class FuenteSheets:
             cred = Credentials.from_service_account_file(os.path.expanduser(os.environ["GOOGLE_CREDENCIALES_ARCHIVO"]), scopes=self.ALCANCES)
         else:
             raise SystemExit("Faltan credenciales: define GOOGLE_CREDENCIALES o GOOGLE_CREDENCIALES_ARCHIVO.")
-        self.gc = gspread.authorize(cred)
+        # BackOffHTTPClient reintenta con espera si Google pide bajar el ritmo (límite de 60 lecturas por minuto)
+        self.gc = gspread.authorize(cred, http_client=gspread.BackOffHTTPClient)
         self.libro = self.gc.open_by_key(id_planilla)
+        self._hojas = None
 
     def hoja(self, nombre: str):
-        import gspread
-
+        if self._hojas is None:  # una sola lectura de la lista de pestañas
+            self._hojas = {h.title: h for h in self.libro.worksheets()}
         for titulo in PESTANA.get(nombre, [nombre]):
-            try:
-                return self.libro.worksheet(titulo)
-            except gspread.WorksheetNotFound:
-                continue
+            if titulo in self._hojas:
+                return self._hojas[titulo]
         return None
 
     def leer(self, nombre: str) -> pd.DataFrame:
@@ -165,32 +179,70 @@ class FuenteSheets:
         filas = [f + [""] * (ancho - len(f)) for f in filas]
         return _normalizar(nombre, pd.DataFrame(filas[1:], columns=filas[0]))
 
+    @staticmethod
+    def _celda(v):
+        """Valor que la API de Google acepta: fechas como texto, sin tipos de numpy ni vacíos NaN."""
+        if v is None or (not isinstance(v, str) and pd.isna(v)):
+            return ""
+        if hasattr(v, "isoformat"):
+            return v.isoformat()[:10]
+        if hasattr(v, "item"):
+            return v.item()
+        return v
+
+    @classmethod
+    def _valores(cls, df: pd.DataFrame, con_encabezado: bool = True) -> list:
+        filas = [[cls._celda(v) for v in fila] for fila in df.astype(object).values.tolist()]
+        return ([list(df.columns)] if con_encabezado else []) + filas
+
+    @staticmethod
+    def _letra(i: int) -> str:
+        s = ""
+        i += 1
+        while i:
+            i, r = divmod(i - 1, 26)
+            s = chr(65 + r) + s
+        return s
+
     def escribir(self, nombre: str, df: pd.DataFrame, oculta: bool = False, solo_lectura: bool = False,
-                 secciones: bool = False, anchos: dict | None = None) -> None:
-        """Reemplaza el contenido de una pestaña y le da formato legible."""
+                 secciones: bool = False, anchos: dict | None = None, editables: list[int] | None = None,
+                 filtro: bool = False, congelar_columnas: int = 0, formatos: dict | None = None,
+                 notas: dict | None = None, listas: dict | None = None) -> None:
+        """Reemplaza el contenido de una pestaña y le da formato legible.
+
+        editables: índices de columnas que el usuario puede editar (fondo amarillo, sin protección).
+        """
         titulo = PESTANA.get(nombre, [nombre])[0]
         hoja = self.hoja(nombre)
         if hoja is None:
             hoja = self.libro.add_worksheet(title=titulo, rows=max(len(df) + 20, 50), cols=max(len(df.columns), 4))
+            self._hojas = None
         else:
             if hoja.title != titulo:  # pestaña de una versión anterior: se renombra
                 hoja.update_title(titulo)
+                self._hojas = None
             hoja.clear()
             if hoja.row_count < len(df) + 1:
                 hoja.add_rows(len(df) + 1 - hoja.row_count)
-        valores = [list(df.columns)] + df.astype(object).where(df.notna(), "").values.tolist()
-        valores = [[v.isoformat()[:10] if hasattr(v, "isoformat") else v for v in fila] for fila in valores]
+        valores = self._valores(df)
         hoja.update(values=valores, range_name="A1", value_input_option="USER_ENTERED")
+        editables = editables or []
+        n = len(df.columns)
 
         pedidos = [
             {"updateSheetProperties": {"properties": {"sheetId": hoja.id, "hidden": oculta,
-                                                      "gridProperties": {"frozenRowCount": 0 if secciones else 1}},
-                                       "fields": "hidden,gridProperties.frozenRowCount"}},
+                                                      "gridProperties": {"frozenRowCount": 0 if secciones else 1,
+                                                                         "frozenColumnCount": congelar_columnas}},
+                                       "fields": "hidden,gridProperties.frozenRowCount,gridProperties.frozenColumnCount"}},
             {"repeatCell": {"range": {"sheetId": hoja.id},
                             "cell": {"userEnteredFormat": {"textFormat": {"bold": False}, "backgroundColor": {"red": 1, "green": 1, "blue": 1},
                                                            "wrapStrategy": "WRAP", "verticalAlignment": "TOP"}},
                             "fields": "userEnteredFormat(textFormat,backgroundColor,wrapStrategy,verticalAlignment)"}},
         ]
+        for col in editables:
+            pedidos.append({"repeatCell": {"range": {"sheetId": hoja.id, "startRowIndex": 1, "startColumnIndex": col, "endColumnIndex": col + 1},
+                                           "cell": {"userEnteredFormat": {"backgroundColor": {"red": 1, "green": 0.973, "blue": 0.827}}},
+                                           "fields": "userEnteredFormat.backgroundColor"}})
         if secciones:
             # Filas de título de sección: texto en mayúsculas en la primera columna
             for i, fila in enumerate(valores):
@@ -203,27 +255,90 @@ class FuenteSheets:
             pedidos.append({"repeatCell": {"range": {"sheetId": hoja.id, "startRowIndex": 0, "endRowIndex": 1},
                                            "cell": {"userEnteredFormat": {"textFormat": {"bold": True}, "backgroundColor": self.COLOR_ENCABEZADO}},
                                            "fields": "userEnteredFormat(textFormat,backgroundColor)"}})
+            for col in editables:
+                pedidos.append({"repeatCell": {"range": {"sheetId": hoja.id, "startRowIndex": 0, "endRowIndex": 1, "startColumnIndex": col, "endColumnIndex": col + 1},
+                                               "cell": {"userEnteredFormat": {"textFormat": {"bold": True}, "backgroundColor": {"red": 1, "green": 0.894, "blue": 0.6}}},
+                                               "fields": "userEnteredFormat(textFormat,backgroundColor)"}})
+        for col, patron in (formatos or {}).items():
+            tipo = "DATE" if "yy" in patron else "NUMBER"
+            pedidos.append({"repeatCell": {"range": {"sheetId": hoja.id, "startRowIndex": 1, "startColumnIndex": col, "endColumnIndex": col + 1},
+                                           "cell": {"userEnteredFormat": {"numberFormat": {"type": tipo, "pattern": patron}}},
+                                           "fields": "userEnteredFormat.numberFormat"}})
+        for col, valores_lista in (listas or {}).items():  # listas desplegables
+            pedidos.append({"setDataValidation": {"range": {"sheetId": hoja.id, "startRowIndex": 1, "startColumnIndex": col, "endColumnIndex": col + 1},
+                                                  "rule": {"condition": {"type": "ONE_OF_LIST", "values": [{"userEnteredValue": v} for v in valores_lista]},
+                                                           "strict": True, "showCustomUi": True}}})
+        for col, texto in (notas or {}).items():
+            pedidos.append({"updateCells": {"range": {"sheetId": hoja.id, "startRowIndex": 0, "endRowIndex": 1, "startColumnIndex": col, "endColumnIndex": col + 1},
+                                            "rows": [{"values": [{"note": texto}]}], "fields": "note"}})
         for col, ancho in (anchos or {}).items():
             pedidos.append({"updateDimensionProperties": {"range": {"sheetId": hoja.id, "dimension": "COLUMNS", "startIndex": col, "endIndex": col + 1},
                                                           "properties": {"pixelSize": ancho}, "fields": "pixelSize"}})
-        # Protección de solo advertencia: evita editar por error las pestañas que escribe el cálculo
+        if filtro:
+            pedidos.append({"setBasicFilter": {"filter": {"range": {"sheetId": hoja.id, "startRowIndex": 0, "endRowIndex": len(df) + 1,
+                                                                    "startColumnIndex": 0, "endColumnIndex": n}}}})
+        # Protección de solo advertencia: evita editar por error lo que escribe el cálculo
         meta = self.libro.fetch_sheet_metadata({"fields": "sheets(properties.sheetId,protectedRanges.protectedRangeId)"})
         for s in meta["sheets"]:
             if s["properties"]["sheetId"] == hoja.id:
                 for pr in s.get("protectedRanges", []):
                     pedidos.append({"deleteProtectedRange": {"protectedRangeId": pr["protectedRangeId"]}})
         if solo_lectura:
-            pedidos.append({"addProtectedRange": {"protectedRange": {
-                "range": {"sheetId": hoja.id}, "warningOnly": True,
-                "description": "La escribe el cálculo semanal: los cambios se pierden el próximo lunes."}}})
+            protegidas = [c for c in range(n) if c not in editables] if editables else None
+            rangos = ([{"sheetId": hoja.id}] if protegidas is None else
+                      [{"sheetId": hoja.id, "startColumnIndex": c, "endColumnIndex": c + 1} for c in protegidas])
+            for r in rangos:
+                pedidos.append({"addProtectedRange": {"protectedRange": {
+                    "range": r, "warningOnly": True,
+                    "description": "La completa el cálculo: los cambios aquí se pierden en el próximo cálculo."}}})
         self.libro.batch_update({"requests": pedidos})
 
-    def ordenar(self, nombres: list[str]) -> None:
-        """Deja las pestañas en este orden (las no mencionadas quedan al final)."""
-        hojas = {h.title: h for h in self.libro.worksheets()}
+    def agregar_filas(self, nombre: str, df: pd.DataFrame) -> None:
+        """Agrega filas al final (para los registros que solo crecen)."""
+        if df.empty:
+            return
+        hoja = self.hoja(nombre)
+        if hoja is None:
+            self.escribir(nombre, df, oculta=True, solo_lectura=True)
+            return
+        hoja.append_rows(self._valores(df, con_encabezado=False), value_input_option="USER_ENTERED")
+
+    def actualizar_columnas(self, nombre: str, datos: pd.DataFrame, columnas: list[str], columna_id: str) -> None:
+        """Escribe solo algunas columnas, fila por fila según el código de cada fila en la planilla.
+
+        Respeta el orden que tenga la pestaña (Roberto puede ordenarla o filtrarla) y no toca las columnas editables.
+        datos: indexado por código, con los nombres de columna tal como se ven en la planilla.
+        """
+        hoja = self.hoja(nombre)
+        filas = hoja.get_all_values()
+        encabezado = filas[0]
+        ids = [f[encabezado.index(columna_id)] if len(f) > encabezado.index(columna_id) else "" for f in filas[1:]]
+        rangos = []
+        for col in columnas:
+            j = encabezado.index(col)
+            valores = [[self._celda(datos.at[i, col]) if i in datos.index else ""] for i in ids]
+            letra = self._letra(j)
+            rangos.append({"range": f"{letra}2:{letra}{len(ids) + 1}", "values": valores})
+        if rangos:
+            hoja.batch_update(rangos, value_input_option="USER_ENTERED")
+
+    def ordenar(self, nombres: list[str], visibles: int | None = None) -> None:
+        """Deja las pestañas en este orden (las no mencionadas quedan al final).
+
+        visibles: cuántas de las primeras quedan a la vista; las demás se ocultan.
+        """
+        self._hojas = None
+        self.hoja("Inventario")
+        hojas = self._hojas
         titulos = [PESTANA.get(n, [n])[0] for n in nombres]
-        pedidos = [{"updateSheetProperties": {"properties": {"sheetId": hojas[t].id, "index": i}, "fields": "index"}}
-                   for i, t in enumerate(titulos) if t in hojas]
+        pedidos = []
+        for i, t in enumerate(titulos):
+            if t not in hojas:
+                continue
+            props, campos = {"sheetId": hojas[t].id, "index": i}, "index"
+            if visibles is not None:
+                props["hidden"], campos = i >= visibles, "index,hidden"
+            pedidos.append({"updateSheetProperties": {"properties": props, "fields": campos}})
         if pedidos:
             self.libro.batch_update({"requests": pedidos})
 
