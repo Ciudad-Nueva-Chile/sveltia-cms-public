@@ -5,8 +5,8 @@ isbn: '9789505864201'
 portada: /assets/portadas/9789505864201.jpg
 precio_iva: 20000
 categoria: Espiritualidad y vida cristiana
-oculto: true
-destacado: false
+oculto: false
+destacado: true
 origen_editorial: Ciudad Nueva Argentina
 coleccion: ''
 num_coleccion: ''
