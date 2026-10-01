@@ -10,6 +10,6 @@ categoria: "Magisterio de la Iglesia y Papas"
 subcategoria: ""
 precio_iva: 24200
 precio_neto: 20336
-portada: "/assets/portadas/9788497154673.jpg"
+portada: "/assets/portadas/CN-0527.jpg"
 estado_comercial: ""
 ---

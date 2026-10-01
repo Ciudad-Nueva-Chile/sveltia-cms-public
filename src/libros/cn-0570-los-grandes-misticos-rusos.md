@@ -10,6 +10,6 @@ categoria: "Espiritualidad y vida cristiana"
 subcategoria: ""
 precio_iva: 43200
 precio_neto: 36303
-portada: "/assets/portadas/9788497153386.jpg"
+portada: "/assets/portadas/CN-0570.jpg"
 estado_comercial: ""
 ---

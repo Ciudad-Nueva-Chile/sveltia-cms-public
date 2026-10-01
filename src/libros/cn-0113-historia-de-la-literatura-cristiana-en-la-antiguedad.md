@@ -10,6 +10,6 @@ categoria: "Patrística — Padres de la Iglesia"
 subcategoria: "Estudios Patrísticos"
 precio_iva: 83000
 precio_neto: 69748
-portada: "/assets/portadas/9788497155779.jpg"
+portada: "/assets/portadas/CN-0113.jpg"
 estado_comercial: ""
 ---

@@ -10,6 +10,6 @@ categoria: "Patrística — Padres de la Iglesia"
 subcategoria: "Biblioteca de Patrística"
 precio_iva: 88200
 precio_neto: 74118
-portada: "/assets/portadas/9788497155489.jpg"
+portada: "/assets/portadas/CN-0099.jpg"
 estado_comercial: ""
 ---

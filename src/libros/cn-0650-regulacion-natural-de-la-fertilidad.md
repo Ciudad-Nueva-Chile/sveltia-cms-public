@@ -10,6 +10,6 @@ categoria: "Familia, pareja y educación de los hijos"
 subcategoria: ""
 precio_iva: 21000
 precio_neto: 17647
-portada: "/assets/portadas/9788486987442.jpg"
+portada: ""
 estado_comercial: ""
 ---

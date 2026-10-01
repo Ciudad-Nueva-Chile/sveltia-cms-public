@@ -10,6 +10,6 @@ categoria: "Teología y filosofía"
 subcategoria: ""
 precio_iva: 46700
 precio_neto: 39244
-portada: "/assets/portadas/9788497155236.jpg"
+portada: "/assets/portadas/CN-0428.jpg"
 estado_comercial: ""
 ---

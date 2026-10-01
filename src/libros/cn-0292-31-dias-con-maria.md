@@ -10,6 +10,6 @@ categoria: "Espiritualidad y oración"
 subcategoria: "Colección «15 días con»"
 precio_iva: 15600
 precio_neto: 13109
-portada: "/assets/portadas/9788497151122.jpg"
+portada: "/assets/portadas/CN-0292.jpg"
 estado_comercial: ""
 ---

@@ -48,10 +48,10 @@
       </form>
 
       <nav class="nav-principal" id="nav-principal" aria-label="Principal">
-        <a href="/catalogo/" {% if page.url.startsWith('/catalogo') %}aria-current="page"{% endif %}>Catálogo</a>
-        <a href="/patristica/" {% if page.url.startsWith('/patristica') %}aria-current="page"{% endif %}>Patrística</a>
-        <a href="/instituciones/" {% if page.url.startsWith('/instituciones') %}aria-current="page"{% endif %}>Librerías e instituciones</a>
-        <a href="/nosotros/" {% if page.url.startsWith('/nosotros') %}aria-current="page"{% endif %}>Nosotros</a>
+        <a href="/catalogo/" {% if (page.url or '').startsWith('/catalogo') %}aria-current="page"{% endif %}>Catálogo</a>
+        <a href="/patristica/" {% if (page.url or '').startsWith('/patristica') %}aria-current="page"{% endif %}>Patrística</a>
+        <a href="/instituciones/" {% if (page.url or '').startsWith('/instituciones') %}aria-current="page"{% endif %}>Librerías e instituciones</a>
+        <a href="/nosotros/" {% if (page.url or '').startsWith('/nosotros') %}aria-current="page"{% endif %}>Nosotros</a>
       </nav>
 
       <a class="boton-solicitud" href="/solicitud/" aria-label="Mi solicitud de pedido">

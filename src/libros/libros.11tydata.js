@@ -7,8 +7,9 @@ const AUTOR_VACIO = new Set(["", "Autor no especificado"]);
 
 export default {
   layout: "libro.njk",
-  permalink: "/catalogo/{{ page.fileSlug }}/",
   eleventyComputed: {
+    // Un libro oculto desde /admin no genera su página
+    permalink: (data) => (data.oculto ? false : `/catalogo/${data.page.fileSlug}/`),
     // Título sin la sigla de colección final, p. ej. "CARTAS CRISTOLOGICAS (BP. 46)" → "CARTAS CRISTOLOGICAS"
     titulo_visible: (data) => String(data.titulo || "").replace(/\\"/g, '"').replace(SIGLA_FINAL, "").replace(/\s{2,}/g, " ").trim(),
     // "BP 46", o vacío si el título no trae sigla

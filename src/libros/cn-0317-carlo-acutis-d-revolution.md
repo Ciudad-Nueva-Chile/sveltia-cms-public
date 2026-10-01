@@ -10,7 +10,7 @@ categoria: "Biografías, santos y testimonios"
 subcategoria: ""
 precio_iva: 21500
 precio_neto: 18067
-portada: ""
+portada: "/assets/portadas/CN-0317.jpg"
 inventario_tipo: "Coyuntural"
 estado_comercial: ""
 ---

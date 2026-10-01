@@ -10,6 +10,6 @@ categoria: "Patrística — Padres de la Iglesia"
 subcategoria: "Apócrifos Cristianos"
 precio_iva: 50200
 precio_neto: 42185
-portada: "/assets/portadas/9788497150545.jpg"
+portada: ""
 estado_comercial: ""
 ---

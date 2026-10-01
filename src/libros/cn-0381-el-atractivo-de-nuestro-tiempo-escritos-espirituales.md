@@ -10,6 +10,6 @@ categoria: "Espiritualidad de la unidad (Chiara Lubich / Focolares)"
 subcategoria: "Obras de Chiara Lubich"
 precio_iva: 26000
 precio_neto: 21849
-portada: "/assets/portadas/9788486987831.jpg"
+portada: ""
 estado_comercial: ""
 ---

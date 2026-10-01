@@ -10,6 +10,6 @@ categoria: "Sociedad, política y fraternidad"
 subcategoria: ""
 precio_iva: 22500
 precio_neto: 18908
-portada: "/assets/portadas/9788497152921.jpg"
+portada: "/assets/portadas/CN-0517.jpg"
 estado_comercial: ""
 ---

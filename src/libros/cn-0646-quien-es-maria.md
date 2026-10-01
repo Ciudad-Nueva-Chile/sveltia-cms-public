@@ -10,6 +10,6 @@ categoria: "Espiritualidad y oración"
 subcategoria: "María y los ángeles"
 precio_iva: 15600
 precio_neto: 13109
-portada: "/assets/portadas/9788497150378.jpg"
+portada: "/assets/portadas/CN-0646.jpg"
 estado_comercial: ""
 ---

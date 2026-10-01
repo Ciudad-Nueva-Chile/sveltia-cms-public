@@ -10,6 +10,6 @@ categoria: "Patrística — Padres de la Iglesia"
 subcategoria: "La Biblia comentada por los Padres — Antiguo Testamento"
 precio_iva: 70900
 precio_neto: 59580
-portada: ""
+portada: "/assets/portadas/CN-0095.jpg"
 estado_comercial: ""
 ---

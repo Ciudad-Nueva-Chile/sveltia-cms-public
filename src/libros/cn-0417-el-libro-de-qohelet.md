@@ -10,6 +10,6 @@ categoria: "Biblia y estudios bíblicos"
 subcategoria: ""
 precio_iva: 12100
 precio_neto: 10168
-portada: "/assets/portadas/9788425418396.jpg"
+portada: "/assets/portadas/CN-0417.jpg"
 estado_comercial: ""
 ---

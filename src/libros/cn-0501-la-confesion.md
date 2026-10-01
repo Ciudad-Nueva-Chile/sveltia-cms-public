@@ -10,6 +10,6 @@ categoria: "Catequesis y sacramentos"
 subcategoria: ""
 precio_iva: 13900
 precio_neto: 11681
-portada: "/assets/portadas/9788497152570.jpg"
+portada: "/assets/portadas/CN-0501.jpg"
 estado_comercial: ""
 ---

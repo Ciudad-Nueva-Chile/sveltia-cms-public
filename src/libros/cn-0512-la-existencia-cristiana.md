@@ -10,6 +10,6 @@ categoria: "Espiritualidad de la unidad (Chiara Lubich / Focolares)"
 subcategoria: "Movimiento de los Focolares: historia y protagonistas"
 precio_iva: 22500
 precio_neto: 18908
-portada: "/assets/portadas/9788486987299.jpg"
+portada: ""
 estado_comercial: ""
 ---

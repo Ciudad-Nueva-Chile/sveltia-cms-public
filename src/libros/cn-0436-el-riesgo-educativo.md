@@ -10,6 +10,6 @@ categoria: "Educación y prosocialidad"
 subcategoria: ""
 precio_iva: 7100
 precio_neto: 5966
-portada: "/assets/portadas/9789505861811.jpg"
+portada: "/assets/portadas/CN-0436.jpg"
 estado_comercial: ""
 ---

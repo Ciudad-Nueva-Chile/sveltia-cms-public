@@ -35,10 +35,11 @@ collections:
     create: true
     slug: "{{fields.isbn}}"
     identifier_field: titulo
-    summary: "{{titulo}} — {{autor}} · ${{precio_iva}}"
+    summary: "{{oculto | ternary('🚫 OCULTO · ', '')}}{{titulo}} — {{autor}} · ${{precio_iva}}"
     sortable_fields: [titulo, autor, categoria, precio_iva]
     view_filters:
       - { label: "Destacados en la portada", field: destacado, pattern: true }
+      - { label: "Ocultos en el sitio", field: oculto, pattern: true }
       - { label: "Sin portada", field: portada, pattern: "^$" }
       - { label: "Patrística", field: categoria, pattern: "^Patrística" }
     view_groups:
@@ -58,6 +59,7 @@ collections:
         search_fields: ["lista.*.nombre"]
         value_field: "lista.*.nombre"
         display_fields: ["lista.*.nombre"]
+      - { name: oculto, label: "Ocultar en el sitio", widget: boolean, default: false, required: false, hint: "Activado: el libro no aparece en ninguna parte del sitio (catálogo, búsqueda, portada) y su página deja de publicarse. Sigue en la planilla de inventario." }
       - { name: destacado, label: "Destacar en la portada", widget: boolean, default: false, required: false }
       - { name: origen_editorial, label: "Edición", widget: select, options: ["Ciudad Nueva España", "Ciudad Nueva Argentina", "Uruguay", "Otra"], required: false }
       - { name: coleccion, label: "Colección", widget: string, required: false, hint: "Solo para patrística: por ejemplo «Biblioteca de Patrística»." }

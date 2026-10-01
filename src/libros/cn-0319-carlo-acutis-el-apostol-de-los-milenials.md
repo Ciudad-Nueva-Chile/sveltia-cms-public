@@ -2,7 +2,7 @@
 titulo: CARLO ACUTIS. El apostol de los milenials
 autor: Vito Rizzo
 isbn: '9789505863983'
-portada: /assets/portadas/9789505863983.jpg
+portada: "/assets/portadas/CN-0319.jpg"
 precio_iva: 17800
 categoria: Biografías, santos y testimonios
 destacado: true

@@ -10,6 +10,6 @@ categoria: "Economía de Comunión y humanismo económico"
 subcategoria: ""
 precio_iva: 26000
 precio_neto: 21849
-portada: "/assets/portadas/9788497155137.jpg"
+portada: "/assets/portadas/CN-0365.jpg"
 estado_comercial: ""
 ---

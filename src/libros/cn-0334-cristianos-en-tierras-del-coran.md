@@ -10,6 +10,6 @@ categoria: "Ecumenismo y diálogo interreligioso"
 subcategoria: ""
 precio_iva: 24200
 precio_neto: 20336
-portada: "/assets/portadas/9788497151559.jpg"
+portada: "/assets/portadas/CN-0334.jpg"
 estado_comercial: ""
 ---

@@ -10,6 +10,6 @@ categoria: "Doctrina social de la Iglesia"
 subcategoria: ""
 precio_iva: 8500
 precio_neto: 7143
-portada: "/assets/portadas/9789505862047.jpg"
+portada: ""
 estado_comercial: ""
 ---

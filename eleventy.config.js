@@ -7,6 +7,8 @@ const slug = (texto) =>
     .toLowerCase();
 
 const porTitulo = (a, b) => a.data.titulo.localeCompare(b.data.titulo, "es");
+// Libros visibles en el sitio: los marcados «Ocultar en el sitio» en /admin quedan fuera de todo
+const librosVisibles = (api) => api.getFilteredByGlob("src/libros/*.md").filter((l) => !l.data.oculto);
 
 import { HtmlBasePlugin } from "@11ty/eleventy";
 
@@ -63,16 +65,16 @@ export default function (eleventyConfig) {
   });
 
   // ---------- Colecciones ----------
-  eleventyConfig.addCollection("libros", (api) => api.getFilteredByGlob("src/libros/*.md").sort(porTitulo));
+  eleventyConfig.addCollection("libros", (api) => librosVisibles(api).sort(porTitulo));
 
   eleventyConfig.addCollection("destacados", (api) =>
-    api.getFilteredByGlob("src/libros/*.md").filter((l) => l.data.destacado).sort(porTitulo)
+    librosVisibles(api).filter((l) => l.data.destacado).sort(porTitulo)
   );
 
   // Categorías en el orden de src/_data/categorias.json; si un libro trae una categoría
   // que no está en el archivo, igual aparece (al final) para que nada quede huérfano.
   eleventyConfig.addCollection("categorias", (api) => {
-    const libros = api.getFilteredByGlob("src/libros/*.md").sort(porTitulo);
+    const libros = librosVisibles(api).sort(porTitulo);
     const config = libros[0]?.data.categorias?.lista || [];
     const nombres = [...config.map((c) => c.nombre)];
     for (const l of libros) if (!nombres.includes(l.data.categoria)) nombres.push(l.data.categoria);
@@ -86,7 +88,7 @@ export default function (eleventyConfig) {
   });
 
   eleventyConfig.addCollection("colecciones", (api) => {
-    const libros = api.getFilteredByGlob("src/libros/*.md").sort(porTitulo);
+    const libros = librosVisibles(api).sort(porTitulo);
     const config = libros[0]?.data.colecciones?.lista || [];
     return config
       .map((c) => {

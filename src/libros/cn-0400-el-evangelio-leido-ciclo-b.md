@@ -10,6 +10,6 @@ categoria: "Espiritualidad y oración"
 subcategoria: "Liturgia, meditación y tiempos litúrgicos"
 precio_iva: 53600
 precio_neto: 45042
-portada: "/assets/portadas/9788497153133.jpg"
+portada: "/assets/portadas/CN-0400.jpg"
 estado_comercial: ""
 ---
