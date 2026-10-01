@@ -5,8 +5,8 @@ isbn: '9789505863983'
 portada: /assets/portadas/CN-0319.jpg
 precio_iva: 17800
 categoria: Biografías, santos y testimonios
-oculto: true
-destacado: true
+oculto: false
+destacado: false
 origen_editorial: Ciudad Nueva Argentina
 coleccion: ''
 num_coleccion: ''
