@@ -21,3 +21,12 @@ jobs:
       - run: pytest -q
       - name: El modelo corre de punta a punta con los datos de ejemplo
         run: python -m inventario --panel /tmp/datos.json > /dev/null
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: El sitio se compila igual que en la publicación (con prefijo de GitHub Pages)
+        env:
+          PATH_PREFIX: /${{ github.event.repository.name }}/
+        run: npx eleventy --quiet --output=/tmp/sitio

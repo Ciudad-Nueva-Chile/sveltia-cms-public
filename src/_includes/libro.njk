@@ -1,6 +1,8 @@
 ---
 layout: base.njk
 ---
+{#- Un libro oculto desde /admin no se publica: no se genera nada -#}
+{% if not oculto %}
 {% from "componentes/libro.njk" import cubierta, tarjeta, datosPedido with context %}
 {%- set cat = categoria | infoCategoria(categorias) -%}
 {%- set libro_actual = { page: page, coleccion_visible: coleccion_visible, categoria: categoria } -%}
@@ -108,3 +110,4 @@ layout: base.njk
   "offers": { "@type": "Offer", "price": {{ precio_iva }}, "priceCurrency": "CLP" }{% endif %}
 }
 </script>
+{% endif %}

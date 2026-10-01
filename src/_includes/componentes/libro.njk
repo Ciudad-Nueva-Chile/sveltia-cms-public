@@ -16,7 +16,7 @@
 
 {#- Datos mínimos que necesita la solicitud de pedido en el navegador -#}
 {% macro datosPedido(libro) -%}
-data-pedido-id="{{ libro.data.id_catalogo or libro.fileSlug }}" data-pedido-titulo="{{ libro.data.titulo_visible }}{% if libro.data.sigla %} ({{ libro.data.sigla }}){% endif %}" data-pedido-isbn="{{ libro.data.isbn }}" data-pedido-precio="{{ libro.data.precio_iva }}" data-pedido-url="{{ libro.url | htmlBaseUrl }}" data-pedido-portada="{{ (libro.data.portada | htmlBaseUrl) if libro.data.portada else '' }}"
+data-pedido-id="{{ libro.data.id_catalogo or libro.fileSlug }}" data-pedido-titulo="{{ libro.data.titulo_visible }}{% if libro.data.sigla %} ({{ libro.data.sigla }}){% endif %}" data-pedido-isbn="{{ libro.data.isbn }}" data-pedido-precio="{{ libro.data.precio_iva }}" data-pedido-url="{{ (libro.url | htmlBaseUrl) if libro.url else '' }}" data-pedido-portada="{{ (libro.data.portada | htmlBaseUrl) if libro.data.portada else '' }}"
 {%- endmacro %}
 
 {% macro tarjeta(libro, clase="") %}
