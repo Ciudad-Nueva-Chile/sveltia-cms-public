@@ -1,16 +1,19 @@
 ---
-id_catalogo: "CN-0384"
-isbn: "9789505864201"
-titulo: "EL CANSANCIO DE LOS BUENOS. 2a ed."
-autor: "Roberto Almada"
-origen_editorial: "Ciudad Nueva Argentina"
-coleccion: ""
-num_coleccion: ""
-categoria: "Espiritualidad y vida cristiana"
-subcategoria: ""
+titulo: EL CANSANCIO DE LOS BUENOS. 2a ed.
+autor: Roberto Almada
+isbn: '9789505864201'
+portada: /assets/portadas/9789505864201.jpg
 precio_iva: 20000
+categoria: Espiritualidad y vida cristiana
+oculto: true
+destacado: false
+origen_editorial: Ciudad Nueva Argentina
+coleccion: ''
+num_coleccion: ''
+subcategoria: ''
+inventario_tipo: ''
+inventario_decision: ''
 precio_neto: 16807
-portada: "/assets/portadas/9789505864201.jpg"
-destacado: true
-estado_comercial: ""
+estado_comercial: ''
+id_catalogo: CN-0384
 ---
