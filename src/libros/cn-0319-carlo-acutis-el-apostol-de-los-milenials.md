@@ -6,7 +6,7 @@ portada: /assets/portadas/CN-0319.jpg
 precio_iva: 17800
 categoria: Biografías, santos y testimonios
 oculto: false
-destacado: false
+destacado: true
 origen_editorial: Ciudad Nueva Argentina
 coleccion: ''
 num_coleccion: ''
