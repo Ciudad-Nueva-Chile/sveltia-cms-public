@@ -1,4 +1,4 @@
-# Configurar la planilla privada y el cálculo semanal
+# Configurar la planilla privada, el cálculo diario y la contraseña del panel
 
 Todo esto se hace una sola vez. Toma unos 30 minutos. Nada de lo que se configura aquí queda público.
 
@@ -58,15 +58,22 @@ En GitHub: repositorio → **Settings → Secrets and variables → Actions → 
 |---|---|
 | `GOOGLE_CREDENCIALES` | El contenido completo del archivo `.json` (ábrelo con un editor de texto, copia todo) |
 | `ID_PLANILLA` | El ID del paso 2.3 |
+| `CLAVE_PANEL` | La contraseña del panel de inventario. Larga (por ejemplo tres o cuatro palabras): el archivo cifrado es público y una contraseña corta se puede adivinar probando |
 
-Luego **Actions → Cálculo diario del inventario → Run workflow** para probarlo. Cada mañana se detectan los cambios
-de «Inventario» y se actualizan los resultados. Los secretos no se muestran nunca y el registro del cálculo no imprime datos.
+Luego **Actions → Publicar sitio y panel → Run workflow** para probarlo. Cada mañana (y con cada cambio en el
+repositorio) se detectan los cambios de «Inventario», se descuentan las ventas nuevas, se actualizan los resultados
+en la planilla y se publica el panel con los datos cifrados. Los secretos no se muestran nunca y el registro no imprime datos.
+
+**Contraseña del panel.** El panel la pide una vez; con «Recordar en este dispositivo» guarda la clave derivada (no la
+contraseña) y entra directo. «Salir» la olvida. Para cambiarla, edita el secreto `CLAVE_PANEL` y vuelve a publicar:
+lo recordado en los dispositivos deja de servir y se pide la nueva.
 
 ## 5. Publicación (GitHub Pages)
 
 1. **Settings → Pages → Source: GitHub Actions**.
-2. Con cada push se publica el sitio en `https://ciudad-nueva-chile.github.io/sveltia-cms-public/`, el panel de
-   administración en `/admin/` y el panel de inventario con **datos de ejemplo** en `/inventario/`.
+2. Con cada push y cada mañana se publica el sitio en `https://ciudad-nueva-chile.github.io/sveltia-cms-public/`, el
+   panel de administración en `/admin/` y el panel de inventario en `/inventario/` (con contraseña si están los
+   secretos de la planilla y `CLAVE_PANEL`; si no, con **datos de ejemplo**).
 3. Para que Roberto edite los parámetros en línea hace falta el mismo autenticador del sitio
    (OAuth App de GitHub + `sveltia-cms-auth` en Cloudflare Workers) y poner su dirección en `base_url`
    de `admin/config.yml`. Para probar sin eso: `npm install && npm run admin`, servir la carpeta y elegir

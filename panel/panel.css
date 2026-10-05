@@ -277,3 +277,17 @@ figcaption { display: flex; justify-content: space-between; align-items: baselin
   .tabla-comp th:nth-child(2), .tabla-comp td:nth-child(2), .tabla-comp th:nth-child(3), .tabla-comp td:nth-child(3), .tabla-comp th:nth-child(4), .tabla-comp td:nth-child(4) { display: none; }
 }
 .tabla-comp td.num { white-space: nowrap; }
+
+/* Acceso con contraseña (datos cifrados) */
+body.bloqueado .pestanas, body.bloqueado .vista, body.bloqueado .meta { display: none !important; }
+.acceso { display: grid; place-items: center; min-height: 70vh; padding: 24px 0; }
+.acceso-caja { width: min(380px, 100%); display: grid; gap: 14px; text-align: left; padding: 28px; }
+.acceso-caja h1 { margin: 4px 0 0; font-size: 1.4rem; }
+.acceso-caja p { margin: 0; color: var(--texto-2); font-size: .92rem; }
+.acceso-campo { display: grid; gap: 6px; font-weight: 600; font-size: .9rem; }
+.acceso-campo input { height: 42px; border: 1px solid var(--borde); border-radius: 8px; padding: 0 12px; font: inherit; background: var(--superficie); color: var(--texto); }
+.acceso-campo input:focus { outline: 2px solid var(--acento); outline-offset: 1px; }
+.boton { height: 44px; border: 0; border-radius: 999px; background: var(--acento); color: #fff; font: inherit; font-weight: 650; cursor: pointer; }
+.boton:hover { background: var(--acento-oscuro); }
+.boton:disabled { opacity: .6; cursor: progress; }
+.acceso-error { color: var(--grave) !important; font-weight: 600; }

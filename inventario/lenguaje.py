@@ -204,7 +204,7 @@ def hoja_pedido(lineas: pd.DataFrame, combinaciones: list[dict], envios: dict, f
     filas.append(["CONVIENE", formula(f"=IFERROR(INDEX(A{primera}:A{ultima},MATCH(MIN({rango}),{rango},0)),\"\")", sep)])
     filas.append(["", formula(f'=IF(B{fila_conviene}="{elegida}","La lista de abajo corresponde a esta opción.",'
                               f'"Con estos costos conviene otra opción. La lista de abajo se actualiza en el próximo cálculo '
-                              f'(cada mañana, o a mano en GitHub: Actions → Cálculo diario → Run workflow).")', sep)])
+                              f'(cada mañana, o a mano en GitHub: Actions → Publicar sitio y panel → Run workflow).")', sep)])
     filas += [[""], ["2. QUÉ PEDIR"]]
     tabla = pedido(lineas)
     tabla = tabla[["Cuándo", "Comprar en", "Cantidad", "Título", "Código", "US$ aprox.", "Por qué"]]

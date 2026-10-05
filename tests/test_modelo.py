@@ -357,3 +357,13 @@ def test_hoja_pedido_formulas_con_separador_de_la_planilla():
     assert ";" in conviene and "," not in conviene
     assert h["editables"] == [(5, 1), (5, 2)]
     assert lenguaje.formula('=IF(A1="a, b",1,2)', ";") == '=IF(A1="a, b";1;2)'
+
+
+# ---------- Datos del panel cifrados ----------
+def test_cifrado_ida_y_vuelta_y_contrasena_incorrecta():
+    from inventario import cifrado
+    paquete = cifrado.cifrar({"hola": "ñandú", "n": 3}, "clave larga de prueba")
+    assert "ñandú" not in str(paquete)
+    assert cifrado.descifrar(paquete, "clave larga de prueba") == {"hola": "ñandú", "n": 3}
+    with pytest.raises(Exception):
+        cifrado.descifrar(paquete, "otra")

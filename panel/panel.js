@@ -446,27 +446,101 @@
   }
 
   // ---------- Carga ----------
+  // Con datos reales se publica datos.cifrado.json (AES-GCM con una clave derivada de la contraseña, ver
+  // inventario/cifrado.py) y se pide la contraseña. Sin él, se muestran los datos de ejemplo de datos.json.
+  var CLAVE_RECORDADA = "inventario-panel.clave";
+
+  function iniciar(datos) {
+    D = datos;
+    document.body.classList.remove("bloqueado");
+    $("#acceso").hidden = true;
+    $("#fecha-corte").textContent = fechaCl(D.fecha_corte);
+    $("#etiqueta-datos").textContent = D.etiqueta || "";
+    $("#etiqueta-datos").hidden = !D.etiqueta;
+    pintarComparacion();
+    pintarPedidos();
+    pintarListas();
+    pintarChips();
+    pintarLibros();
+    pintarTiles();
+    pintarDispersion();
+    pintarMatriz();
+    pintarTecnica();
+  }
+
+  function errorCarga(texto) {
+    var e = $("#error-carga");
+    e.hidden = false;
+    e.textContent = texto;
+  }
+
+  function bytes(b64) { return Uint8Array.from(atob(b64), function (c) { return c.charCodeAt(0); }); }
+  function base64(arr) { return btoa(String.fromCharCode.apply(null, arr)); }
+  function leerRecordada() { try { return localStorage.getItem(CLAVE_RECORDADA); } catch (e) { return null; } }
+  function guardarRecordada(v) { try { v ? localStorage.setItem(CLAVE_RECORDADA, v) : localStorage.removeItem(CLAVE_RECORDADA); } catch (e) { /* sin almacenamiento */ } }
+
+  function derivar(contrasena, paquete) {
+    return crypto.subtle.importKey("raw", new TextEncoder().encode(contrasena), "PBKDF2", false, ["deriveBits"])
+      .then(function (base) {
+        return crypto.subtle.deriveBits({ name: "PBKDF2", hash: "SHA-256", salt: bytes(paquete.sal), iterations: paquete.iteraciones }, base, 256);
+      })
+      .then(function (bits) { return new Uint8Array(bits); });
+  }
+
+  function descifrar(paquete, clave) {
+    return crypto.subtle.importKey("raw", clave, "AES-GCM", false, ["decrypt"])
+      .then(function (k) { return crypto.subtle.decrypt({ name: "AES-GCM", iv: bytes(paquete.iv) }, k, bytes(paquete.datos)); })
+      .then(function (texto) { return JSON.parse(new TextDecoder().decode(texto)); });
+  }
+
+  function pedirContrasena(paquete) {
+    document.body.classList.add("bloqueado");
+    $("#acceso").hidden = false;
+    $("#contrasena").focus();
+    $("#form-acceso").addEventListener("submit", function (ev) {
+      ev.preventDefault();
+      var boton = $("#entrar");
+      boton.disabled = true;
+      boton.textContent = "Abriendo…";
+      $("#acceso-error").hidden = true;
+      var clave;
+      derivar($("#contrasena").value, paquete)
+        .then(function (c) { clave = c; return descifrar(paquete, c); })
+        .then(function (datos) {
+          if ($("#recordar").checked) guardarRecordada(base64(clave));
+          $("#contrasena").value = "";
+          iniciar(datos);
+        })
+        .catch(function () {
+          $("#acceso-error").hidden = false;
+          $("#contrasena").select();
+        })
+        .then(function () { boton.disabled = false; boton.textContent = "Entrar"; });
+    });
+  }
+
+  $("#salir").addEventListener("click", function () {
+    guardarRecordada(null);
+    location.reload();
+  });
+
   mostrarVista();
-  fetch("datos.json", { cache: "no-store" })
-    .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
-    .then(function (datos) {
-      D = datos;
-      $("#fecha-corte").textContent = fechaCl(D.fecha_corte);
-      $("#etiqueta-datos").textContent = D.etiqueta || "";
-      $("#etiqueta-datos").hidden = !D.etiqueta;
-      pintarPedidos();
-      pintarComparacion();
-      pintarListas();
-      pintarChips();
-      pintarLibros();
-      pintarTiles();
-      pintarDispersion();
-      pintarMatriz();
-      pintarTecnica();
-    })
-    .catch(function () {
-      var e = $("#error-carga");
-      e.hidden = false;
-      e.textContent = "No se encontró datos.json. Genéralo con: python -m inventario --panel panel/datos.json";
+  fetch("datos.cifrado.json", { cache: "no-store" })
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .catch(function () { return null; })
+    .then(function (paquete) {
+      if (!paquete) {  // sin datos reales: los de ejemplo
+        return fetch("datos.json", { cache: "no-store" })
+          .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+          .then(iniciar)
+          .catch(function () { errorCarga("No se encontraron los datos del panel. Revisa el último «Publicar sitio y panel» en GitHub Actions."); });
+      }
+      $("#salir").hidden = false;
+      var recordada = leerRecordada();
+      if (!recordada) return pedirContrasena(paquete);
+      return descifrar(paquete, bytes(recordada)).then(iniciar).catch(function () {
+        guardarRecordada(null);  // cambió la contraseña
+        pedirContrasena(paquete);
+      });
     });
 })();

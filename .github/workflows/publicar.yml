@@ -1,13 +1,21 @@
-# Publica en GitHub Pages la versión de prueba:
+# Publica en GitHub Pages:
 #   /            el sitio (no indexable en buscadores mientras sea de prueba)
 #   /admin/      Sveltia CMS: libros, páginas, ajustes y parámetros del inventario
-#   /inventario/ el panel de inventario con DATOS DE EJEMPLO
-# Nunca publica datos reales: el cálculo con la planilla privada es otro flujo (calculo-semanal.yml).
+#   /inventario/ el panel de inventario
+#
+# Corre con cada cambio en main y todos los días a las 07:00 de Chile. En cada pasada también hace el cálculo del
+# inventario con la planilla privada (detecta cambios, descuenta ventas, escribe los resultados en la planilla).
+#
+# El repositorio y el sitio son públicos, así que los datos reales del panel se publican CIFRADOS con la contraseña
+# CLAVE_PANEL (el panel la pide). Sin los secretos de la planilla, o sin CLAVE_PANEL, el panel muestra datos de ejemplo.
+# Los registros de Actions también son públicos: el cálculo no imprime datos.
 name: Publicar sitio y panel
 
 on:
   push:
     branches: [main]
+  schedule:
+    - cron: "0 10 * * *"   # 07:00 en Chile en horario de verano (06:00 en invierno)
   workflow_dispatch:
 
 permissions:
@@ -38,11 +46,29 @@ jobs:
         env:
           PATH_PREFIX: /${{ github.event.repository.name }}/
         run: npm run build
-      - name: Panel de inventario con datos de ejemplo
+      - name: Panel de inventario (archivos)
         run: |
           mkdir -p _site/inventario
           cp -R panel/. _site/inventario/
-          python -m inventario --fuente ejemplo --panel _site/inventario/datos.json > /dev/null
+          rm -f _site/inventario/datos.json _site/inventario/datos.cifrado.json
+      - name: Cálculo con la planilla y datos del panel
+        # Si Google falla, el sitio se publica igual; el panel avisa que no encontró los datos
+        continue-on-error: true
+        env:
+          GOOGLE_CREDENCIALES: ${{ secrets.GOOGLE_CREDENCIALES }}
+          ID_PLANILLA: ${{ secrets.ID_PLANILLA }}
+          CLAVE_PANEL: ${{ secrets.CLAVE_PANEL }}
+        run: |
+          if [ -z "$GOOGLE_CREDENCIALES" ] || [ -z "$ID_PLANILLA" ]; then
+            echo "::notice::Sin los secretos de la planilla: el panel muestra datos de ejemplo. Ver docs/CONFIGURAR.md."
+            python -m inventario --fuente ejemplo --panel _site/inventario/datos.json > /dev/null
+          elif [ -z "$CLAVE_PANEL" ]; then
+            python -m inventario --fuente sheets
+            echo "::notice::Falta el secreto CLAVE_PANEL: el panel muestra datos de ejemplo, no los de la planilla."
+            python -m inventario --fuente ejemplo --panel _site/inventario/datos.json > /dev/null
+          else
+            python -m inventario --fuente sheets --panel _site/inventario/datos.cifrado.json --cifrar
+          fi
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

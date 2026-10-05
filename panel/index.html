@@ -21,6 +21,7 @@
       <div class="meta">
         <span class="etiqueta-datos" id="etiqueta-datos" hidden></span>
         <span>Datos al <strong id="fecha-corte">—</strong></span>
+        <button type="button" class="enlace" id="salir" hidden>Salir</button>
       </div>
     </div>
     <nav class="marco pestanas" role="tablist" aria-label="Secciones">
@@ -32,6 +33,21 @@
 
   <main class="marco">
     <p class="aviso-error" id="error-carga" hidden></p>
+
+    <!-- ============ ACCESO (solo cuando los datos están cifrados) ============ -->
+    <section class="acceso" id="acceso" hidden>
+      <form class="tarjeta acceso-caja" id="form-acceso">
+        <img src="img/isotipo.png" alt="" width="44" height="42">
+        <h1>Panel de inventario</h1>
+        <p>Escribe la contraseña para ver los datos.</p>
+        <label class="acceso-campo">Contraseña
+          <input type="password" id="contrasena" autocomplete="current-password" required autofocus>
+        </label>
+        <label class="casilla"><input type="checkbox" id="recordar" checked> Recordar en este dispositivo</label>
+        <button type="submit" class="boton" id="entrar">Entrar</button>
+        <p class="acceso-error" id="acceso-error" role="alert" hidden>Contraseña incorrecta.</p>
+      </form>
+    </section>
 
     <!-- ============ ESTA SEMANA ============ -->
     <section class="vista" id="vista-semana" data-vista="semana">

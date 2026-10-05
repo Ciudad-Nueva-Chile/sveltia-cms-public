@@ -2,6 +2,8 @@
     python -m inventario                               # datos de ejemplo → salida/
     python -m inventario --fuente sheets --planilla ID # planilla privada → escribe los resultados en ella
     python -m inventario --panel panel/datos.json      # además genera los datos del panel
+    python -m inventario --fuente sheets --panel _site/inventario/datos.cifrado.json --cifrar
+                                                       # datos del panel cifrados con la contraseña CLAVE_PANEL
 """
 from __future__ import annotations
 
@@ -266,6 +268,7 @@ def main(argv=None):
     ap.add_argument("--fecha-corte", help="AAAA-MM-DD; por omisión, la del último movimiento")
     ap.add_argument("--panel", type=Path, help="escribe también los datos del panel en este JSON")
     ap.add_argument("--etiqueta", default=None, help="texto de la etiqueta del panel (por omisión, según la fuente)")
+    ap.add_argument("--cifrar", action="store_true", help="cifra los datos del panel con la contraseña de la variable CLAVE_PANEL")
     a = ap.parse_args(argv)
 
     if a.fuente == "sheets":
@@ -298,7 +301,16 @@ def main(argv=None):
     if a.panel:
         a.panel.parent.mkdir(parents=True, exist_ok=True)
         etiqueta = a.etiqueta if a.etiqueta is not None else ("Datos de ejemplo (sintéticos)" if a.fuente == "ejemplo" else "")
-        a.panel.write_text(json.dumps(datos_panel(r, etiqueta), ensure_ascii=False, default=str), encoding="utf-8")
+        datos = datos_panel(r, etiqueta)
+        if a.cifrar:
+            from .cifrado import cifrar
+            if not os.environ.get("CLAVE_PANEL"):
+                raise SystemExit("Falta la contraseña del panel: define la variable CLAVE_PANEL.")
+            datos = cifrar(datos, os.environ["CLAVE_PANEL"])
+        elif a.fuente == "sheets" and os.environ.get("GITHUB_ACTIONS"):
+            # El sitio es público: los datos reales nunca se publican sin cifrar
+            raise SystemExit("Los datos de la planilla solo se publican cifrados: usa --cifrar.")
+        a.panel.write_text(json.dumps(datos, ensure_ascii=False, default=str), encoding="utf-8")
 
     if a.fuente == "sheets":
         # Los registros de GitHub Actions de un repositorio público son públicos: no imprimir datos reales.

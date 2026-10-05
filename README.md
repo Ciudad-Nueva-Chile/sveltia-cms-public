@@ -10,7 +10,7 @@ Repositorio de prueba con dos partes que se publican juntas:
 |---|---|
 | <https://ciudad-nueva-chile.github.io/sveltia-cms-public/> | El sitio (versión de prueba, no indexada en buscadores) |
 | <https://ciudad-nueva-chile.github.io/sveltia-cms-public/admin/> | Un solo panel para libros, páginas, ajustes y parámetros del inventario |
-| <https://ciudad-nueva-chile.github.io/sveltia-cms-public/inventario/> | Panel de inventario con datos de ejemplo |
+| <https://ciudad-nueva-chile.github.io/sveltia-cms-public/inventario/> | Panel de inventario. Con la planilla conectada pide una contraseña (los datos se publican cifrados); sin ella muestra datos de ejemplo |
 
 ## La planilla: una tabla de libros, una de ventas y el pedido
 
@@ -81,7 +81,7 @@ panel/                      panel de inventario: «Esta semana», «Libros» y �
 herramientas/               generar_ejemplo.py (datos sintéticos) y crear_planilla.py (prepara la Google Sheet)
 datos_ejemplo/              datos sintéticos: los títulos y precios son públicos; clientes, cantidades y costos son inventados
 tests/                      pruebas del modelo
-.github/workflows/          pruebas, publicación (sitio + /admin + /inventario), cálculo semanal con la planilla
+.github/workflows/          pruebas; publicación diaria y con cada cambio (sitio + /admin + /inventario + cálculo con la planilla)
 ```
 
 ## Privacidad
