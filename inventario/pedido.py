@@ -9,8 +9,12 @@
    con menor costo puesto en bodega entre los que se envían; un envío solo vale si alcanza su mínimo FOB,
    completándolo si hace falta con demanda adelantada de títulos A y B. Lo que no cabe se posterga.
 4. Se elige la combinación de menor costo total: lo que se compra ahora, más lo adelantado × costo_adelantar, más lo
-   postergado a su costo más bajo con un recargo de costo_postergar × su precio neto (el costo de esperar).
+   postergado a su costo más bajo con un recargo de costo_postergar × su precio neto (el costo de esperar), más el
+   costo fijo de cada envío que se hace (courier, despacho, trámites; lo anota Roberto en «Pedido sugerido»).
    Con dos orígenes son cuatro combinaciones: el óptimo es exacto.
+
+El costo fijo de los envíos no cambia qué libros van en cada combinación, solo cuál conviene. Por eso la planilla
+puede recalcular la recomendación al instante con fórmulas: total = costo de la combinación + sus envíos.
 """
 from __future__ import annotations
 
@@ -74,8 +78,22 @@ def _neto_usd(precio_lista: float, costos: pd.DataFrame) -> float:
     return precio_lista / (1 + IVA) / (float(tc.iloc[0]) if len(tc) else 950.0)
 
 
-def sugerir(titulos: pd.DataFrame, costos: pd.DataFrame, p: Parametros, fecha_corte: pd.Timestamp) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """Devuelve (líneas del pedido, resumen por origen). El resumen trae en .attrs el ahorro y los postergados."""
+def nombre_combinacion(envia: list[str]) -> str:
+    if not envia:
+        return "No pedir nada ahora"
+    if len(envia) == 1:
+        return f"Todo a {envia[0]}"
+    return "Dividir: " + " y ".join(envia) + f" ({len(envia)} envíos)"
+
+
+def sugerir(titulos: pd.DataFrame, costos: pd.DataFrame, p: Parametros, fecha_corte: pd.Timestamp,
+            envios: dict | None = None) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Devuelve (líneas del pedido, resumen por origen).
+
+    envios: costo fijo de cada envío en dólares, por origen (vacío = 0).
+    El resumen trae en .attrs el ahorro, los postergados y la comparación de combinaciones («combinaciones»).
+    """
+    envios = {o: float(v or 0) for o, v in (envios or {}).items()}
     if not len(costos):
         costos = pd.DataFrame(columns=["origen", "edicion", "fob_sobre_precio_neto", "costo_sobre_precio_neto", "tipo_cambio"])
     configurados = [o.nombre for o in p.origenes]
@@ -101,7 +119,7 @@ def sugerir(titulos: pd.DataFrame, costos: pd.DataFrame, p: Parametros, fecha_co
     def evaluar(activos: tuple) -> dict:
         lineas, postergados = [], []
         fob = {o: 0.0 for o in activos}
-        costo = 0.0
+        costo = castigo = 0.0
         for f, cant, ops in necesidades:
             o = mas_barato(ops, activos)
             sin_costo = [k for k in ops if k in activos and math.isnan(ops[k][0])]
@@ -123,15 +141,27 @@ def sugerir(titulos: pd.DataFrame, costos: pd.DataFrame, p: Parametros, fecha_co
                     continue
                 lineas.append((f, extra, o, ops, "adelanto"))
                 fob[o] += valor * extra
-                costo += bodega * extra * p.costo_adelantar
+                castigo += bodega * extra * p.costo_adelantar
         valido = all(fob[o] == 0 or fob[o] >= p.origen(o).minimo_embarque_usd for o in activos)
         # Lo postergado igual se comprará después: cuesta lo más barato posible más el castigo por la espera
         for f, cant in postergados:
             o = mas_barato(opciones_de[f.id])
-            costo += (opciones_de[f.id][o][0] if o else 0.0) * cant + _neto_usd(f.precio_lista, costos) * cant * p.costo_postergar
-        return {"activos": activos, "lineas": lineas, "postergados": postergados, "valido": valido, "costo": costo}
+            costo += (opciones_de[f.id][o][0] if o else 0.0) * cant
+            castigo += _neto_usd(f.precio_lista, costos) * cant * p.costo_postergar
+        envia = [o for o in activos if any(l[2] == o for l in lineas)]
+        return {"activos": activos, "envia": envia, "lineas": lineas, "postergados": postergados, "valido": valido,
+                "libros": costo, "castigo": castigo, "envio": sum(envios.get(o, 0.0) for o in envia),
+                "costo": costo + castigo + sum(envios.get(o, 0.0) for o in envia)}
 
     escenarios = [evaluar(c) for n in range(len(origenes) + 1) for c in itertools.combinations(origenes, n)]
+    # Combinaciones que terminan enviando a los mismos orígenes son la misma opción: queda la más barata
+    unicas = {}
+    for e in escenarios:
+        k = tuple(e["envia"])
+        if k not in unicas or (round(e["costo"], 2), len(e["activos"])) < (round(unicas[k]["costo"], 2), len(unicas[k]["activos"])):
+            unicas[k] = e
+    escenarios = sorted(unicas.values(), key=lambda e: (len(e["envia"]) == 0, len(e["envia"]),
+                                                         [origenes.index(o) for o in e["envia"]]))
     mejor = min((e for e in escenarios if e["valido"]), key=lambda e: (round(e["costo"], 2), len(e["activos"])))
 
     def linea(cuando, o, f, cant, motivo, ops):
@@ -206,5 +236,20 @@ def sugerir(titulos: pd.DataFrame, costos: pd.DataFrame, p: Parametros, fecha_co
     resumen = pd.DataFrame(resumen)
     resumen.attrs["ahorro_usd"] = round(ahorro, 2)
     resumen.attrs["postergados"] = [(f.id, f.titulo, c) for f, c in mejor["postergados"]]
+    resumen.attrs["envios"] = {o: envios.get(o, 0.0) for o in origenes if o in configurados or o in envios
+                               or any(o in e["envia"] for e in escenarios)}
+    resumen.attrs["combinaciones"] = [{
+        "nombre": nombre_combinacion(e["envia"]),
+        "envia": e["envia"],
+        "elegida": e is mejor,
+        "valida": e["valido"],
+        "libros_ahora": sum(l[1] for l in e["lineas"]),
+        "adelantados": sum(l[1] for l in e["lineas"] if l[4] == "adelanto"),
+        "para_despues": sum(c for _, c in e["postergados"]),
+        "libros_usd": round(e["libros"], 2),
+        "castigo_usd": round(e["castigo"], 2),
+        "envio_usd": round(e["envio"], 2),
+        "total_usd": round(e["costo"], 2),
+    } for e in escenarios]
     columnas = ["cuando", "origen", "id", "isbn", "titulo", "abc", "cantidad", "motivo", "costo_unitario_usd", "subtotal_usd"]
     return pd.DataFrame(filas, columns=columnas), resumen

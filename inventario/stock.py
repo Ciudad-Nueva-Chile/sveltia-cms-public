@@ -21,10 +21,13 @@ EFECTOS = {
     "consignacion_liquidada": (0, -1),
     "ajuste": (+1, 0),
     "pedido_en_camino": (0, 0),   # no mueve la bodega: suma a «en tránsito» hasta que llega la importación
+    "venta_perdida": (0, 0),      # lo pidieron y no había: no mueve stock, pero es demanda
 }
 
 # Salida física de bodega que refleja demanda (lo que hay que reponer)
-TIPOS_DEMANDA = {"venta": +1, "consignacion_salida": +1, "consignacion_devolucion": -1, "devolucion_cliente": -1}
+# La venta perdida (pedido sin stock) también cuenta: sin ella el pronóstico subestima justo los libros que faltan.
+TIPOS_DEMANDA = {"venta": +1, "consignacion_salida": +1, "consignacion_devolucion": -1, "devolucion_cliente": -1,
+                 "venta_perdida": +1}
 # Venta facturada (lo que genera ingreso; base de la clasificación ABC)
 TIPOS_VENTA = {"venta": +1, "consignacion_liquidada": +1, "devolucion_cliente": -1}
 

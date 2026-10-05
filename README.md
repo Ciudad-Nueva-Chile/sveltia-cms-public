@@ -12,19 +12,24 @@ Repositorio de prueba con dos partes que se publican juntas:
 | <https://ciudad-nueva-chile.github.io/sveltia-cms-public/admin/> | Un solo panel para libros, páginas, ajustes y parámetros del inventario |
 | <https://ciudad-nueva-chile.github.io/sveltia-cms-public/inventario/> | Panel de inventario con datos de ejemplo |
 
-## La planilla: una tabla de libros donde Roberto corrige cantidades
+## La planilla: una tabla de libros, una de ventas y el pedido
 
 | Pestaña | Para qué |
 |---|---|
 | **Inventario** | Un libro por fila: código, ISBN, título, autor, editorial, **se compra en**, categoría, precio de venta, **en bodega**, **en consignación**, **pedido en camino**, última actualización, cómo se vende, qué hacer y **notas**. Roberto solo edita las columnas amarillas; el resto se completa solo y se puede ordenar y filtrar |
-| **Esta semana** | Qué pedir, qué está sin stock, qué liquidar, qué consignaciones cobrar. Solo lectura |
-| **Pedido sugerido** | La lista para cada editorial. Solo lectura |
-| Ocultas | Configuración (costos por origen), Registro de movimientos, Historial de fotos, Análisis técnico, Indicadores |
+| **Ventas** | Una fila por libro vendido: fecha, pedido o boleta, libro (lista desplegable), cantidad, **descuento (%)** si hubo, canal y estado («Vendido», «No había stock» o «Devolución»). ISBN, precio de lista y total cobrado se completan solos con fórmulas. Cada mañana las ventas nuevas se descuentan del stock de «Inventario» y se anota cuándo en «Descontado del stock» |
+| **Esta semana** | Qué pedir y dónde conviene, qué está sin stock, qué pidieron y no había, qué liquidar, qué consignaciones cobrar. Solo lectura |
+| **Pedido sugerido** | Arriba, **dónde conviene comprar**: Roberto anota el costo de cada envío (celdas amarillas) y la comparación entre «Todo a España», «Todo a Argentina», «Dividir» y «No pedir nada ahora» se recalcula al instante. Abajo, la lista de qué pedir |
+| Ocultas | Configuración (costos por origen), Registro de movimientos, Historial de fotos, Lista de libros (para la lista desplegable de «Ventas»), Análisis técnico, Indicadores |
 
 Cada mañana el cálculo compara «Inventario» con la foto anterior y deduce qué pasó: si bajó la bodega y subió la
-consignación, fue una salida en consignación; si bajó la bodega, una venta; si subió, una llegada. Así se arma la
-historia de demanda sin anotar movimientos, y se estampa la fecha de «Última actualización». La historia pasada se
+consignación, fue una salida en consignación; si bajó la bodega, una venta; si subió, una llegada. Luego descuenta las
+ventas nuevas de «Ventas». Si Roberto ya había bajado la bodega a mano ese día, no se descuenta dos veces: la venta
+anotada reemplaza a la baja deducida. Las bajas sin venta anotada se avisan en «Esta semana». La historia pasada se
 carga una vez desde las facturas y guías del SII, que son más exactas.
+
+«Ventas» es la fuente de demanda con más detalle: la venta perdida («No había stock») cuenta como demanda aunque no
+mueva stock, y el descuento y el canal quedan para analizar ofertas.
 
 El catálogo y los precios salen del sitio (`src/libros`): el precio se cambia en `/admin/`, no en la planilla.
 
@@ -39,11 +44,14 @@ El catálogo y los precios salen del sitio (`src/libros`): el precio se cambia e
 | Pronóstico mensual | SBA (Croston con corrección de sesgo) para intermitente y grumosa; suavizamiento exponencial para suave y errática | `inventario/demanda.py` |
 | Stock objetivo | Demanda del plazo de reposición más la revisión, al nivel de servicio elegido, estimada remuestreando meses observados (sin suponer una distribución normal, que no sirve con demanda intermitente) | `inventario/demanda.py` |
 | Política por título | Reponer (A y B), stock mínimo de un ejemplar (C), a pedido (esporádica), temporada, no reponer (coyuntural), liquidar o revisar (con stock y sin salidas en 18 meses). La planilla puede fijarla a mano | `inventario/politica.py` |
-| Dónde comprar y pedido por origen | Si un libro está en ambas editoriales («Se compra en»), prueba todas las combinaciones de envíos (ninguno, España, Argentina, ambos) y elige la de menor costo: cada libro va al origen con menor **costo puesto en bodega** entre los que se envían; cada envío debe alcanzar su **mínimo FOB** (US$ 700), completándolo con demanda adelantada de títulos A y B; lo que no cabe espera el próximo envío con un castigo por la espera. Con dos orígenes son cuatro combinaciones: el óptimo es exacto | `inventario/pedido.py` |
+| Dónde comprar y pedido por origen | Si un libro está en ambas editoriales («Se compra en»), prueba todas las combinaciones de envíos (ninguno, España, Argentina, ambos) y elige la de menor costo: cada libro va al origen con menor **costo puesto en bodega** entre los que se envían; cada envío debe alcanzar su **mínimo FOB** (US$ 700), completándolo con demanda adelantada de títulos A y B; lo que no cabe espera el próximo envío con un castigo por la espera. Cada envío suma su **costo fijo** (courier, despacho, trámites), que puede hacer que convenga traer todo de un solo país. Con dos orígenes son cuatro combinaciones: el óptimo es exacto. Como el costo fijo no cambia qué libros van en cada combinación, la planilla y el panel recalculan la recomendación al instante | `inventario/pedido.py` |
+| Ventas | Convierte cada fila de «Ventas» en un movimiento (venta, factura de consignación, devolución o venta perdida), descuenta del stock solo las nuevas y resume ventas con descuento, descuento promedio y ventas perdidas | `inventario/ventas.py` |
 
 Límites que conviene tener presentes:
-- **La demanda observada está censurada:** cuando no hubo stock, la venta perdida no queda registrada. Las consultas por
-  libros no disponibles (por ejemplo, las etiquetadas «No encontrado» en WhatsApp) son la forma de corregirlo.
+- **La demanda observada está censurada:** cuando no hubo stock, la venta perdida solo queda registrada si se anota en
+  «Ventas» como «No había stock». Conviene anotar también las consultas de WhatsApp por libros no disponibles.
+- Las ventas con descuento se cuentan como demanda normal. Si una oferta dispara las ventas, el pronóstico sube un
+  tiempo; el porcentaje queda anotado para separarlas más adelante.
 - El remuestreo supone que los próximos meses se parecen a los de la ventana. Un evento como una canonización cambia
   eso: por eso existe la clase Coyuntural.
 - Las cifras en dólares dependen de los factores de la pestaña Costos, que son una estimación por origen.

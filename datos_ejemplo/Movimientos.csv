@@ -2,1424 +2,1633 @@ fecha,id,tipo,cantidad,documento,cliente
 2024-10-01,CN-0001,inventario_inicial,1,CONTEO-1001,
 2024-10-01,CN-0005,inventario_inicial,5,CONTEO-1016,
 2024-10-01,CN-0012,inventario_inicial,2,CONTEO-1032,
-2024-10-01,CN-0017,inventario_inicial,1,CONTEO-1035,
-2024-10-01,CN-0020,inventario_inicial,4,CONTEO-1036,
-2024-10-01,CN-0029,inventario_inicial,5,CONTEO-1044,
-2024-10-01,CN-0030,inventario_inicial,1,CONTEO-1060,
-2024-10-01,CN-0032,inventario_inicial,2,CONTEO-1062,
-2024-10-01,CN-0034,inventario_inicial,1,CONTEO-1064,
-2024-10-01,CN-0035,inventario_inicial,1,CONTEO-1066,
-2024-10-01,CN-0036,inventario_inicial,2,CONTEO-1068,
-2024-10-01,CN-0039,inventario_inicial,2,CONTEO-1071,
-2024-10-01,CN-0045,inventario_inicial,5,CONTEO-1074,
-2024-10-01,CN-0052,inventario_inicial,1,CONTEO-1081,
-2024-10-01,CN-0059,inventario_inicial,1,CONTEO-1082,
-2024-10-01,CN-0063,inventario_inicial,1,CONTEO-1083,
-2024-10-01,CN-0079,inventario_inicial,2,CONTEO-1084,
-2024-10-01,CN-0086,inventario_inicial,1,CONTEO-1086,
-2024-10-01,CN-0092,inventario_inicial,2,CONTEO-1089,
-2024-10-01,CN-0111,inventario_inicial,10,CONTEO-1092,
-2024-10-01,CN-0117,inventario_inicial,4,CONTEO-1160,
-2024-10-01,CN-0119,inventario_inicial,1,CONTEO-1165,
-2024-10-01,CN-0120,inventario_inicial,2,CONTEO-1166,
-2024-10-01,CN-0128,inventario_inicial,1,CONTEO-1167,
-2024-10-01,CN-0131,inventario_inicial,3,CONTEO-1168,
-2024-10-01,CN-0149,inventario_inicial,2,CONTEO-1169,
-2024-10-01,CN-0161,inventario_inicial,2,CONTEO-1181,
-2024-10-01,CN-0162,inventario_inicial,2,CONTEO-1182,
-2024-10-01,CN-0172,inventario_inicial,5,CONTEO-1183,
-2024-10-01,CN-0181,inventario_inicial,2,CONTEO-1203,
-2024-10-01,CN-0183,inventario_inicial,1,CONTEO-1205,
-2024-10-01,CN-0185,inventario_inicial,2,CONTEO-1206,
-2024-10-01,CN-0187,inventario_inicial,1,CONTEO-1217,
-2024-10-01,CN-0189,inventario_inicial,1,CONTEO-1232,
-2024-10-01,CN-0206,inventario_inicial,2,CONTEO-1234,
-2024-10-01,CN-0209,inventario_inicial,1,CONTEO-1236,
-2024-10-01,CN-0226,inventario_inicial,2,CONTEO-1238,
-2024-10-01,CN-0227,inventario_inicial,1,CONTEO-1242,
-2024-10-01,CN-0231,inventario_inicial,3,CONTEO-1293,
-2024-10-01,CN-0232,inventario_inicial,1,CONTEO-1312,
-2024-10-01,CN-0239,inventario_inicial,3,CONTEO-1315,
-2024-10-01,CN-0242,inventario_inicial,1,CONTEO-1329,
-2024-10-01,CN-0245,inventario_inicial,1,CONTEO-1331,
-2024-10-01,CN-0249,inventario_inicial,5,CONTEO-1334,
-2024-10-01,CN-0264,inventario_inicial,1,CONTEO-1363,
-2024-10-01,CN-0270,inventario_inicial,12,CONTEO-1365,
-2024-10-01,CN-0274,inventario_inicial,1,CONTEO-1415,
-2024-10-01,CN-0282,inventario_inicial,1,CONTEO-1424,
-2024-10-01,CN-0290,inventario_inicial,1,CONTEO-1425,
-2024-10-01,CN-0304,inventario_inicial,10,CONTEO-1512,
-2024-10-01,CN-0304,venta,1,F-1513,Cliente 05
-2024-10-01,CN-0306,inventario_inicial,3,CONTEO-1572,
-2024-10-01,CN-0317,inventario_inicial,10,CONTEO-1573,
-2024-10-01,CN-0318,inventario_inicial,10,CONTEO-1646,
-2024-10-01,CN-0319,inventario_inicial,10,CONTEO-1728,
-2024-10-01,CN-0320,inventario_inicial,10,CONTEO-1799,
-2024-10-01,CN-0321,inventario_inicial,10,CONTEO-1853,
-2024-10-01,CN-0322,inventario_inicial,5,CONTEO-1905,
-2024-10-01,CN-0323,inventario_inicial,4,CONTEO-1915,
-2024-10-01,CN-0333,inventario_inicial,1,CONTEO-1933,
-2024-10-01,CN-0340,inventario_inicial,1,CONTEO-1935,
-2024-10-01,CN-0345,inventario_inicial,1,CONTEO-1936,
-2024-10-01,CN-0356,inventario_inicial,1,CONTEO-1938,
-2024-10-01,CN-0365,inventario_inicial,1,CONTEO-1940,
-2024-10-01,CN-0370,inventario_inicial,1,CONTEO-1942,
-2024-10-01,CN-0385,inventario_inicial,4,CONTEO-1944,
-2024-10-01,CN-0397,inventario_inicial,2,CONTEO-1961,
-2024-10-01,CN-0402,inventario_inicial,1,CONTEO-1964,
-2024-10-01,CN-0408,inventario_inicial,1,CONTEO-1980,
-2024-10-01,CN-0421,inventario_inicial,1,CONTEO-1982,
-2024-10-01,CN-0429,inventario_inicial,1,CONTEO-1984,
-2024-10-01,CN-0434,inventario_inicial,2,CONTEO-2002,
-2024-10-01,CN-0436,inventario_inicial,1,CONTEO-2006,
-2024-10-01,CN-0456,inventario_inicial,2,CONTEO-2020,
-2024-10-01,CN-0468,inventario_inicial,1,CONTEO-2022,
-2024-10-01,CN-0470,inventario_inicial,3,CONTEO-2036,
-2024-10-01,CN-0473,inventario_inicial,2,CONTEO-2050,
-2024-10-01,CN-0477,inventario_inicial,3,CONTEO-2054,
-2024-10-01,CN-0482,inventario_inicial,1,CONTEO-2062,
-2024-10-01,CN-0492,inventario_inicial,3,CONTEO-2063,
-2024-10-01,CN-0500,inventario_inicial,2,CONTEO-2087,
-2024-10-01,CN-0522,inventario_inicial,2,CONTEO-2090,
-2024-10-01,CN-0523,inventario_inicial,2,CONTEO-2091,
-2024-10-01,CN-0524,inventario_inicial,1,CONTEO-2092,
-2024-10-01,CN-0525,inventario_inicial,2,CONTEO-2093,
-2024-10-01,CN-0530,inventario_inicial,2,CONTEO-2094,
-2024-10-01,CN-0535,inventario_inicial,2,CONTEO-2095,
-2024-10-01,CN-0565,inventario_inicial,3,CONTEO-2096,
-2024-10-01,CN-0566,inventario_inicial,2,CONTEO-2116,
-2024-10-01,CN-0574,inventario_inicial,5,CONTEO-2131,
-2024-10-01,CN-0576,inventario_inicial,2,CONTEO-2143,
-2024-10-01,CN-0577,inventario_inicial,2,CONTEO-2161,
-2024-10-01,CN-0585,inventario_inicial,3,CONTEO-2164,
-2024-10-01,CN-0607,inventario_inicial,2,CONTEO-2245,
-2024-10-01,CN-0612,inventario_inicial,2,CONTEO-2246,
-2024-10-01,CN-0614,inventario_inicial,3,CONTEO-2247,
-2024-10-01,CN-0615,inventario_inicial,2,CONTEO-2263,
-2024-10-01,CN-0621,inventario_inicial,2,CONTEO-2264,
-2024-10-01,CN-0625,inventario_inicial,2,CONTEO-2266,
-2024-10-01,CN-0634,inventario_inicial,2,CONTEO-2268,
-2024-10-01,CN-0641,inventario_inicial,2,CONTEO-2270,
-2024-10-01,CN-0654,inventario_inicial,2,CONTEO-2342,
-2024-10-01,CN-0655,inventario_inicial,1,CONTEO-2345,
-2024-10-01,CN-0665,inventario_inicial,1,CONTEO-2347,
-2024-10-01,CN-0666,inventario_inicial,1,CONTEO-2349,
-2024-10-01,CN-0672,inventario_inicial,2,CONTEO-2352,
-2024-10-01,CN-0681,inventario_inicial,2,CONTEO-2357,
-2024-10-01,CN-0682,inventario_inicial,2,CONTEO-2361,
-2024-10-01,CN-0690,inventario_inicial,1,CONTEO-2362,
-2024-10-01,CN-0694,inventario_inicial,1,CONTEO-2364,
-2024-10-01,CN-0698,inventario_inicial,1,CONTEO-2376,
-2024-10-01,CN-0700,inventario_inicial,2,CONTEO-2378,
-2024-10-01,CN-0702,inventario_inicial,2,CONTEO-2379,
-2024-10-01,CN-0704,inventario_inicial,4,CONTEO-2380,
-2024-10-01,CN-0710,inventario_inicial,4,CONTEO-2389,
-2024-10-01,CN-0714,inventario_inicial,2,CONTEO-2404,
-2024-10-01,CN-0715,inventario_inicial,1,CONTEO-2405,
-2024-10-01,CN-0720,inventario_inicial,2,CONTEO-2406,
-2024-10-01,CN-0721,inventario_inicial,5,CONTEO-2407,
-2024-10-03,CN-0111,venta,4,F-1093,Cliente 01
-2024-10-04,CN-0321,venta,3,F-1854,Cliente 01
-2024-10-04,CN-0576,venta,1,F-2144,Cliente 05
-2024-10-05,CN-0704,venta,1,F-2381,Cliente 10
-2024-10-06,CN-0299,importacion,70,IMP-1427,
-2024-10-06,CN-0592,importacion,70,IMP-2165,
-2024-10-06,CN-0648,importacion,70,IMP-2272,
-2024-10-07,CN-0029,venta,1,F-1045,Cliente 06
-2024-10-07,CN-0270,consignacion_salida,1,GD-1367,Cliente 12
-2024-10-07,CN-0319,consignacion_salida,1,GD-1729,Cliente 02
-2024-10-07,CN-0721,consignacion_salida,3,GD-2408,Cliente 02
-2024-10-09,CN-0231,consignacion_salida,1,GD-1294,Cliente 01
-2024-10-09,CN-0304,venta,3,F-1517,Cliente 01
-2024-10-09,CN-0323,venta,2,F-1916,Cliente 12
-2024-10-12,CN-0239,venta,1,F-1316,Cliente 01
-2024-10-12,CN-0304,venta,1,F-1515,Cliente 11
-2024-10-12,CN-0318,consignacion_salida,2,GD-1649,Cliente 01
-2024-10-13,CN-0270,venta,1,F-1366,Cliente 04
-2024-10-14,CN-0470,venta,2,F-2037,Cliente 04
-2024-10-14,CN-0614,venta,2,F-2248,Cliente 02
-2024-10-15,CN-0470,venta,1,F-2038,Cliente 01
-2024-10-16,CN-0574,venta,1,F-2132,Cliente 02
-2024-10-17,CN-0111,venta,2,F-1094,Cliente 01
-2024-10-17,CN-0304,venta,1,F-1514,Cliente 01
-2024-10-17,CN-0385,venta,3,F-1945,Cliente 07
-2024-10-19,CN-0304,venta,1,F-1516,Cliente 17
-2024-10-19,CN-0318,consignacion_salida,1,GD-1647,Cliente 02
-2024-10-20,CN-0318,venta,1,F-1650,Cliente 01
-2024-10-21,CN-0320,venta,1,F-1800,Cliente 02
-2024-10-21,CN-0385,venta,1,F-1946,Cliente 05
-2024-10-22,CN-0111,consignacion_salida,3,GD-1095,Cliente 01
-2024-10-22,CN-0232,consignacion_salida,1,GD-1313,Cliente 01
-2024-10-22,CN-0655,venta,1,F-2346,Cliente 06
-2024-10-26,CN-0565,venta,1,F-2097,Cliente 01
-2024-11-01,CN-0345,venta,1,F-1937,Cliente 01
-2024-11-01,CN-0565,venta,1,F-2099,Cliente 02
-2024-11-02,CN-0299,consignacion_salida,1,GD-1443,Cliente 05
-2024-11-02,CN-0648,venta,1,F-2278,Cliente 11
-2024-11-03,CN-0299,venta,7,F-1442,Cliente 01
-2024-11-03,CN-0704,consignacion_salida,2,GD-2382,Cliente 04
-2024-11-04,CN-0318,venta,1,F-1652,Cliente 08
-2024-11-04,CN-0592,venta,3,F-2166,Cliente 03
-2024-11-04,CN-0592,consignacion_salida,2,GD-2170,Cliente 21
-2024-11-04,CN-0592,venta,3,F-2174,Cliente 01
-2024-11-05,CN-0648,consignacion_salida,3,GD-2283,Cliente 04
-2024-11-05,CN-0710,venta,1,F-2390,Cliente 01
-2024-11-07,CN-0185,venta,2,F-1207,Cliente 19
-2024-11-07,CN-0187,consignacion_salida,1,GD-1218,Cliente 02
-2024-11-08,CN-0321,venta,2,F-1856,Cliente 01
-2024-11-08,CN-0614,consignacion_salida,1,GD-2249,Cliente 01
-2024-11-09,CN-0270,venta,1,F-1369,Cliente 01
-2024-11-10,CN-0320,venta,4,F-1803,Cliente 20
-2024-11-10,CN-0648,consignacion_salida,4,GD-2273,Cliente 15
+2024-10-01,CN-0017,inventario_inicial,4,CONTEO-1036,
+2024-10-01,CN-0020,inventario_inicial,1,CONTEO-1044,
+2024-10-01,CN-0029,inventario_inicial,1,CONTEO-1047,
+2024-10-01,CN-0030,inventario_inicial,1,CONTEO-1049,
+2024-10-01,CN-0034,inventario_inicial,1,CONTEO-1053,
+2024-10-01,CN-0036,inventario_inicial,2,CONTEO-1076,
+2024-10-01,CN-0039,inventario_inicial,2,CONTEO-1077,
+2024-10-01,CN-0040,inventario_inicial,2,CONTEO-1085,
+2024-10-01,CN-0045,inventario_inicial,1,CONTEO-1086,
+2024-10-01,CN-0052,inventario_inicial,12,CONTEO-1088,
+2024-10-01,CN-0059,inventario_inicial,1,CONTEO-1149,
+2024-10-01,CN-0063,inventario_inicial,1,CONTEO-1159,
+2024-10-01,CN-0068,inventario_inicial,1,CONTEO-1160,
+2024-10-01,CN-0074,inventario_inicial,3,CONTEO-1161,
+2024-10-01,CN-0086,inventario_inicial,2,CONTEO-1173,
+2024-10-01,CN-0086,venta,1,F-1174,Cliente 11
+2024-10-01,CN-0094,inventario_inicial,2,CONTEO-1176,
+2024-10-01,CN-0096,inventario_inicial,2,CONTEO-1187,
+2024-10-01,CN-0113,inventario_inicial,4,CONTEO-1197,
+2024-10-01,CN-0117,inventario_inicial,1,CONTEO-1218,
+2024-10-01,CN-0118,inventario_inicial,5,CONTEO-1219,
+2024-10-01,CN-0119,inventario_inicial,1,CONTEO-1237,
+2024-10-01,CN-0120,inventario_inicial,4,CONTEO-1240,
+2024-10-01,CN-0121,inventario_inicial,5,CONTEO-1251,
+2024-10-01,CN-0128,inventario_inicial,1,CONTEO-1275,
+2024-10-01,CN-0131,inventario_inicial,1,CONTEO-1287,
+2024-10-01,CN-0161,inventario_inicial,1,CONTEO-1290,
+2024-10-01,CN-0162,inventario_inicial,2,CONTEO-1291,
+2024-10-01,CN-0181,inventario_inicial,3,CONTEO-1294,
+2024-10-01,CN-0183,inventario_inicial,2,CONTEO-1299,
+2024-10-01,CN-0185,inventario_inicial,3,CONTEO-1300,
+2024-10-01,CN-0187,inventario_inicial,1,CONTEO-1301,
+2024-10-01,CN-0189,inventario_inicial,3,CONTEO-1303,
+2024-10-01,CN-0206,inventario_inicial,1,CONTEO-1318,
+2024-10-01,CN-0209,inventario_inicial,2,CONTEO-1322,
+2024-10-01,CN-0217,inventario_inicial,1,CONTEO-1323,
+2024-10-01,CN-0226,inventario_inicial,1,CONTEO-1325,
+2024-10-01,CN-0227,inventario_inicial,2,CONTEO-1327,
+2024-10-01,CN-0228,inventario_inicial,2,CONTEO-1338,
+2024-10-01,CN-0239,inventario_inicial,2,CONTEO-1441,
+2024-10-01,CN-0242,inventario_inicial,2,CONTEO-1459,
+2024-10-01,CN-0245,inventario_inicial,1,CONTEO-1460,
+2024-10-01,CN-0249,inventario_inicial,3,CONTEO-1462,
+2024-10-01,CN-0252,inventario_inicial,1,CONTEO-1466,
+2024-10-01,CN-0262,inventario_inicial,2,CONTEO-1468,
+2024-10-01,CN-0264,inventario_inicial,1,CONTEO-1469,
+2024-10-01,CN-0268,inventario_inicial,1,CONTEO-1471,
+2024-10-01,CN-0270,inventario_inicial,3,CONTEO-1472,
+2024-10-01,CN-0274,inventario_inicial,3,CONTEO-1537,
+2024-10-01,CN-0275,inventario_inicial,1,CONTEO-1538,
+2024-10-01,CN-0290,inventario_inicial,2,CONTEO-1541,
+2024-10-01,CN-0291,inventario_inicial,4,CONTEO-1551,
+2024-10-01,CN-0306,inventario_inicial,1,CONTEO-1628,
+2024-10-01,CN-0316,inventario_inicial,2,CONTEO-1629,
+2024-10-01,CN-0317,inventario_inicial,10,CONTEO-1632,
+2024-10-01,CN-0318,inventario_inicial,10,CONTEO-1685,
+2024-10-01,CN-0319,inventario_inicial,10,CONTEO-1743,
+2024-10-01,CN-0320,inventario_inicial,10,CONTEO-1820,
+2024-10-01,CN-0321,inventario_inicial,10,CONTEO-1883,
+2024-10-01,CN-0322,inventario_inicial,5,CONTEO-1970,
+2024-10-01,CN-0325,inventario_inicial,2,CONTEO-1983,
+2024-10-01,CN-0340,inventario_inicial,1,CONTEO-1987,
+2024-10-01,CN-0356,inventario_inicial,1,CONTEO-1989,
+2024-10-01,CN-0359,inventario_inicial,2,CONTEO-1990,
+2024-10-01,CN-0365,inventario_inicial,1,CONTEO-1994,
+2024-10-01,CN-0370,inventario_inicial,6,CONTEO-2001,
+2024-10-01,CN-0373,inventario_inicial,1,CONTEO-2056,
+2024-10-01,CN-0385,inventario_inicial,1,CONTEO-2058,
+2024-10-01,CN-0397,inventario_inicial,1,CONTEO-2078,
+2024-10-01,CN-0406,inventario_inicial,3,CONTEO-2090,
+2024-10-01,CN-0408,inventario_inicial,2,CONTEO-2091,
+2024-10-01,CN-0415,inventario_inicial,1,CONTEO-2094,
+2024-10-01,CN-0421,inventario_inicial,1,CONTEO-2110,
+2024-10-01,CN-0429,inventario_inicial,5,CONTEO-2112,
+2024-10-01,CN-0434,inventario_inicial,2,CONTEO-2124,
+2024-10-01,CN-0436,inventario_inicial,1,CONTEO-2126,
+2024-10-01,CN-0450,inventario_inicial,1,CONTEO-2127,
+2024-10-01,CN-0456,inventario_inicial,2,CONTEO-2128,
+2024-10-01,CN-0468,inventario_inicial,2,CONTEO-2129,
+2024-10-01,CN-0470,inventario_inicial,1,CONTEO-2131,
+2024-10-01,CN-0477,inventario_inicial,1,CONTEO-2132,
+2024-10-01,CN-0481,inventario_inicial,1,CONTEO-2133,
+2024-10-01,CN-0482,inventario_inicial,2,CONTEO-2134,
+2024-10-01,CN-0487,inventario_inicial,1,CONTEO-2137,
+2024-10-01,CN-0500,inventario_inicial,2,CONTEO-2138,
+2024-10-01,CN-0522,inventario_inicial,1,CONTEO-2139,
+2024-10-01,CN-0523,inventario_inicial,2,CONTEO-2140,
+2024-10-01,CN-0524,inventario_inicial,1,CONTEO-2142,
+2024-10-01,CN-0525,inventario_inicial,5,CONTEO-2144,
+2024-10-01,CN-0526,inventario_inicial,2,CONTEO-2153,
+2024-10-01,CN-0530,inventario_inicial,4,CONTEO-2154,
+2024-10-01,CN-0576,inventario_inicial,3,CONTEO-2221,
+2024-10-01,CN-0577,inventario_inicial,1,CONTEO-2222,
+2024-10-01,CN-0585,inventario_inicial,3,CONTEO-2225,
+2024-10-01,CN-0595,inventario_inicial,1,CONTEO-2309,
+2024-10-01,CN-0612,inventario_inicial,2,CONTEO-2329,
+2024-10-01,CN-0614,inventario_inicial,2,CONTEO-2331,
+2024-10-01,CN-0615,inventario_inicial,2,CONTEO-2332,
+2024-10-01,CN-0621,inventario_inicial,2,CONTEO-2333,
+2024-10-01,CN-0625,inventario_inicial,1,CONTEO-2336,
+2024-10-01,CN-0632,inventario_inicial,2,CONTEO-2337,
+2024-10-01,CN-0641,inventario_inicial,3,CONTEO-2340,
+2024-10-01,CN-0654,inventario_inicial,5,CONTEO-2410,
+2024-10-01,CN-0655,inventario_inicial,3,CONTEO-2419,
+2024-10-01,CN-0665,inventario_inicial,1,CONTEO-2428,
+2024-10-01,CN-0666,inventario_inicial,1,CONTEO-2430,
+2024-10-01,CN-0672,inventario_inicial,5,CONTEO-2433,
+2024-10-01,CN-0675,inventario_inicial,2,CONTEO-2450,
+2024-10-01,CN-0681,inventario_inicial,2,CONTEO-2452,
+2024-10-01,CN-0682,inventario_inicial,5,CONTEO-2453,
+2024-10-01,CN-0690,inventario_inicial,3,CONTEO-2465,
+2024-10-01,CN-0694,inventario_inicial,3,CONTEO-2479,
+2024-10-01,CN-0695,inventario_inicial,2,CONTEO-2537,
+2024-10-01,CN-0696,inventario_inicial,3,CONTEO-2541,
+2024-10-01,CN-0698,inventario_inicial,2,CONTEO-2542,
+2024-10-01,CN-0700,inventario_inicial,6,CONTEO-2543,
+2024-10-01,CN-0702,inventario_inicial,5,CONTEO-2592,
+2024-10-01,CN-0710,inventario_inicial,4,CONTEO-2609,
+2024-10-01,CN-0714,inventario_inicial,1,CONTEO-2626,
+2024-10-01,CN-0715,inventario_inicial,7,CONTEO-2629,
+2024-10-01,CN-0720,inventario_inicial,1,CONTEO-2687,
+2024-10-01,CN-0721,inventario_inicial,1,CONTEO-2688,
+2024-10-02,CN-0012,venta,1,F-1033,Cliente 22
+2024-10-04,CN-0228,venta,1,F-1339,Cliente 01
+2024-10-05,CN-0317,consignacion_salida,2,GD-1633,Cliente 06
+2024-10-06,CN-0059,consignacion_salida,1,GD-1150,Cliente 01
+2024-10-06,CN-0299,importacion,70,IMP-1562,
+2024-10-06,CN-0370,venta,1,F-2003,Cliente 01
+2024-10-06,CN-0385,consignacion_salida,1,GD-2059,Cliente 12
+2024-10-06,CN-0592,importacion,70,IMP-2226,
+2024-10-06,CN-0648,importacion,70,IMP-2341,
+2024-10-07,CN-0121,consignacion_salida,2,GD-1255,Cliente 02
+2024-10-08,CN-0074,venta,1,F-1162,Cliente 01
+2024-10-08,CN-0694,venta,1,F-2480,Cliente 01
+2024-10-09,CN-0074,venta,1,F-1163,Cliente 09
+2024-10-09,CN-0113,venta,1,F-1198,Cliente 03
+2024-10-10,CN-0595,consignacion_salida,1,GD-2310,Cliente 04
+2024-10-12,CN-0270,consignacion_salida,3,GD-1473,Cliente 01
+2024-10-13,CN-0317,consignacion_salida,3,GD-1634,Cliente 02
+2024-10-14,CN-0370,venta,2,F-2002,Cliente 01
+2024-10-15,CN-0319,venta,2,F-1744,Cliente 18
+2024-10-16,CN-0319,venta,2,F-1745,Cliente 01
+2024-10-18,CN-0096,venta,2,F-1188,Cliente 02
+2024-10-19,CN-0052,consignacion_salida,3,GD-1089,Cliente 01
+2024-10-19,CN-0239,consignacion_salida,1,GD-1442,Cliente 02
+2024-10-19,CN-0318,venta,4,F-1686,Cliente 02
+2024-10-20,CN-0715,venta,1,F-2630,Cliente 02
+2024-10-21,CN-0710,venta,2,F-2610,Cliente 01
+2024-10-22,CN-0121,consignacion_salida,1,GD-1254,Cliente 02
+2024-10-23,CN-0700,venta,2,F-2544,Cliente 01
+2024-10-24,CN-0121,consignacion_salida,2,GD-1252,Cliente 08
+2024-10-24,CN-0317,venta,1,F-1636,Cliente 03
+2024-10-24,CN-0530,venta,4,F-2155,Cliente 17
+2024-10-25,CN-0052,consignacion_salida,1,GD-1090,Cliente 11
+2024-10-27,CN-0672,venta,1,F-2434,Cliente 01
+2024-10-28,CN-0318,consignacion_salida,2,GD-1687,Cliente 01
+2024-10-28,CN-0318,venta,1,F-1689,Cliente 13
+2024-11-01,CN-0299,venta,1,F-1573,Cliente 01
+2024-11-01,CN-0317,venta,2,F-1639,Cliente 07
+2024-11-01,CN-0694,venta,1,F-2481,Cliente 01
+2024-11-02,CN-0239,venta,1,F-1444,Cliente 02
+2024-11-03,CN-0319,consignacion_salida,1,GD-1746,Cliente 01
+2024-11-03,CN-0592,consignacion_salida,3,GD-2227,Cliente 05
+2024-11-03,CN-0648,consignacion_salida,3,GD-2346,Cliente 03
+2024-11-03,CN-0702,consignacion_salida,1,GD-2593,Cliente 02
+2024-11-04,CN-0299,venta,2,F-1563,Cliente 03
+2024-11-04,CN-0715,consignacion_salida,1,GD-2634,Cliente 03
+2024-11-06,CN-0648,consignacion_salida,3,GD-2354,Cliente 01
+2024-11-07,CN-0592,consignacion_salida,5,GD-2230,Cliente 02
+2024-11-07,CN-0648,venta,2,F-2344,Cliente 01
+2024-11-07,CN-0648,venta,1,F-2350,Cliente 05
+2024-11-08,CN-0299,venta,2,F-1568,Cliente 01
+2024-11-08,CN-0694,venta,1,F-2482,Cliente 01
+2024-11-09,CN-0034,consignacion_salida,1,GD-1054,Cliente 22
+2024-11-09,CN-0299,venta,1,F-1566,Cliente 01
+2024-11-10,CN-0128,consignacion_salida,1,GD-1276,Cliente 01
+2024-11-10,CN-0299,consignacion_salida,3,GD-1574,Cliente 01
+2024-11-10,CN-0321,venta,1,F-1884,Cliente 13
 2024-11-11,CN-0001,venta,1,F-1002,Cliente 02
-2024-11-11,CN-0111,consignacion_salida,1,GD-1097,Cliente 04
-2024-11-11,CN-0299,venta,3,F-1430,Cliente 04
-2024-11-11,CN-0648,venta,2,F-2281,Cliente 03
-2024-11-12,CN-0321,venta,5,F-1855,Cliente 05
-2024-11-12,CN-0648,consignacion_salida,4,GD-2276,Cliente 05
-2024-11-13,CN-0149,venta,1,F-1170,Cliente 02
-2024-11-13,CN-0592,venta,3,F-2169,Cliente 02
-2024-11-14,CN-0299,venta,3,F-1431,Cliente 01
-2024-11-14,CN-0299,venta,2,F-1436,Cliente 01
-2024-11-14,CN-0592,venta,3,F-2175,Cliente 05
-2024-11-14,CN-0648,venta,2,F-2282,Cliente 01
-2024-11-15,CN-0020,venta,1,F-1037,Cliente 01
-2024-11-15,CN-0648,consignacion_salida,2,GD-2285,Cliente 08
-2024-11-16,CN-0402,venta,1,F-1965,Cliente 03
-2024-11-16,CN-0565,venta,1,F-2098,Cliente 03
-2024-11-17,CN-0721,consignacion_salida,1,GD-2410,Cliente 01
-2024-11-18,CN-0299,consignacion_salida,2,GD-1432,Cliente 07
-2024-11-18,CN-0592,venta,3,F-2176,Cliente 02
-2024-11-19,CN-0299,consignacion_salida,3,GD-1428,Cliente 01
-2024-11-19,CN-0318,consignacion_salida,2,GD-1651,Cliente 03
-2024-11-19,CN-0592,consignacion_salida,1,GD-2177,Cliente 03
-2024-11-20,CN-0648,consignacion_salida,2,GD-2275,Cliente 04
-2024-11-21,CN-0468,venta,1,F-2023,Cliente 07
-2024-11-21,CN-0592,consignacion_salida,2,GD-2167,Cliente 01
-2024-11-21,CN-0592,consignacion_salida,1,GD-2172,Cliente 01
-2024-11-22,CN-0172,venta,1,F-1184,Cliente 01
-2024-11-22,CN-0648,consignacion_salida,2,GD-2279,Cliente 15
-2024-11-23,CN-0299,consignacion_salida,1,GD-1437,Cliente 05
-2024-11-23,CN-0304,venta,2,F-1518,Cliente 05
-2024-11-25,CN-0299,consignacion_salida,3,GD-1439,Cliente 05
-2024-11-25,CN-0299,venta,3,F-1441,Cliente 01
-2024-11-26,CN-0320,consignacion_salida,5,GD-1801,Cliente 03
-2024-11-27,CN-0172,venta,1,F-1185,Cliente 01
-2024-11-27,CN-0317,consignacion_salida,1,GD-1574,Cliente 01
-2024-11-28,CN-0299,consignacion_salida,3,GD-1434,Cliente 22
-2024-11-28,CN-0304,venta,1,F-1519,Cliente 03
-2024-12-01,CN-0299,venta,1,F-1447,Cliente 22
-2024-12-01,CN-0625,venta,1,F-2267,Cliente 21
-2024-12-02,CN-0299,venta,4,F-1451,Cliente 14
-2024-12-02,CN-0648,venta,7,F-2290,Cliente 05
-2024-12-03,CN-0299,consignacion_salida,4,GD-1445,Cliente 01
-2024-12-04,CN-0299,venta,1,F-1457,Cliente 12
-2024-12-04,CN-0648,venta,2,F-2289,Cliente 09
-2024-12-05,CN-0648,venta,1,F-2291,Cliente 09
-2024-12-06,CN-0694,consignacion_salida,1,GD-2365,Cliente 03
-2024-12-08,CN-0299,venta,3,F-1449,Cliente 01
-2024-12-08,CN-0592,venta,2,F-2187,Cliente 02
-2024-12-10,CN-0648,consignacion_salida,4,GD-2292,Cliente 01
-2024-12-11,CN-0299,venta,1,F-1454,Cliente 06
-2024-12-11,CN-0318,venta,2,F-1655,Cliente 05
-2024-12-12,CN-0029,venta,1,F-1046,Cliente 01
-2024-12-12,CN-0429,venta,1,F-1985,Cliente 01
-2024-12-12,CN-0592,venta,3,F-2184,Cliente 01
-2024-12-13,CN-0574,consignacion_salida,2,GD-2133,Cliente 01
-2024-12-14,CN-0592,venta,3,F-2179,Cliente 03
-2024-12-14,CN-0592,consignacion_salida,3,GD-2185,Cliente 01
-2024-12-15,CN-0592,venta,1,F-2180,Cliente 02
-2024-12-16,CN-0270,venta,3,F-1370,Cliente 03
-2024-12-16,CN-0333,venta,1,F-1934,Cliente 01
-2024-12-16,CN-0710,venta,3,F-2391,Cliente 21
-2024-12-17,CN-0030,venta,1,F-1061,Cliente 01
-2024-12-17,CN-0299,consignacion_salida,2,GD-1455,Cliente 01
-2024-12-17,CN-0592,consignacion_salida,1,GD-2189,Cliente 01
-2024-12-18,CN-0317,consignacion_salida,1,GD-1576,Cliente 06
-2024-12-18,CN-0319,consignacion_salida,2,GD-1731,Cliente 02
-2024-12-18,CN-0648,venta,2,F-2288,Cliente 10
-2024-12-18,CN-0721,consignacion_salida,1,GD-2411,Cliente 18
-2024-12-19,CN-0299,consignacion_salida,2,GD-1450,Cliente 08
-2024-12-19,CN-0592,consignacion_salida,1,GD-2182,Cliente 02
-2024-12-19,CN-0592,venta,2,F-2190,Cliente 02
-2024-12-20,CN-0299,consignacion_salida,2,GD-1448,Cliente 09
-2024-12-20,CN-0592,venta,2,F-2178,Cliente 01
-2024-12-20,CN-0648,venta,4,F-2287,Cliente 13
-2024-12-21,CN-0020,consignacion_salida,1,GD-1039,Cliente 05
-2024-12-21,CN-0320,consignacion_salida,3,GD-1804,Cliente 16
-2024-12-21,CN-0320,venta,2,F-1806,Cliente 04
-2024-12-22,CN-0249,consignacion_salida,1,GD-1335,Cliente 03
-2024-12-23,CN-0020,venta,1,F-1038,Cliente 01
-2024-12-23,CN-0299,venta,2,F-1453,Cliente 01
-2024-12-24,CN-0576,venta,1,F-2145,Cliente 05
-2024-12-25,CN-0592,consignacion_salida,5,GD-2181,Cliente 01
-2024-12-26,CN-0299,venta,1,F-1452,Cliente 10
-2024-12-26,CN-0592,venta,2,F-2188,Cliente 05
-2024-12-28,CN-0318,consignacion_salida,2,GD-1653,Cliente 18
-2025-01-01,CN-0470,consignacion_salida,1,GD-2040,Cliente 02
-2025-01-01,CN-0592,consignacion_salida,2,GD-2195,Cliente 01
-2025-01-03,CN-0321,venta,4,F-1858,Cliente 01
-2025-01-03,CN-0321,venta,1,F-1862,Cliente 05
-2025-01-03,CN-0321,venta,2,F-1864,Cliente 17
-2025-01-03,CN-0648,venta,6,F-2302,Cliente 01
-2025-01-04,CN-0187,importacion,5,IMP-1220,
-2025-01-04,CN-0320,venta,3,F-1808,Cliente 17
-2025-01-04,CN-0321,venta,1,F-1866,Cliente 02
-2025-01-04,CN-0704,importacion,4,IMP-2383,
-2025-01-04,CN-0710,importacion,5,IMP-2392,
-2025-01-05,CN-0172,venta,1,F-1186,Cliente 01
-2025-01-05,CN-0319,importacion,32,IMP-1732,
-2025-01-05,CN-0648,venta,1,F-2309,Cliente 07
-2025-01-06,CN-0185,importacion,5,IMP-1208,
-2025-01-06,CN-0228,importacion,12,IMP-1243,
-2025-01-06,CN-0429,importacion,5,IMP-1986,
-2025-01-06,CN-0429,venta,2,F-1987,Cliente 04
-2025-01-06,CN-0450,importacion,5,IMP-2007,
-2025-01-06,CN-0592,venta,1,F-2199,Cliente 17
-2025-01-07,CN-0149,importacion,4,IMP-1171,
-2025-01-07,CN-0299,consignacion_salida,2,GD-1469,Cliente 02
-2025-01-07,CN-0304,importacion,12,IMP-1520,
-2025-01-07,CN-0317,importacion,31,IMP-1578,
-2025-01-07,CN-0317,venta,1,F-1579,Cliente 02
-2025-01-07,CN-0321,importacion,40,IMP-1857,
-2025-01-07,CN-0385,importacion,5,IMP-1947,
-2025-01-07,CN-0470,importacion,5,IMP-2039,
+2024-11-11,CN-0319,venta,2,F-1749,Cliente 19
+2024-11-11,CN-0415,venta,1,F-2095,Cliente 07
+2024-11-11,CN-0648,venta,1,F-2352,Cliente 01
+2024-11-11,CN-0695,consignacion_salida,1,GD-2538,Cliente 01
+2024-11-15,CN-0317,venta,3,F-1637,Cliente 01
+2024-11-16,CN-0648,venta,4,F-2351,Cliente 20
+2024-11-17,CN-0299,consignacion_salida,3,GD-1564,Cliente 08
+2024-11-17,CN-0648,consignacion_salida,2,GD-2355,Cliente 04
+2024-11-18,CN-0317,venta,2,F-1638,Cliente 05
+2024-11-18,CN-0648,venta,5,F-2345,Cliente 16
+2024-11-18,CN-0648,consignacion_salida,3,GD-2348,Cliente 20
+2024-11-18,CN-0690,consignacion_salida,3,GD-2466,Cliente 07
+2024-11-19,CN-0299,consignacion_salida,1,GD-1576,Cliente 03
+2024-11-19,CN-0592,consignacion_salida,2,GD-2229,Cliente 02
+2024-11-19,CN-0700,consignacion_salida,1,GD-2546,Cliente 03
+2024-11-20,CN-0299,consignacion_salida,3,GD-1567,Cliente 01
+2024-11-20,CN-0299,consignacion_salida,2,GD-1569,Cliente 16
+2024-11-20,CN-0299,venta,2,F-1575,Cliente 01
+2024-11-20,CN-0320,consignacion_salida,1,GD-1821,Cliente 06
+2024-11-20,CN-0592,consignacion_salida,1,GD-2232,Cliente 17
+2024-11-20,CN-0648,venta,1,F-2358,Cliente 06
+2024-11-21,CN-0029,venta,1,F-1048,Cliente 13
+2024-11-21,CN-0319,venta,1,F-1748,Cliente 09
+2024-11-21,CN-0648,venta,4,F-2353,Cliente 02
+2024-11-21,CN-0648,venta,1,F-2359,Cliente 07
+2024-11-22,CN-0052,venta,1,F-1093,Cliente 05
+2024-11-22,CN-0228,venta,1,F-1340,Cliente 05
+2024-11-22,CN-0319,venta,1,F-1750,Cliente 21
+2024-11-23,CN-0299,consignacion_salida,1,GD-1570,Cliente 07
+2024-11-23,CN-0421,venta,1,F-2111,Cliente 01
+2024-11-23,CN-0648,venta,3,F-2357,Cliente 03
+2024-11-23,CN-0721,consignacion_salida,1,GD-2689,Cliente 15
+2024-11-24,CN-0299,venta,3,F-1571,Cliente 11
+2024-11-24,CN-0648,consignacion_salida,1,GD-2342,Cliente 06
+2024-11-24,CN-0715,consignacion_salida,2,GD-2631,Cliente 01
+2024-11-24,CN-0715,venta,2,F-2633,Cliente 07
+2024-11-25,CN-0592,venta,3,F-2234,Cliente 17
+2024-11-25,CN-0700,venta,1,F-2545,Cliente 06
+2024-11-26,CN-0299,venta,3,F-1572,Cliente 01
+2024-11-26,CN-0655,venta,1,F-2420,Cliente 03
+2024-11-26,CN-0710,venta,2,F-2611,Cliente 01
+2024-11-26,CN-0715,consignacion_salida,1,GD-2636,Cliente 01
+2024-11-27,CN-0131,consignacion_salida,1,GD-1288,Cliente 01
+2024-11-27,CN-0318,consignacion_salida,3,GD-1690,Cliente 01
+2024-11-28,CN-0052,venta,2,F-1092,Cliente 02
+2024-11-28,CN-0592,venta,1,F-2231,Cliente 06
+2024-12-01,CN-0052,consignacion_salida,1,GD-1097,Cliente 03
+2024-12-01,CN-0373,venta,1,F-2057,Cliente 02
+2024-12-01,CN-0592,venta,3,F-2235,Cliente 01
+2024-12-01,CN-0592,consignacion_salida,2,GD-2236,Cliente 01
+2024-12-02,CN-0189,consignacion_salida,1,GD-1305,Cliente 06
+2024-12-02,CN-0299,venta,6,F-1581,Cliente 01
+2024-12-02,CN-0299,venta,5,F-1583,Cliente 07
+2024-12-03,CN-0189,venta,2,F-1304,Cliente 07
+2024-12-04,CN-0299,venta,4,F-1577,Cliente 08
+2024-12-05,CN-0299,venta,6,F-1582,Cliente 11
+2024-12-05,CN-0648,consignacion_salida,5,GD-2367,Cliente 02
+2024-12-06,CN-0320,venta,1,F-1823,Cliente 21
+2024-12-08,CN-0264,venta,1,F-1470,Cliente 04
+2024-12-09,CN-0408,venta,1,F-2092,Cliente 01
+2024-12-11,CN-0052,venta,1,F-1094,Cliente 04
+2024-12-11,CN-0299,venta,2,F-1580,Cliente 05
+2024-12-11,CN-0592,consignacion_salida,2,GD-2244,Cliente 04
+2024-12-11,CN-0648,consignacion_salida,1,GD-2363,Cliente 01
+2024-12-12,CN-0592,venta,2,F-2242,Cliente 02
+2024-12-12,CN-0592,venta,1,F-2246,Cliente 07
+2024-12-12,CN-0648,venta,1,F-2364,Cliente 14
+2024-12-12,CN-0682,venta,1,F-2454,Cliente 01
+2024-12-13,CN-0118,consignacion_salida,3,GD-1220,Cliente 02
+2024-12-13,CN-0321,venta,2,F-1885,Cliente 05
+2024-12-13,CN-0648,venta,4,F-2360,Cliente 03
+2024-12-14,CN-0291,consignacion_salida,1,GD-1552,Cliente 12
+2024-12-14,CN-0592,consignacion_salida,3,GD-2238,Cliente 07
+2024-12-14,CN-0592,venta,2,F-2249,Cliente 02
+2024-12-14,CN-0648,venta,4,F-2366,Cliente 01
+2024-12-15,CN-0648,consignacion_salida,3,GD-2370,Cliente 07
+2024-12-15,CN-0715,venta,1,F-2638,Cliente 10
+2024-12-16,CN-0034,venta,1,F-1056,Cliente 07
+2024-12-16,CN-0648,venta,1,F-2372,Cliente 09
+2024-12-17,CN-0291,venta,1,F-1553,Cliente 02
+2024-12-17,CN-0592,consignacion_salida,2,GD-2240,Cliente 01
+2024-12-19,CN-0052,consignacion_salida,1,GD-1095,Cliente 01
+2024-12-19,CN-0319,venta,1,F-1751,Cliente 16
+2024-12-19,CN-0648,venta,3,F-2361,Cliente 01
+2024-12-20,CN-0370,venta,1,F-2004,Cliente 03
+2024-12-21,CN-0648,venta,2,F-2365,Cliente 01
+2024-12-21,CN-0648,venta,1,F-2369,Cliente 06
+2024-12-22,CN-0592,venta,4,F-2243,Cliente 05
+2024-12-22,CN-0700,consignacion_salida,2,GD-2548,Cliente 09
+2024-12-23,CN-0121,consignacion_devolucion,2,GD-1256,Cliente 02
+2024-12-25,CN-0385,consignacion_liquidada,1,F-2060,Cliente 12
+2024-12-26,CN-0592,consignacion_salida,3,GD-2247,Cliente 02
+2024-12-28,CN-0299,consignacion_salida,2,GD-1578,Cliente 18
+2024-12-28,CN-0370,venta,1,F-2005,Cliente 02
+2024-12-28,CN-0648,venta,2,F-2362,Cliente 08
+2025-01-01,CN-0299,venta,4,F-1584,Cliente 01
+2025-01-02,CN-0118,venta,1,F-1222,Cliente 01
+2025-01-02,CN-0317,venta,4,F-1641,Cliente 01
+2025-01-02,CN-0370,venta,4,F-2007,Cliente 02
+2025-01-02,CN-0592,venta,2,F-2252,Cliente 13
+2025-01-02,CN-0592,venta,1,F-2255,Cliente 03
+2025-01-02,CN-0715,venta,1,F-2640,Cliente 01
+2025-01-03,CN-0299,venta,2,F-1589,Cliente 12
+2025-01-03,CN-0317,venta,4,F-1647,Cliente 01
+2025-01-04,CN-0239,importacion,5,IMP-1445,
+2025-01-04,CN-0318,consignacion_salida,4,GD-1694,Cliente 03
+2025-01-04,CN-0318,venta,1,F-1695,Cliente 08
+2025-01-04,CN-0320,importacion,32,IMP-1824,
+2025-01-04,CN-0321,importacion,33,IMP-1886,
+2025-01-04,CN-0592,consignacion_salida,2,GD-2251,Cliente 05
+2025-01-05,CN-0034,importacion,5,IMP-1057,
+2025-01-05,CN-0318,importacion,40,IMP-1692,
+2025-01-05,CN-0319,importacion,40,IMP-1752,
+2025-01-05,CN-0321,venta,1,F-1889,Cliente 14
+2025-01-05,CN-0700,importacion,12,IMP-2549,
+2025-01-05,CN-0715,importacion,12,IMP-2639,
+2025-01-06,CN-0228,importacion,5,IMP-1341,
+2025-01-06,CN-0230,importacion,5,IMP-1359,
+2025-01-06,CN-0370,importacion,11,IMP-2006,
+2025-01-06,CN-0385,importacion,5,IMP-2061,
+2025-01-06,CN-0402,importacion,5,IMP-2080,
+2025-01-06,CN-0530,consignacion_salida,1,GD-2159,Cliente 06
+2025-01-06,CN-0648,venta,1,F-2379,Cliente 03
+2025-01-07,CN-0052,venta,2,F-1099,Cliente 06
+2025-01-07,CN-0059,importacion,5,IMP-1151,
+2025-01-07,CN-0074,importacion,4,IMP-1164,
+2025-01-07,CN-0096,importacion,5,IMP-1189,
+2025-01-07,CN-0189,consignacion_salida,3,GD-1308,Cliente 03
+2025-01-07,CN-0592,venta,2,F-2250,Cliente 01
+2025-01-07,CN-0592,consignacion_salida,1,GD-2262,Cliente 02
+2025-01-07,CN-0690,importacion,5,IMP-2467,
 2025-01-08,CN-0001,importacion,5,IMP-1003,
-2025-01-08,CN-0274,importacion,4,IMP-1416,
-2025-01-08,CN-0320,importacion,37,IMP-1807,
-2025-01-08,CN-0321,venta,2,F-1859,Cliente 20
-2025-01-08,CN-0470,consignacion_salida,2,GD-2042,Cliente 03
-2025-01-09,CN-0117,venta,1,F-1161,Cliente 11
-2025-01-09,CN-0257,importacion,5,IMP-1350,
-2025-01-09,CN-0321,venta,4,F-1865,Cliente 18
-2025-01-09,CN-0565,importacion,5,IMP-2100,
-2025-01-09,CN-0614,importacion,5,IMP-2251,
-2025-01-09,CN-0648,venta,2,F-2300,Cliente 01
-2025-01-09,CN-0672,consignacion_salida,1,GD-2353,Cliente 11
-2025-01-09,CN-0696,importacion,5,IMP-2366,
-2025-01-09,CN-0721,importacion,5,IMP-2412,
-2025-01-10,CN-0111,importacion,12,IMP-1098,
-2025-01-10,CN-0228,venta,3,F-1244,Cliente 01
-2025-01-10,CN-0318,importacion,40,IMP-1656,
-2025-01-10,CN-0402,importacion,5,IMP-1966,
-2025-01-10,CN-0576,importacion,5,IMP-2146,
-2025-01-10,CN-0648,venta,2,F-2294,Cliente 02
-2025-01-11,CN-0321,venta,2,F-1863,Cliente 01
-2025-01-11,CN-0468,importacion,5,IMP-2024,
-2025-01-11,CN-0648,venta,4,F-2301,Cliente 03
-2025-01-12,CN-0249,consignacion_salida,1,GD-1336,Cliente 02
-2025-01-12,CN-0299,consignacion_salida,1,GD-1460,Cliente 17
-2025-01-12,CN-0299,consignacion_salida,3,GD-1466,Cliente 08
-2025-01-12,CN-0299,consignacion_salida,1,GD-1471,Cliente 03
-2025-01-13,CN-0045,venta,2,F-1075,Cliente 10
-2025-01-13,CN-0304,consignacion_salida,3,GD-1521,Cliente 01
-2025-01-13,CN-0320,venta,3,F-1812,Cliente 10
-2025-01-14,CN-0592,consignacion_salida,1,GD-2201,Cliente 01
-2025-01-14,CN-0648,consignacion_salida,3,GD-2307,Cliente 01
-2025-01-15,CN-0648,consignacion_salida,1,GD-2303,Cliente 03
-2025-01-15,CN-0648,venta,5,F-2305,Cliente 10
-2025-01-16,CN-0299,consignacion_salida,1,GD-1458,Cliente 05
-2025-01-16,CN-0299,venta,4,F-1468,Cliente 22
-2025-01-16,CN-0592,consignacion_salida,2,GD-2193,Cliente 02
-2025-01-16,CN-0648,consignacion_salida,2,GD-2295,Cliente 15
-2025-01-17,CN-0111,consignacion_salida,5,GD-1099,Cliente 02
-2025-01-17,CN-0320,consignacion_salida,4,GD-1814,Cliente 03
-2025-01-17,CN-0321,venta,2,F-1861,Cliente 15
-2025-01-18,CN-0299,venta,1,F-1464,Cliente 01
-2025-01-18,CN-0299,venta,2,F-1465,Cliente 11
-2025-01-19,CN-0304,venta,3,F-1523,Cliente 01
-2025-01-19,CN-0592,venta,3,F-2205,Cliente 03
-2025-01-20,CN-0319,venta,2,F-1733,Cliente 09
-2025-01-20,CN-0320,venta,2,F-1809,Cliente 03
-2025-01-20,CN-0592,venta,3,F-2197,Cliente 02
-2025-01-20,CN-0592,consignacion_salida,1,GD-2203,Cliente 02
-2025-01-20,CN-0648,consignacion_salida,1,GD-2298,Cliente 01
-2025-01-20,CN-0648,venta,1,F-2306,Cliente 06
-2025-01-21,CN-0270,consignacion_salida,2,GD-1371,Cliente 03
-2025-01-21,CN-0592,venta,3,F-2204,Cliente 07
-2025-01-22,CN-0299,consignacion_salida,3,GD-1462,Cliente 01
-2025-01-22,CN-0321,venta,2,F-1860,Cliente 02
-2025-01-22,CN-0429,consignacion_salida,2,GD-1988,Cliente 04
-2025-01-22,CN-0592,consignacion_salida,3,GD-2191,Cliente 04
-2025-01-23,CN-0385,consignacion_salida,1,GD-1948,Cliente 10
-2025-01-23,CN-0468,venta,1,F-2025,Cliente 01
-2025-01-24,CN-0317,venta,1,F-1580,Cliente 09
-2025-01-24,CN-0320,consignacion_salida,2,GD-1810,Cliente 02
-2025-01-25,CN-0231,consignacion_salida,2,GD-1295,Cliente 05
-2025-01-25,CN-0320,venta,2,F-1813,Cliente 02
-2025-01-26,CN-0318,venta,2,F-1659,Cliente 11
-2025-01-26,CN-0323,venta,1,F-1917,Cliente 02
-2025-01-26,CN-0592,venta,2,F-2200,Cliente 02
-2025-01-27,CN-0592,venta,1,F-2198,Cliente 09
-2025-01-27,CN-0648,venta,4,F-2297,Cliente 16
-2025-01-28,CN-0318,consignacion_salida,5,GD-1657,Cliente 01
-2025-01-28,CN-0592,venta,3,F-2194,Cliente 03
-2025-02-01,CN-0318,venta,4,F-1661,Cliente 01
-2025-02-01,CN-0492,venta,2,F-2064,Cliente 02
-2025-02-02,CN-0318,venta,5,F-1660,Cliente 07
-2025-02-03,CN-0323,consignacion_salida,1,GD-1918,Cliente 02
-2025-02-03,CN-0421,consignacion_salida,1,GD-1983,Cliente 13
-2025-02-03,CN-0565,venta,1,F-2103,Cliente 01
-2025-02-04,CN-0321,venta,4,F-1874,Cliente 10
-2025-02-06,CN-0111,venta,1,F-1104,Cliente 03
-2025-02-06,CN-0228,consignacion_salida,2,GD-1245,Cliente 01
-2025-02-06,CN-0317,consignacion_salida,1,GD-1582,Cliente 01
-2025-02-07,CN-0321,consignacion_salida,2,GD-1872,Cliente 06
-2025-02-08,CN-0111,venta,2,F-1101,Cliente 02
-2025-02-08,CN-0257,venta,1,F-1351,Cliente 03
-2025-02-08,CN-0320,venta,2,F-1816,Cliente 02
-2025-02-08,CN-0320,venta,2,F-1822,Cliente 08
-2025-02-08,CN-0321,consignacion_salida,3,GD-1869,Cliente 07
-2025-02-10,CN-0299,consignacion_liquidada,3,F-1429,Cliente 01
-2025-02-11,CN-0320,venta,3,F-1818,Cliente 01
-2025-02-11,CN-0320,consignacion_salida,1,GD-1820,Cliente 02
-2025-02-13,CN-0172,consignacion_salida,2,GD-1187,Cliente 01
-2025-02-13,CN-0304,venta,2,F-1525,Cliente 01
-2025-02-13,CN-0470,consignacion_salida,3,GD-2044,Cliente 04
-2025-02-16,CN-0317,venta,3,F-1581,Cliente 08
-2025-02-16,CN-0320,venta,3,F-1824,Cliente 19
-2025-02-16,CN-0320,venta,1,F-1825,Cliente 01
-2025-02-17,CN-0111,venta,2,F-1103,Cliente 01
-2025-02-17,CN-0149,consignacion_salida,2,GD-1172,Cliente 02
-2025-02-17,CN-0228,venta,1,F-1247,Cliente 02
-2025-02-17,CN-0321,venta,3,F-1868,Cliente 02
-2025-02-18,CN-0321,venta,2,F-1867,Cliente 10
-2025-02-18,CN-0576,venta,1,F-2147,Cliente 03
-2025-02-19,CN-0228,venta,1,F-1246,Cliente 15
-2025-02-19,CN-0319,consignacion_salida,3,GD-1734,Cliente 04
-2025-02-21,CN-0304,venta,3,F-1524,Cliente 08
-2025-02-21,CN-0320,venta,1,F-1817,Cliente 08
-2025-02-22,CN-0320,venta,5,F-1823,Cliente 18
-2025-02-23,CN-0321,venta,3,F-1871,Cliente 11
-2025-02-24,CN-0565,consignacion_salida,3,GD-2101,Cliente 05
-2025-02-24,CN-0574,consignacion_salida,1,GD-2134,Cliente 01
-2025-02-25,CN-0185,venta,1,F-1209,Cliente 22
-2025-02-26,CN-0111,venta,1,F-1102,Cliente 01
-2025-02-26,CN-0320,consignacion_salida,4,GD-1819,Cliente 09
-2025-02-26,CN-0321,venta,1,F-1875,Cliente 02
-2025-02-26,CN-0710,venta,1,F-2393,Cliente 03
+2025-01-08,CN-0052,importacion,8,IMP-1098,
+2025-01-08,CN-0597,venta,1,F-2312,Cliente 20
+2025-01-08,CN-0721,importacion,5,IMP-2690,
+2025-01-09,CN-0113,venta,1,F-1199,Cliente 01
+2025-01-09,CN-0128,importacion,5,IMP-1278,
+2025-01-09,CN-0189,importacion,4,IMP-1307,
+2025-01-09,CN-0270,importacion,12,IMP-1475,
+2025-01-09,CN-0316,venta,1,F-1630,Cliente 01
+2025-01-09,CN-0317,importacion,40,IMP-1640,
+2025-01-09,CN-0715,consignacion_liquidada,1,F-2635,Cliente 03
+2025-01-10,CN-0232,venta,1,F-1386,Cliente 02
+2025-01-10,CN-0299,consignacion_salida,4,GD-1586,Cliente 02
+2025-01-10,CN-0574,importacion,5,IMP-2210,
+2025-01-10,CN-0694,importacion,12,IMP-2483,
+2025-01-10,CN-0710,importacion,5,IMP-2612,
+2025-01-11,CN-0231,importacion,5,IMP-1376,
+2025-01-11,CN-0317,consignacion_salida,2,GD-1645,Cliente 03
+2025-01-11,CN-0319,venta,1,F-1757,Cliente 09
+2025-01-11,CN-0415,importacion,5,IMP-2096,
+2025-01-12,CN-0232,importacion,12,IMP-1385,
+2025-01-12,CN-0317,venta,1,F-1646,Cliente 19
+2025-01-12,CN-0365,importacion,4,IMP-1995,
+2025-01-12,CN-0530,importacion,12,IMP-2156,
+2025-01-12,CN-0597,importacion,5,IMP-2311,
+2025-01-14,CN-0321,venta,4,F-1888,Cliente 05
+2025-01-14,CN-0597,venta,1,F-2313,Cliente 09
+2025-01-15,CN-0299,venta,4,F-1587,Cliente 11
+2025-01-15,CN-0397,venta,1,F-2079,Cliente 03
+2025-01-16,CN-0318,venta,3,F-1693,Cliente 02
+2025-01-16,CN-0321,venta,2,F-1890,Cliente 01
+2025-01-16,CN-0592,consignacion_salida,3,GD-2256,Cliente 04
+2025-01-16,CN-0702,venta,1,F-2596,Cliente 01
+2025-01-18,CN-0232,venta,1,F-1387,Cliente 08
+2025-01-18,CN-0317,consignacion_salida,2,GD-1648,Cliente 02
+2025-01-18,CN-0319,consignacion_salida,1,GD-1755,Cliente 02
+2025-01-18,CN-0320,consignacion_salida,1,GD-1825,Cliente 03
+2025-01-18,CN-0592,consignacion_salida,3,GD-2260,Cliente 01
+2025-01-18,CN-0648,consignacion_salida,1,GD-2373,Cliente 10
+2025-01-18,CN-0648,venta,2,F-2376,Cliente 17
+2025-01-18,CN-0700,consignacion_salida,3,GD-2552,Cliente 03
+2025-01-19,CN-0319,consignacion_salida,2,GD-1754,Cliente 02
+2025-01-19,CN-0592,venta,2,F-2253,Cliente 21
+2025-01-20,CN-0299,consignacion_salida,2,GD-1588,Cliente 01
+2025-01-20,CN-0319,consignacion_salida,1,GD-1756,Cliente 02
+2025-01-20,CN-0321,venta,3,F-1887,Cliente 02
+2025-01-20,CN-0530,consignacion_salida,2,GD-2157,Cliente 02
+2025-01-20,CN-0592,consignacion_salida,3,GD-2258,Cliente 04
+2025-01-20,CN-0648,consignacion_salida,3,GD-2375,Cliente 16
+2025-01-21,CN-0648,consignacion_salida,2,GD-2377,Cliente 07
+2025-01-21,CN-0690,consignacion_salida,1,GD-2468,Cliente 02
+2025-01-23,CN-0113,venta,1,F-1200,Cliente 02
+2025-01-23,CN-0317,venta,3,F-1642,Cliente 15
+2025-01-23,CN-0317,consignacion_salida,1,GD-1643,Cliente 03
+2025-01-23,CN-0612,venta,1,F-2330,Cliente 02
+2025-01-23,CN-0694,consignacion_salida,2,GD-2485,Cliente 02
+2025-01-24,CN-0118,venta,1,F-1221,Cliente 02
+2025-01-24,CN-0694,venta,2,F-2484,Cliente 01
+2025-01-24,CN-0702,venta,2,F-2595,Cliente 12
+2025-01-24,CN-0715,venta,2,F-2641,Cliente 02
+2025-01-25,CN-0052,consignacion_salida,2,GD-1100,Cliente 02
+2025-01-25,CN-0270,consignacion_salida,1,GD-1476,Cliente 09
+2025-01-25,CN-0299,venta,2,F-1585,Cliente 09
+2025-01-25,CN-0319,consignacion_liquidada,1,F-1747,Cliente 01
+2025-01-25,CN-0319,consignacion_salida,6,GD-1753,Cliente 10
+2025-01-25,CN-0402,venta,2,F-2081,Cliente 03
+2025-01-25,CN-0700,venta,2,F-2550,Cliente 22
+2025-01-26,CN-0086,venta,1,F-1175,Cliente 04
+2025-01-26,CN-0592,venta,2,F-2254,Cliente 07
+2025-01-27,CN-0700,consignacion_salida,3,GD-2551,Cliente 04
+2025-01-28,CN-0275,consignacion_salida,1,GD-1539,Cliente 15
+2025-02-01,CN-0189,venta,2,F-1309,Cliente 01
+2025-02-01,CN-0317,venta,1,F-1652,Cliente 10
+2025-02-01,CN-0317,venta,2,F-1656,Cliente 04
+2025-02-01,CN-0654,venta,1,F-2411,Cliente 01
+2025-02-02,CN-0052,venta,1,F-1101,Cliente 12
+2025-02-02,CN-0227,consignacion_salida,1,GD-1328,Cliente 06
+2025-02-02,CN-0318,venta,1,F-1703,Cliente 03
+2025-02-02,CN-0672,consignacion_salida,1,GD-2435,Cliente 01
+2025-02-02,CN-0710,venta,1,F-2613,Cliente 02
+2025-02-03,CN-0318,consignacion_salida,2,GD-1699,Cliente 13
+2025-02-04,CN-0530,consignacion_salida,1,GD-2163,Cliente 09
+2025-02-04,CN-0710,consignacion_salida,1,GD-2614,Cliente 22
+2025-02-05,CN-0270,venta,1,F-1477,Cliente 04
+2025-02-06,CN-0318,consignacion_salida,4,GD-1696,Cliente 01
+2025-02-06,CN-0319,venta,4,F-1760,Cliente 07
+2025-02-07,CN-0317,venta,3,F-1649,Cliente 04
+2025-02-07,CN-0318,venta,2,F-1698,Cliente 02
+2025-02-08,CN-0317,venta,3,F-1651,Cliente 01
+2025-02-08,CN-0321,consignacion_salida,3,GD-1891,Cliente 01
+2025-02-09,CN-0318,consignacion_salida,3,GD-1704,Cliente 01
+2025-02-09,CN-0320,consignacion_salida,4,GD-1827,Cliente 04
+2025-02-09,CN-0321,consignacion_salida,3,GD-1893,Cliente 12
+2025-02-13,CN-0318,venta,4,F-1702,Cliente 01
+2025-02-14,CN-0232,venta,3,F-1388,Cliente 15
+2025-02-15,CN-0121,venta,2,F-1257,Cliente 04
+2025-02-15,CN-0317,consignacion_salida,1,GD-1658,Cliente 04
+2025-02-15,CN-0319,venta,2,F-1758,Cliente 06
+2025-02-15,CN-0319,consignacion_salida,1,GD-1759,Cliente 01
+2025-02-15,CN-0700,venta,1,F-2554,Cliente 06
+2025-02-16,CN-0317,venta,3,F-1655,Cliente 14
+2025-02-16,CN-0321,venta,2,F-1895,Cliente 03
+2025-02-17,CN-0317,venta,5,F-1657,Cliente 15
+2025-02-17,CN-0702,consignacion_salida,1,GD-2597,Cliente 11
+2025-02-18,CN-0039,venta,1,F-1078,Cliente 08
+2025-02-18,CN-0317,consignacion_salida,3,GD-1653,Cliente 08
+2025-02-20,CN-0321,venta,3,F-1896,Cliente 01
+2025-02-21,CN-0113,venta,1,F-1201,Cliente 07
+2025-02-21,CN-0694,venta,2,F-2487,Cliente 06
+2025-02-22,CN-0317,venta,2,F-1650,Cliente 02
+2025-02-22,CN-0715,venta,1,F-2642,Cliente 02
+2025-02-23,CN-0270,consignacion_salida,1,GD-1478,Cliente 13
+2025-02-23,CN-0694,venta,2,F-2486,Cliente 02
+2025-02-24,CN-0318,consignacion_salida,4,GD-1701,Cliente 20
+2025-02-25,CN-0232,venta,1,F-1389,Cliente 05
+2025-02-25,CN-0270,consignacion_salida,3,GD-1480,Cliente 16
+2025-02-25,CN-0319,consignacion_salida,3,GD-1761,Cliente 03
+2025-02-25,CN-0319,consignacion_salida,1,GD-1762,Cliente 05
+2025-02-25,CN-0370,consignacion_salida,1,GD-2008,Cliente 16
+2025-02-25,CN-0530,consignacion_salida,3,GD-2161,Cliente 01
+2025-02-26,CN-0365,consignacion_salida,2,GD-1996,Cliente 01
+2025-02-26,CN-0370,venta,3,F-2009,Cliente 02
 2025-02-27,CN-0001,consignacion_salida,1,GD-1004,Cliente 18
-2025-02-27,CN-0320,consignacion_devolucion,3,GD-1805,Cliente 16
-2025-02-28,CN-0270,consignacion_salida,2,GD-1373,Cliente 05
-2025-03-03,CN-0318,venta,3,F-1666,Cliente 12
-2025-03-04,CN-0320,venta,2,F-1829,Cliente 01
-2025-03-05,CN-0385,consignacion_salida,2,GD-1949,Cliente 01
-2025-03-07,CN-0228,venta,1,F-1248,Cliente 08
-2025-03-07,CN-0317,venta,3,F-1583,Cliente 05
-2025-03-08,CN-0385,venta,1,F-1951,Cliente 09
-2025-03-08,CN-0576,consignacion_salida,1,GD-2148,Cliente 03
-2025-03-09,CN-0648,consignacion_devolucion,4,GD-2277,Cliente 05
-2025-03-10,CN-0318,consignacion_salida,4,GD-1663,Cliente 02
-2025-03-10,CN-0319,consignacion_salida,2,GD-1735,Cliente 18
-2025-03-10,CN-0321,consignacion_salida,2,GD-1876,Cliente 01
-2025-03-10,CN-0429,consignacion_salida,1,GD-1990,Cliente 02
-2025-03-12,CN-0036,venta,1,F-1069,Cliente 01
-2025-03-12,CN-0317,consignacion_salida,2,GD-1584,Cliente 21
-2025-03-14,CN-0402,venta,3,F-1967,Cliente 06
-2025-03-15,CN-0304,venta,1,F-1526,Cliente 01
-2025-03-15,CN-0318,venta,4,F-1664,Cliente 11
-2025-03-15,CN-0321,venta,2,F-1878,Cliente 05
-2025-03-16,CN-0264,consignacion_salida,1,GD-1364,Cliente 19
-2025-03-16,CN-0320,venta,3,F-1826,Cliente 05
-2025-03-17,CN-0320,venta,2,F-1828,Cliente 22
-2025-03-18,CN-0029,venta,1,F-1048,Cliente 01
-2025-03-18,CN-0672,consignacion_salida,1,GD-2355,Cliente 04
-2025-03-19,CN-0111,venta,1,F-1105,Cliente 04
-2025-03-20,CN-0034,venta,1,F-1065,Cliente 21
-2025-03-20,CN-0318,consignacion_salida,2,GD-1665,Cliente 01
-2025-03-21,CN-0299,consignacion_liquidada,1,F-1444,Cliente 05
-2025-03-21,CN-0317,venta,1,F-1586,Cliente 05
-2025-03-21,CN-0566,venta,1,F-2117,Cliente 01
-2025-03-22,CN-0012,venta,1,F-1033,Cliente 01
-2025-03-22,CN-0320,venta,2,F-1827,Cliente 01
-2025-03-23,CN-0321,consignacion_salida,1,GD-1879,Cliente 02
-2025-03-25,CN-0318,venta,2,F-1662,Cliente 09
-2025-03-28,CN-0029,venta,1,F-1047,Cliente 04
-2025-03-28,CN-0187,venta,2,F-1221,Cliente 10
-2025-03-28,CN-0249,consignacion_salida,1,GD-1338,Cliente 01
-2025-03-28,CN-0270,venta,2,F-1375,Cliente 02
-2025-03-28,CN-0318,venta,6,F-1667,Cliente 03
-2025-03-28,CN-0492,venta,1,F-2065,Cliente 05
-2025-04-01,CN-0321,consignacion_salida,2,GD-1888,Cliente 02
-2025-04-02,CN-0318,consignacion_salida,3,GD-1676,Cliente 02
-2025-04-02,CN-0402,consignacion_salida,1,GD-1968,Cliente 01
-2025-04-04,CN-0270,importacion,12,IMP-1376,
-2025-04-05,CN-0111,consignacion_salida,1,GD-1111,Cliente 01
-2025-04-05,CN-0249,consignacion_salida,2,GD-1340,Cliente 05
-2025-04-05,CN-0318,importacion,32,IMP-1668,
-2025-04-05,CN-0429,importacion,4,IMP-1992,
-2025-04-05,CN-0574,importacion,4,IMP-2135,
-2025-04-06,CN-0029,importacion,4,IMP-1049,
-2025-04-06,CN-0323,importacion,5,IMP-1919,
-2025-04-07,CN-0111,importacion,12,IMP-1106,
-2025-04-07,CN-0320,consignacion_salida,2,GD-1833,Cliente 02
-2025-04-07,CN-0321,importacion,39,IMP-1881,
-2025-04-07,CN-0321,venta,2,F-1887,Cliente 03
-2025-04-07,CN-0402,venta,1,F-1970,Cliente 01
-2025-04-07,CN-0566,venta,1,F-2120,Cliente 02
+2025-02-27,CN-0012,consignacion_salida,1,GD-1034,Cliente 01
+2025-02-27,CN-0034,venta,1,F-1058,Cliente 18
+2025-02-27,CN-0228,consignacion_salida,1,GD-1342,Cliente 02
+2025-02-27,CN-0239,venta,1,F-1446,Cliente 01
+2025-02-27,CN-0592,consignacion_devolucion,2,GD-2241,Cliente 01
+2025-02-28,CN-0320,venta,3,F-1828,Cliente 13
+2025-03-01,CN-0270,consignacion_salida,3,GD-1481,Cliente 01
+2025-03-01,CN-0370,venta,1,F-2010,Cliente 01
+2025-03-01,CN-0682,venta,1,F-2456,Cliente 04
+2025-03-02,CN-0270,venta,1,F-1483,Cliente 04
+2025-03-02,CN-0715,venta,3,F-2643,Cliente 06
+2025-03-03,CN-0299,consignacion_liquidada,3,F-1565,Cliente 08
+2025-03-03,CN-0319,venta,1,F-1769,Cliente 05
+2025-03-03,CN-0319,venta,2,F-1771,Cliente 17
+2025-03-03,CN-0320,consignacion_salida,4,GD-1831,Cliente 07
+2025-03-03,CN-0321,venta,3,F-1900,Cliente 01
+2025-03-04,CN-0232,consignacion_salida,3,GD-1390,Cliente 22
+2025-03-05,CN-0318,venta,3,F-1706,Cliente 19
+2025-03-07,CN-0094,venta,1,F-1177,Cliente 11
+2025-03-08,CN-0321,venta,2,F-1899,Cliente 09
+2025-03-08,CN-0321,venta,2,F-1901,Cliente 01
+2025-03-09,CN-0319,venta,4,F-1772,Cliente 18
+2025-03-10,CN-0318,venta,2,F-1710,Cliente 09
+2025-03-10,CN-0321,consignacion_salida,2,GD-1897,Cliente 01
+2025-03-11,CN-0052,venta,4,F-1102,Cliente 18
+2025-03-11,CN-0230,venta,1,F-1360,Cliente 07
+2025-03-11,CN-0319,venta,2,F-1770,Cliente 01
+2025-03-11,CN-0700,venta,3,F-2555,Cliente 01
+2025-03-12,CN-0319,venta,2,F-1766,Cliente 02
+2025-03-12,CN-0597,consignacion_salida,2,GD-2314,Cliente 01
+2025-03-13,CN-0318,consignacion_salida,1,GD-1707,Cliente 02
+2025-03-14,CN-0232,venta,2,F-1392,Cliente 01
+2025-03-14,CN-0325,consignacion_salida,1,GD-1984,Cliente 20
+2025-03-15,CN-0227,venta,1,F-1330,Cliente 07
+2025-03-15,CN-0714,consignacion_salida,1,GD-2627,Cliente 01
+2025-03-16,CN-0121,consignacion_salida,1,GD-1258,Cliente 08
+2025-03-16,CN-0359,consignacion_salida,1,GD-1991,Cliente 03
+2025-03-16,CN-0530,consignacion_salida,1,GD-2164,Cliente 09
+2025-03-17,CN-0245,consignacion_salida,1,GD-1461,Cliente 05
+2025-03-17,CN-0319,venta,2,F-1768,Cliente 15
+2025-03-19,CN-0034,consignacion_salida,1,GD-1059,Cliente 13
+2025-03-19,CN-0317,venta,1,F-1660,Cliente 02
+2025-03-19,CN-0320,consignacion_salida,3,GD-1829,Cliente 04
+2025-03-19,CN-0702,venta,1,F-2599,Cliente 15
+2025-03-20,CN-0239,venta,1,F-1447,Cliente 01
+2025-03-20,CN-0694,venta,3,F-2488,Cliente 02
+2025-03-21,CN-0318,venta,2,F-1705,Cliente 01
+2025-03-21,CN-0429,consignacion_salida,2,GD-2113,Cliente 01
+2025-03-21,CN-0530,venta,1,F-2166,Cliente 07
+2025-03-21,CN-0592,consignacion_devolucion,3,GD-2248,Cliente 02
+2025-03-22,CN-0318,venta,4,F-1709,Cliente 14
+2025-03-22,CN-0320,venta,1,F-1830,Cliente 02
+2025-03-23,CN-0232,consignacion_salida,1,GD-1393,Cliente 05
+2025-03-23,CN-0270,consignacion_liquidada,3,F-1474,Cliente 01
+2025-03-23,CN-0291,consignacion_salida,1,GD-1554,Cliente 05
+2025-03-25,CN-0039,venta,1,F-1079,Cliente 18
+2025-03-25,CN-0319,venta,1,F-1764,Cliente 01
+2025-03-25,CN-0715,consignacion_salida,1,GD-2644,Cliente 02
+2025-03-27,CN-0319,venta,4,F-1765,Cliente 06
+2025-03-27,CN-0320,venta,1,F-1832,Cliente 17
+2025-03-28,CN-0319,venta,1,F-1767,Cliente 02
+2025-03-28,CN-0682,consignacion_salida,1,GD-2455,Cliente 07
+2025-04-01,CN-0189,venta,3,F-1311,Cliente 01
+2025-04-01,CN-0318,venta,4,F-1715,Cliente 10
+2025-04-01,CN-0648,consignacion_liquidada,3,F-2371,Cliente 07
+2025-04-02,CN-0121,venta,1,F-1260,Cliente 05
+2025-04-02,CN-0239,consignacion_salida,1,GD-1448,Cliente 09
+2025-04-02,CN-0318,venta,4,F-1713,Cliente 03
+2025-04-03,CN-0094,consignacion_salida,1,GD-1179,Cliente 01
+2025-04-03,CN-0317,venta,2,F-1667,Cliente 09
+2025-04-03,CN-0319,venta,1,F-1778,Cliente 07
+2025-04-04,CN-0039,importacion,5,IMP-1080,
+2025-04-04,CN-0118,importacion,5,IMP-1223,
+2025-04-04,CN-0370,consignacion_salida,3,GD-2012,Cliente 16
+2025-04-04,CN-0370,consignacion_salida,1,GD-2014,Cliente 01
+2025-04-04,CN-0715,venta,2,F-2648,Cliente 14
+2025-04-05,CN-0270,importacion,7,IMP-1484,
+2025-04-05,CN-0319,importacion,40,IMP-1773,
+2025-04-05,CN-0592,consignacion_liquidada,2,F-2245,Cliente 04
+2025-04-05,CN-0694,importacion,11,IMP-2489,
+2025-04-06,CN-0052,venta,1,F-1107,Cliente 03
+2025-04-06,CN-0094,importacion,4,IMP-1178,
+2025-04-06,CN-0317,venta,3,F-1668,Cliente 01
+2025-04-06,CN-0321,venta,1,F-1903,Cliente 01
+2025-04-06,CN-0597,importacion,4,IMP-2316,
+2025-04-07,CN-0113,importacion,5,IMP-1202,
+2025-04-07,CN-0232,consignacion_salida,1,GD-1398,Cliente 01
+2025-04-07,CN-0319,venta,2,F-1784,Cliente 02
+2025-04-07,CN-0321,consignacion_salida,3,GD-1908,Cliente 01
 2025-04-08,CN-0001,venta,2,F-1006,Cliente 01
-2025-04-08,CN-0228,importacion,8,IMP-1249,
-2025-04-08,CN-0228,venta,2,F-1252,Cliente 05
-2025-04-08,CN-0492,importacion,5,IMP-2066,
-2025-04-09,CN-0092,venta,1,F-1090,Cliente 01
-2025-04-09,CN-0111,consignacion_salida,2,GD-1107,Cliente 15
-2025-04-09,CN-0172,importacion,5,IMP-1188,
-2025-04-09,CN-0231,importacion,5,IMP-1296,
-2025-04-09,CN-0270,consignacion_salida,1,GD-1377,Cliente 02
-2025-04-09,CN-0565,importacion,4,IMP-2104,
-2025-04-10,CN-0111,consignacion_salida,2,GD-1109,Cliente 01
-2025-04-10,CN-0304,importacion,12,IMP-1527,
-2025-04-10,CN-0566,importacion,4,IMP-2118,
-2025-04-11,CN-0274,consignacion_salida,1,GD-1417,Cliente 01
-2025-04-11,CN-0317,consignacion_salida,1,GD-1587,Cliente 01
-2025-04-11,CN-0318,venta,1,F-1680,Cliente 06
-2025-04-11,CN-0320,venta,2,F-1832,Cliente 03
-2025-04-11,CN-0648,consignacion_liquidada,3,F-2308,Cliente 01
-2025-04-12,CN-0320,importacion,40,IMP-1830,
-2025-04-12,CN-0320,venta,4,F-1831,Cliente 02
-2025-04-13,CN-0304,venta,4,F-1528,Cliente 01
-2025-04-13,CN-0318,consignacion_salida,2,GD-1669,Cliente 01
-2025-04-13,CN-0320,consignacion_salida,2,GD-1834,Cliente 02
-2025-04-14,CN-0318,consignacion_salida,3,GD-1673,Cliente 14
-2025-04-14,CN-0477,venta,1,F-2055,Cliente 01
-2025-04-15,CN-0317,venta,2,F-1588,Cliente 01
-2025-04-16,CN-0185,consignacion_salida,1,GD-1210,Cliente 01
-2025-04-16,CN-0319,venta,1,F-1738,Cliente 14
-2025-04-16,CN-0565,venta,1,F-2105,Cliente 07
-2025-04-17,CN-0318,consignacion_salida,3,GD-1671,Cliente 04
-2025-04-17,CN-0641,venta,1,F-2271,Cliente 02
-2025-04-18,CN-0299,consignacion_liquidada,2,F-1456,Cliente 01
-2025-04-18,CN-0319,consignacion_salida,4,GD-1736,Cliente 08
-2025-04-18,CN-0429,consignacion_liquidada,2,F-1989,Cliente 04
-2025-04-19,CN-0111,venta,3,F-1108,Cliente 05
-2025-04-20,CN-0321,venta,2,F-1883,Cliente 01
+2025-04-08,CN-0052,importacion,9,IMP-1103,
+2025-04-08,CN-0227,consignacion_salida,1,GD-1332,Cliente 02
+2025-04-08,CN-0232,importacion,12,IMP-1395,
+2025-04-08,CN-0290,venta,2,F-1542,Cliente 03
+2025-04-08,CN-0317,consignacion_salida,3,GD-1666,Cliente 01
+2025-04-08,CN-0370,importacion,9,IMP-2011,
+2025-04-08,CN-0715,consignacion_salida,2,GD-2646,Cliente 08
+2025-04-09,CN-0227,importacion,4,IMP-1331,
+2025-04-09,CN-0318,importacion,40,IMP-1711,
+2025-04-09,CN-0319,venta,2,F-1775,Cliente 10
+2025-04-09,CN-0321,importacion,27,IMP-1902,
+2025-04-09,CN-0702,importacion,5,IMP-2600,
+2025-04-09,CN-0715,importacion,8,IMP-2645,
+2025-04-10,CN-0052,venta,2,F-1105,Cliente 01
+2025-04-10,CN-0318,venta,1,F-1717,Cliente 20
+2025-04-10,CN-0319,venta,4,F-1782,Cliente 06
+2025-04-10,CN-0385,consignacion_salida,1,GD-2063,Cliente 02
+2025-04-11,CN-0052,consignacion_salida,1,GD-1104,Cliente 18
+2025-04-11,CN-0120,consignacion_salida,2,GD-1241,Cliente 02
+2025-04-11,CN-0270,consignacion_salida,2,GD-1489,Cliente 01
+2025-04-11,CN-0319,venta,2,F-1777,Cliente 01
+2025-04-11,CN-0319,consignacion_salida,2,GD-1780,Cliente 01
+2025-04-11,CN-0321,consignacion_salida,1,GD-1905,Cliente 01
+2025-04-11,CN-0321,venta,3,F-1909,Cliente 04
+2025-04-11,CN-0530,importacion,8,IMP-2167,
+2025-04-11,CN-0655,venta,2,F-2421,Cliente 02
+2025-04-12,CN-0189,importacion,5,IMP-1310,
+2025-04-12,CN-0317,importacion,40,IMP-1661,
+2025-04-12,CN-0317,venta,1,F-1663,Cliente 01
+2025-04-12,CN-0700,importacion,12,IMP-2556,
+2025-04-14,CN-0321,consignacion_salida,1,GD-1904,Cliente 07
+2025-04-14,CN-0321,consignacion_salida,3,GD-1906,Cliente 15
+2025-04-14,CN-0695,consignacion_liquidada,1,F-2539,Cliente 01
+2025-04-16,CN-0318,venta,2,F-1712,Cliente 11
+2025-04-16,CN-0530,venta,2,F-2168,Cliente 01
+2025-04-17,CN-0052,venta,2,F-1106,Cliente 01
+2025-04-17,CN-0319,venta,2,F-1779,Cliente 11
+2025-04-17,CN-0320,consignacion_salida,2,GD-1834,Cliente 02
+2025-04-17,CN-0402,venta,1,F-2082,Cliente 01
+2025-04-18,CN-0232,venta,1,F-1397,Cliente 04
+2025-04-18,CN-0318,consignacion_salida,2,GD-1716,Cliente 03
+2025-04-18,CN-0319,venta,3,F-1776,Cliente 09
+2025-04-18,CN-0319,consignacion_salida,3,GD-1786,Cliente 02
+2025-04-18,CN-0321,venta,2,F-1907,Cliente 04
+2025-04-18,CN-0672,venta,1,F-2437,Cliente 22
+2025-04-18,CN-0700,venta,3,F-2557,Cliente 04
+2025-04-19,CN-0232,venta,2,F-1396,Cliente 16
+2025-04-19,CN-0318,venta,2,F-1714,Cliente 01
+2025-04-19,CN-0721,venta,1,F-2691,Cliente 03
+2025-04-20,CN-0113,venta,1,F-1203,Cliente 01
+2025-04-20,CN-0270,venta,2,F-1485,Cliente 07
+2025-04-20,CN-0317,consignacion_salida,3,GD-1662,Cliente 03
+2025-04-20,CN-0317,venta,3,F-1664,Cliente 01
 2025-04-21,CN-0005,venta,1,F-1017,Cliente 01
-2025-04-21,CN-0228,consignacion_salida,1,GD-1250,Cliente 01
-2025-04-21,CN-0321,venta,3,F-1882,Cliente 02
-2025-04-21,CN-0566,venta,2,F-2119,Cliente 10
-2025-04-22,CN-0385,venta,1,F-1953,Cliente 01
-2025-04-23,CN-0228,venta,2,F-1253,Cliente 16
-2025-04-23,CN-0318,venta,2,F-1675,Cliente 04
-2025-04-23,CN-0320,venta,4,F-1835,Cliente 08
-2025-04-23,CN-0492,venta,1,F-2067,Cliente 08
-2025-04-24,CN-0318,consignacion_devolucion,1,GD-1648,Cliente 02
-2025-04-24,CN-0565,consignacion_salida,3,GD-2106,Cliente 04
-2025-04-25,CN-0318,consignacion_salida,2,GD-1678,Cliente 14
-2025-04-25,CN-0321,venta,2,F-1884,Cliente 01
-2025-04-25,CN-0385,venta,2,F-1952,Cliente 13
-2025-04-25,CN-0468,consignacion_salida,1,GD-2026,Cliente 02
-2025-04-26,CN-0317,venta,1,F-1589,Cliente 08
-2025-04-27,CN-0242,venta,1,F-1330,Cliente 01
-2025-04-27,CN-0321,consignacion_salida,1,GD-1885,Cliente 19
-2025-04-27,CN-0574,venta,2,F-2136,Cliente 01
-2025-04-28,CN-0318,venta,4,F-1681,Cliente 17
-2025-04-28,CN-0654,venta,1,F-2343,Cliente 07
-2025-05-01,CN-0319,venta,2,F-1739,Cliente 04
-2025-05-01,CN-0320,consignacion_devolucion,5,GD-1802,Cliente 03
-2025-05-01,CN-0370,venta,1,F-1943,Cliente 02
-2025-05-02,CN-0318,venta,6,F-1685,Cliente 10
-2025-05-02,CN-0318,consignacion_salida,1,GD-1691,Cliente 14
-2025-05-02,CN-0318,venta,3,F-1693,Cliente 06
-2025-05-03,CN-0111,consignacion_salida,2,GD-1114,Cliente 03
-2025-05-03,CN-0323,venta,2,F-1920,Cliente 19
-2025-05-04,CN-0317,venta,4,F-1593,Cliente 04
-2025-05-05,CN-0270,venta,2,F-1379,Cliente 01
-2025-05-05,CN-0320,venta,7,F-1837,Cliente 02
-2025-05-06,CN-0317,venta,1,F-1594,Cliente 01
-2025-05-06,CN-0477,venta,2,F-2056,Cliente 01
-2025-05-07,CN-0226,consignacion_salida,1,GD-1239,Cliente 06
-2025-05-08,CN-0317,venta,1,F-1595,Cliente 20
-2025-05-08,CN-0320,venta,1,F-1836,Cliente 02
-2025-05-09,CN-0434,consignacion_salida,1,GD-2003,Cliente 01
-2025-05-09,CN-0704,consignacion_salida,3,GD-2384,Cliente 09
-2025-05-10,CN-0029,venta,1,F-1050,Cliente 14
-2025-05-10,CN-0317,consignacion_salida,3,GD-1590,Cliente 01
-2025-05-10,CN-0321,venta,2,F-1890,Cliente 18
-2025-05-11,CN-0245,consignacion_salida,1,GD-1332,Cliente 01
-2025-05-11,CN-0318,consignacion_salida,3,GD-1683,Cliente 02
-2025-05-11,CN-0318,consignacion_salida,1,GD-1686,Cliente 03
-2025-05-12,CN-0111,venta,1,F-1113,Cliente 08
-2025-05-12,CN-0257,venta,1,F-1352,Cliente 04
-2025-05-12,CN-0270,venta,1,F-1380,Cliente 01
-2025-05-12,CN-0318,venta,1,F-1688,Cliente 01
-2025-05-12,CN-0321,venta,2,F-1892,Cliente 18
-2025-05-12,CN-0565,consignacion_liquidada,3,F-2102,Cliente 05
-2025-05-12,CN-0704,venta,1,F-2386,Cliente 02
-2025-05-14,CN-0172,consignacion_salida,1,GD-1189,Cliente 10
-2025-05-14,CN-0290,venta,1,F-1426,Cliente 10
-2025-05-14,CN-0318,venta,1,F-1689,Cliente 01
-2025-05-14,CN-0318,venta,2,F-1690,Cliente 04
-2025-05-14,CN-0319,venta,2,F-1745,Cliente 07
-2025-05-14,CN-0576,venta,2,F-2149,Cliente 01
-2025-05-15,CN-0319,consignacion_salida,3,GD-1741,Cliente 04
-2025-05-17,CN-0319,venta,5,F-1740,Cliente 15
-2025-05-18,CN-0317,venta,4,F-1592,Cliente 19
-2025-05-19,CN-0319,venta,2,F-1743,Cliente 02
-2025-05-19,CN-0710,consignacion_salida,2,GD-2394,Cliente 01
-2025-05-20,CN-0111,consignacion_salida,1,GD-1116,Cliente 02
-2025-05-20,CN-0228,consignacion_salida,2,GD-1254,Cliente 22
-2025-05-20,CN-0319,consignacion_salida,3,GD-1744,Cliente 03
-2025-05-20,CN-0721,venta,1,F-2413,Cliente 07
-2025-05-22,CN-0304,venta,2,F-1529,Cliente 06
-2025-05-22,CN-0318,consignacion_salida,1,GD-1682,Cliente 01
-2025-05-23,CN-0318,consignacion_salida,2,GD-1694,Cliente 01
-2025-05-24,CN-0318,venta,1,F-1684,Cliente 01
-2025-05-26,CN-0039,consignacion_salida,1,GD-1072,Cliente 03
-2025-05-26,CN-0317,consignacion_salida,2,GD-1591,Cliente 03
-2025-05-26,CN-0321,venta,1,F-1891,Cliente 11
-2025-05-26,CN-0666,consignacion_salida,1,GD-2350,Cliente 01
-2025-05-26,CN-0672,consignacion_liquidada,1,F-2354,Cliente 11
-2025-05-27,CN-0321,consignacion_devolucion,3,GD-1870,Cliente 07
-2025-05-27,CN-0592,consignacion_liquidada,2,F-2168,Cliente 01
-2025-05-28,CN-0270,consignacion_salida,1,GD-1381,Cliente 07
-2025-05-28,CN-0592,consignacion_liquidada,3,F-2192,Cliente 04
-2025-05-29,CN-0187,consignacion_liquidada,1,F-1219,Cliente 02
-2025-05-29,CN-0614,consignacion_liquidada,1,F-2250,Cliente 01
-2025-06-02,CN-0317,consignacion_salida,2,GD-1597,Cliente 02
-2025-06-03,CN-0079,venta,1,F-1085,Cliente 01
-2025-06-03,CN-0228,venta,2,F-1257,Cliente 07
-2025-06-03,CN-0317,venta,4,F-1596,Cliente 02
-2025-06-03,CN-0318,consignacion_salida,3,GD-1696,Cliente 13
-2025-06-03,CN-0319,venta,3,F-1747,Cliente 14
-2025-06-04,CN-0577,consignacion_salida,1,GD-2162,Cliente 03
-2025-06-05,CN-0274,venta,2,F-1419,Cliente 05
-2025-06-06,CN-0111,venta,1,F-1117,Cliente 02
-2025-06-06,CN-0319,consignacion_salida,2,GD-1746,Cliente 14
-2025-06-07,CN-0319,venta,1,F-1751,Cliente 07
-2025-06-10,CN-0045,venta,1,F-1076,Cliente 01
-2025-06-10,CN-0270,venta,2,F-1383,Cliente 02
-2025-06-10,CN-0299,consignacion_liquidada,2,F-1470,Cliente 02
-2025-06-10,CN-0321,venta,1,F-1895,Cliente 03
-2025-06-10,CN-0696,consignacion_salida,1,GD-2367,Cliente 01
-2025-06-11,CN-0319,venta,3,F-1748,Cliente 02
-2025-06-12,CN-0317,venta,3,F-1599,Cliente 09
-2025-06-12,CN-0321,consignacion_salida,2,GD-1893,Cliente 15
-2025-06-13,CN-0721,venta,2,F-2414,Cliente 03
-2025-06-14,CN-0304,venta,3,F-1530,Cliente 06
-2025-06-15,CN-0249,venta,1,F-1341,Cliente 06
-2025-06-16,CN-0648,consignacion_liquidada,1,F-2304,Cliente 03
-2025-06-17,CN-0232,consignacion_liquidada,1,F-1314,Cliente 01
-2025-06-17,CN-0468,venta,2,F-2028,Cliente 03
-2025-06-18,CN-0231,venta,1,F-1297,Cliente 01
-2025-06-19,CN-0320,venta,3,F-1839,Cliente 07
-2025-06-19,CN-0320,venta,2,F-1842,Cliente 01
-2025-06-19,CN-0492,venta,1,F-2069,Cliente 02
-2025-06-19,CN-0565,venta,1,F-2108,Cliente 01
-2025-06-21,CN-0020,consignacion_devolucion,1,GD-1040,Cliente 05
-2025-06-21,CN-0319,venta,1,F-1749,Cliente 09
-2025-06-21,CN-0450,venta,1,F-2008,Cliente 13
-2025-06-22,CN-0304,venta,3,F-1531,Cliente 08
-2025-06-23,CN-0492,venta,2,F-2068,Cliente 01
-2025-06-24,CN-0239,venta,1,F-1317,Cliente 11
-2025-06-24,CN-0320,consignacion_salida,1,GD-1840,Cliente 02
-2025-06-25,CN-0029,venta,1,F-1051,Cliente 11
-2025-06-25,CN-0036,consignacion_salida,1,GD-1070,Cliente 03
-2025-06-25,CN-0323,venta,1,F-1921,Cliente 01
-2025-06-26,CN-0270,consignacion_liquidada,1,F-1368,Cliente 12
-2025-06-26,CN-0320,venta,2,F-1838,Cliente 04
-2025-06-27,CN-0187,venta,2,F-1222,Cliente 16
-2025-06-27,CN-0228,consignacion_salida,4,GD-1256,Cliente 01
-2025-06-27,CN-0319,venta,4,F-1750,Cliente 13
-2025-06-28,CN-0592,consignacion_liquidada,1,F-2202,Cliente 01
-2025-07-01,CN-0304,consignacion_salida,3,GD-1533,Cliente 21
-2025-07-01,CN-0317,consignacion_salida,2,GD-1605,Cliente 02
-2025-07-02,CN-0319,venta,4,F-1761,Cliente 03
-2025-07-03,CN-0614,venta,2,F-2252,Cliente 05
-2025-07-04,CN-0111,venta,2,F-1119,Cliente 15
-2025-07-04,CN-0187,importacion,4,IMP-1223,
-2025-07-04,CN-0318,venta,3,F-1700,Cliente 12
-2025-07-05,CN-0231,consignacion_salida,1,GD-1300,Cliente 13
-2025-07-05,CN-0249,importacion,5,IMP-1342,
-2025-07-05,CN-0319,importacion,40,IMP-1752,
-2025-07-06,CN-0228,venta,1,F-1260,Cliente 18
-2025-07-06,CN-0317,consignacion_salida,1,GD-1607,Cliente 05
-2025-07-06,CN-0468,importacion,4,IMP-2029,
-2025-07-06,CN-0576,importacion,4,IMP-2150,
-2025-07-07,CN-0270,consignacion_salida,2,GD-1385,Cliente 22
-2025-07-07,CN-0317,venta,1,F-1613,Cliente 02
-2025-07-07,CN-0318,importacion,37,IMP-1698,
-2025-07-07,CN-0565,importacion,5,IMP-2109,
-2025-07-08,CN-0111,importacion,12,IMP-1118,
-2025-07-08,CN-0304,importacion,12,IMP-1532,
-2025-07-08,CN-0317,importacion,40,IMP-1600,
-2025-07-08,CN-0318,consignacion_devolucion,1,GD-1692,Cliente 14
-2025-07-08,CN-0320,importacion,30,IMP-1843,
-2025-07-08,CN-0492,importacion,4,IMP-2070,
-2025-07-09,CN-0185,venta,1,F-1212,Cliente 11
-2025-07-09,CN-0319,venta,1,F-1758,Cliente 03
-2025-07-09,CN-0385,importacion,5,IMP-1954,
-2025-07-10,CN-0228,venta,1,F-1259,Cliente 11
-2025-07-10,CN-0239,importacion,4,IMP-1318,
-2025-07-10,CN-0477,importacion,5,IMP-2057,
-2025-07-11,CN-0149,consignacion_liquidada,2,F-1173,Cliente 02
-2025-07-11,CN-0228,importacion,12,IMP-1258,
-2025-07-11,CN-0270,importacion,7,IMP-1384,
-2025-07-11,CN-0468,consignacion_liquidada,1,F-2027,Cliente 02
-2025-07-12,CN-0317,consignacion_liquidada,1,F-1575,Cliente 01
-2025-07-12,CN-0318,venta,5,F-1699,Cliente 01
-2025-07-12,CN-0402,importacion,5,IMP-1971,
-2025-07-13,CN-0318,venta,1,F-1703,Cliente 01
-2025-07-13,CN-0492,venta,1,F-2071,Cliente 02
-2025-07-14,CN-0317,consignacion_salida,3,GD-1603,Cliente 06
-2025-07-14,CN-0317,venta,2,F-1612,Cliente 02
-2025-07-15,CN-0317,consignacion_salida,3,GD-1601,Cliente 01
-2025-07-15,CN-0318,consignacion_salida,4,GD-1704,Cliente 01
-2025-07-15,CN-0492,consignacion_salida,1,GD-2072,Cliente 02
-2025-07-16,CN-0257,venta,1,F-1353,Cliente 16
-2025-07-17,CN-0231,consignacion_salida,1,GD-1298,Cliente 01
-2025-07-18,CN-0189,venta,1,F-1233,Cliente 12
-2025-07-18,CN-0317,venta,4,F-1616,Cliente 10
-2025-07-19,CN-0111,venta,2,F-1120,Cliente 01
-2025-07-19,CN-0319,venta,2,F-1753,Cliente 05
-2025-07-19,CN-0319,consignacion_salida,4,GD-1757,Cliente 02
-2025-07-20,CN-0111,venta,1,F-1125,Cliente 04
-2025-07-20,CN-0681,consignacion_salida,1,GD-2358,Cliente 12
-2025-07-21,CN-0319,consignacion_salida,3,GD-1755,Cliente 01
-2025-07-23,CN-0111,venta,2,F-1124,Cliente 02
-2025-07-23,CN-0317,venta,4,F-1611,Cliente 01
-2025-07-23,CN-0576,venta,2,F-2151,Cliente 10
-2025-07-24,CN-0317,consignacion_salida,3,GD-1609,Cliente 03
-2025-07-24,CN-0318,consignacion_salida,2,GD-1701,Cliente 11
-2025-07-24,CN-0318,consignacion_salida,1,GD-1706,Cliente 12
-2025-07-25,CN-0231,venta,1,F-1302,Cliente 04
-2025-07-25,CN-0319,venta,2,F-1754,Cliente 01
-2025-07-26,CN-0319,consignacion_salida,3,GD-1762,Cliente 04
-2025-07-27,CN-0111,venta,1,F-1121,Cliente 18
-2025-07-27,CN-0111,consignacion_salida,3,GD-1122,Cliente 07
-2025-07-27,CN-0317,consignacion_salida,2,GD-1614,Cliente 03
-2025-07-27,CN-0321,venta,1,F-1896,Cliente 02
-2025-07-27,CN-0450,consignacion_salida,1,GD-2009,Cliente 01
-2025-07-28,CN-0319,consignacion_salida,1,GD-1759,Cliente 02
-2025-07-28,CN-0320,venta,1,F-1844,Cliente 03
-2025-07-28,CN-0492,venta,1,F-2074,Cliente 01
-2025-07-30,CN-0299,consignacion_devolucion,2,GD-1433,Cliente 07
-2025-07-30,CN-0299,consignacion_liquidada,1,F-1438,Cliente 05
-2025-07-30,CN-0470,consignacion_liquidada,1,F-2041,Cliente 02
-2025-08-01,CN-0111,venta,2,F-1127,Cliente 02
-2025-08-02,CN-0249,venta,1,F-1343,Cliente 03
-2025-08-02,CN-0299,consignacion_devolucion,3,GD-1463,Cliente 01
-2025-08-03,CN-0468,venta,1,F-2030,Cliente 05
-2025-08-04,CN-0317,venta,1,F-1622,Cliente 01
-2025-08-04,CN-0317,venta,2,F-1625,Cliente 05
-2025-08-05,CN-0228,consignacion_salida,2,GD-1262,Cliente 01
-2025-08-05,CN-0318,venta,1,F-1711,Cliente 02
-2025-08-06,CN-0270,venta,2,F-1387,Cliente 04
+2025-04-21,CN-0045,venta,1,F-1087,Cliente 05
+2025-04-22,CN-0524,venta,1,F-2143,Cliente 01
+2025-04-22,CN-0694,consignacion_salida,1,GD-2490,Cliente 04
+2025-04-23,CN-0121,consignacion_devolucion,2,GD-1253,Cliente 08
+2025-04-23,CN-0232,venta,4,F-1399,Cliente 01
+2025-04-23,CN-0319,consignacion_salida,3,GD-1783,Cliente 02
+2025-04-23,CN-0320,venta,3,F-1833,Cliente 01
+2025-04-24,CN-0230,consignacion_salida,2,GD-1361,Cliente 03
+2025-04-24,CN-0270,consignacion_salida,1,GD-1488,Cliente 01
+2025-04-24,CN-0468,venta,1,F-2130,Cliente 01
+2025-04-24,CN-0530,consignacion_salida,1,GD-2169,Cliente 03
+2025-04-25,CN-0317,venta,1,F-1665,Cliente 06
+2025-04-25,CN-0318,consignacion_liquidada,3,F-1691,Cliente 01
+2025-04-25,CN-0319,venta,3,F-1785,Cliente 16
+2025-04-25,CN-0370,venta,3,F-2016,Cliente 10
+2025-04-26,CN-0228,venta,1,F-1344,Cliente 01
+2025-04-26,CN-0715,venta,1,F-2649,Cliente 02
+2025-04-27,CN-0319,venta,2,F-1774,Cliente 07
+2025-04-27,CN-0385,venta,2,F-2062,Cliente 04
+2025-04-28,CN-0270,consignacion_salida,2,GD-1486,Cliente 01
+2025-05-01,CN-0319,consignacion_salida,3,GD-1794,Cliente 02
+2025-05-02,CN-0232,consignacion_salida,3,GD-1400,Cliente 05
+2025-05-02,CN-0321,venta,1,F-1917,Cliente 02
+2025-05-03,CN-0320,venta,3,F-1840,Cliente 01
+2025-05-03,CN-0694,venta,3,F-2492,Cliente 02
+2025-05-04,CN-0321,venta,1,F-1918,Cliente 05
+2025-05-04,CN-0370,consignacion_salida,2,GD-2017,Cliente 01
+2025-05-05,CN-0228,consignacion_salida,1,GD-1345,Cliente 01
+2025-05-06,CN-0270,venta,1,F-1491,Cliente 01
+2025-05-06,CN-0530,consignacion_liquidada,3,F-2162,Cliente 01
+2025-05-06,CN-0700,consignacion_salida,2,GD-2559,Cliente 15
+2025-05-07,CN-0319,venta,2,F-1793,Cliente 03
+2025-05-07,CN-0321,venta,3,F-1910,Cliente 02
+2025-05-08,CN-0321,venta,3,F-1911,Cliente 04
+2025-05-09,CN-0270,consignacion_liquidada,1,F-1479,Cliente 13
+2025-05-09,CN-0317,venta,3,F-1670,Cliente 05
+2025-05-10,CN-0128,venta,1,F-1279,Cliente 05
+2025-05-10,CN-0319,venta,1,F-1796,Cliente 18
+2025-05-10,CN-0675,venta,1,F-2451,Cliente 02
+2025-05-11,CN-0710,venta,1,F-2615,Cliente 05
+2025-05-13,CN-0320,venta,2,F-1835,Cliente 01
+2025-05-13,CN-0429,venta,1,F-2115,Cliente 02
+2025-05-14,CN-0321,venta,1,F-1913,Cliente 05
+2025-05-14,CN-0321,consignacion_salida,4,GD-1914,Cliente 16
+2025-05-15,CN-0318,venta,3,F-1721,Cliente 06
+2025-05-15,CN-0321,venta,2,F-1912,Cliente 01
+2025-05-16,CN-0227,venta,1,F-1334,Cliente 06
+2025-05-16,CN-0321,venta,3,F-1916,Cliente 01
+2025-05-16,CN-0690,consignacion_salida,1,GD-2469,Cliente 01
+2025-05-17,CN-0034,venta,1,F-1061,Cliente 08
+2025-05-17,CN-0700,venta,1,F-2558,Cliente 01
+2025-05-18,CN-0270,venta,3,F-1492,Cliente 06
+2025-05-18,CN-0317,venta,3,F-1669,Cliente 07
+2025-05-19,CN-0052,venta,1,F-1108,Cliente 04
+2025-05-19,CN-0415,venta,3,F-2097,Cliente 09
+2025-05-19,CN-0530,venta,3,F-2170,Cliente 01
+2025-05-19,CN-0702,consignacion_liquidada,1,F-2598,Cliente 11
+2025-05-20,CN-0318,venta,2,F-1722,Cliente 10
+2025-05-20,CN-0319,venta,2,F-1789,Cliente 01
+2025-05-20,CN-0320,venta,1,F-1837,Cliente 01
+2025-05-20,CN-0700,consignacion_liquidada,3,F-2553,Cliente 03
+2025-05-21,CN-0317,consignacion_salida,2,GD-1672,Cliente 01
+2025-05-21,CN-0318,consignacion_salida,3,GD-1718,Cliente 16
+2025-05-21,CN-0318,venta,2,F-1720,Cliente 04
+2025-05-21,CN-0319,venta,3,F-1788,Cliente 02
+2025-05-21,CN-0682,venta,1,F-2457,Cliente 07
+2025-05-22,CN-0034,consignacion_salida,1,GD-1060,Cliente 03
+2025-05-22,CN-0118,venta,1,F-1224,Cliente 01
+2025-05-22,CN-0530,consignacion_salida,2,GD-2171,Cliente 01
+2025-05-23,CN-0320,venta,4,F-1836,Cliente 01
+2025-05-24,CN-0654,venta,1,F-2412,Cliente 01
+2025-05-25,CN-0317,venta,2,F-1671,Cliente 01
+2025-05-25,CN-0319,venta,2,F-1790,Cliente 01
+2025-05-26,CN-0270,venta,2,F-1493,Cliente 11
+2025-05-26,CN-0715,consignacion_salida,4,GD-2650,Cliente 07
+2025-05-26,CN-0721,consignacion_salida,1,GD-2692,Cliente 03
+2025-05-27,CN-0319,consignacion_salida,1,GD-1791,Cliente 19
+2025-05-27,CN-0648,consignacion_liquidada,2,F-2356,Cliente 04
+2025-05-28,CN-0230,consignacion_salida,2,GD-1363,Cliente 05
+2025-05-28,CN-0320,consignacion_salida,1,GD-1838,Cliente 16
+2025-05-31,CN-0320,consignacion_liquidada,1,F-1822,Cliente 06
+2025-06-01,CN-0118,venta,2,F-1226,Cliente 01
+2025-06-01,CN-0228,consignacion_salida,1,GD-1347,Cliente 03
+2025-06-01,CN-0530,consignacion_salida,1,GD-2175,Cliente 10
+2025-06-02,CN-0715,consignacion_salida,2,GD-2654,Cliente 06
+2025-06-03,CN-0052,consignacion_devolucion,1,GD-1091,Cliente 11
+2025-06-03,CN-0232,consignacion_salida,1,GD-1402,Cliente 01
+2025-06-03,CN-0317,consignacion_liquidada,1,F-1644,Cliente 03
+2025-06-03,CN-0320,venta,6,F-1841,Cliente 06
+2025-06-05,CN-0118,venta,1,F-1227,Cliente 01
+2025-06-05,CN-0270,venta,2,F-1494,Cliente 12
+2025-06-06,CN-0118,venta,1,F-1225,Cliente 05
+2025-06-06,CN-0227,consignacion_salida,1,GD-1335,Cliente 01
+2025-06-06,CN-0370,consignacion_salida,2,GD-2018,Cliente 04
+2025-06-06,CN-0482,consignacion_salida,1,GD-2135,Cliente 05
+2025-06-06,CN-0672,consignacion_devolucion,1,GD-2436,Cliente 01
+2025-06-07,CN-0694,venta,2,F-2494,Cliente 01
+2025-06-09,CN-0034,venta,1,F-1062,Cliente 03
+2025-06-09,CN-0291,venta,2,F-1556,Cliente 05
+2025-06-09,CN-0317,venta,1,F-1675,Cliente 03
+2025-06-09,CN-0321,venta,3,F-1921,Cliente 03
+2025-06-10,CN-0052,venta,2,F-1109,Cliente 01
+2025-06-10,CN-0094,venta,1,F-1181,Cliente 01
+2025-06-11,CN-0318,venta,2,F-1725,Cliente 04
+2025-06-12,CN-0270,venta,1,F-1495,Cliente 02
+2025-06-12,CN-0702,consignacion_salida,1,GD-2601,Cliente 04
+2025-06-14,CN-0530,consignacion_salida,1,GD-2173,Cliente 01
+2025-06-15,CN-0052,venta,1,F-1110,Cliente 03
+2025-06-15,CN-0318,venta,1,F-1723,Cliente 18
+2025-06-16,CN-0320,venta,1,F-1842,Cliente 01
+2025-06-16,CN-0715,consignacion_salida,1,GD-2652,Cliente 01
+2025-06-17,CN-0119,venta,1,F-1238,Cliente 07
+2025-06-18,CN-0020,consignacion_salida,1,GD-1045,Cliente 02
+2025-06-18,CN-0415,venta,1,F-2098,Cliente 10
+2025-06-18,CN-0700,consignacion_salida,2,GD-2560,Cliente 09
+2025-06-19,CN-0317,consignacion_salida,4,GD-1674,Cliente 02
+2025-06-19,CN-0694,venta,4,F-2493,Cliente 05
+2025-06-20,CN-0340,venta,1,F-1988,Cliente 03
+2025-06-21,CN-0052,venta,2,F-1111,Cliente 05
+2025-06-21,CN-0321,venta,2,F-1922,Cliente 01
+2025-06-21,CN-0648,consignacion_liquidada,3,F-2349,Cliente 20
+2025-06-22,CN-0700,venta,1,F-2561,Cliente 22
+2025-06-24,CN-0121,consignacion_salida,1,GD-1261,Cliente 01
+2025-06-24,CN-0321,venta,2,F-1923,Cliente 01
+2025-06-25,CN-0318,venta,2,F-1724,Cliente 08
+2025-06-26,CN-0113,consignacion_salida,3,GD-1204,Cliente 01
+2025-06-26,CN-0321,consignacion_salida,1,GD-1924,Cliente 01
+2025-06-26,CN-0690,venta,3,F-2471,Cliente 01
+2025-06-27,CN-0321,consignacion_salida,4,GD-1919,Cliente 04
+2025-06-28,CN-0239,venta,1,F-1449,Cliente 01
+2025-06-28,CN-0317,consignacion_salida,1,GD-1676,Cliente 02
+2025-06-28,CN-0597,consignacion_salida,2,GD-2317,Cliente 01
+2025-07-01,CN-0030,consignacion_salida,1,GD-1050,Cliente 04
+2025-07-01,CN-0034,venta,2,F-1064,Cliente 11
+2025-07-01,CN-0094,venta,1,F-1182,Cliente 02
+2025-07-01,CN-0320,venta,3,F-1855,Cliente 11
+2025-07-02,CN-0230,consignacion_salida,1,GD-1366,Cliente 07
+2025-07-02,CN-0290,venta,2,F-1544,Cliente 04
+2025-07-02,CN-0321,consignacion_salida,2,GD-1933,Cliente 04
+2025-07-02,CN-0700,consignacion_salida,5,GD-2563,Cliente 03
+2025-07-03,CN-0052,consignacion_salida,2,GD-1118,Cliente 03
+2025-07-03,CN-0672,venta,1,F-2439,Cliente 03
+2025-07-04,CN-0034,consignacion_devolucion,1,GD-1055,Cliente 22
+2025-07-04,CN-0121,importacion,5,IMP-1263,
+2025-07-04,CN-0232,importacion,12,IMP-1404,
+2025-07-04,CN-0232,venta,2,F-1405,Cliente 01
+2025-07-04,CN-0321,importacion,36,IMP-1925,
+2025-07-04,CN-0321,venta,2,F-1928,Cliente 01
+2025-07-04,CN-0321,consignacion_salida,2,GD-1936,Cliente 14
+2025-07-04,CN-0429,consignacion_salida,2,GD-2116,Cliente 21
+2025-07-04,CN-0690,importacion,4,IMP-2472,
+2025-07-04,CN-0715,consignacion_salida,2,GD-2657,Cliente 08
+2025-07-05,CN-0052,consignacion_salida,3,GD-1115,Cliente 01
+2025-07-05,CN-0113,importacion,4,IMP-1205,
+2025-07-05,CN-0317,consignacion_devolucion,3,GD-1635,Cliente 02
+2025-07-05,CN-0320,consignacion_salida,3,GD-1858,Cliente 03
+2025-07-06,CN-0052,importacion,12,IMP-1112,
+2025-07-06,CN-0319,venta,3,F-1798,Cliente 03
+2025-07-06,CN-0319,venta,3,F-1801,Cliente 20
+2025-07-06,CN-0320,importacion,40,IMP-1843,
+2025-07-06,CN-0320,consignacion_salida,1,GD-1847,Cliente 01
+2025-07-06,CN-0321,venta,1,F-1929,Cliente 01
+2025-07-06,CN-0530,importacion,9,IMP-2177,
+2025-07-07,CN-0034,importacion,5,IMP-1063,
+2025-07-07,CN-0319,consignacion_salida,1,GD-1799,Cliente 19
+2025-07-07,CN-0682,importacion,4,IMP-2458,
+2025-07-07,CN-0700,importacion,9,IMP-2562,
+2025-07-07,CN-0715,importacion,11,IMP-2656,
+2025-07-08,CN-0121,consignacion_devolucion,1,GD-1259,Cliente 08
+2025-07-08,CN-0321,venta,1,F-1940,Cliente 01
+2025-07-08,CN-0402,venta,2,F-2083,Cliente 19
+2025-07-09,CN-0118,importacion,5,IMP-1228,
+2025-07-09,CN-0206,consignacion_salida,1,GD-1319,Cliente 06
+2025-07-09,CN-0239,importacion,4,IMP-1450,
+2025-07-09,CN-0270,importacion,12,IMP-1496,
+2025-07-09,CN-0290,importacion,5,IMP-1543,
+2025-07-09,CN-0320,venta,3,F-1850,Cliente 22
+2025-07-09,CN-0655,importacion,5,IMP-2422,
+2025-07-09,CN-0694,venta,2,F-2500,Cliente 01
+2025-07-10,CN-0317,importacion,32,IMP-1678,
+2025-07-10,CN-0320,venta,3,F-1849,Cliente 11
+2025-07-10,CN-0322,consignacion_salida,1,GD-1971,Cliente 17
+2025-07-10,CN-0415,importacion,4,IMP-2099,
+2025-07-10,CN-0648,consignacion_liquidada,5,F-2368,Cliente 02
+2025-07-10,CN-0694,importacion,9,IMP-2495,
+2025-07-11,CN-0239,consignacion_liquidada,1,F-1443,Cliente 02
+2025-07-11,CN-0291,importacion,5,IMP-1557,
+2025-07-11,CN-0317,venta,2,F-1679,Cliente 03
+2025-07-11,CN-0318,venta,1,F-1730,Cliente 01
+2025-07-11,CN-0319,importacion,40,IMP-1797,
+2025-07-11,CN-0320,venta,1,F-1853,Cliente 01
+2025-07-11,CN-0370,importacion,9,IMP-2020,
+2025-07-12,CN-0052,venta,1,F-1117,Cliente 08
+2025-07-12,CN-0230,importacion,5,IMP-1365,
+2025-07-12,CN-0318,importacion,27,IMP-1726,
+2025-07-12,CN-0319,venta,3,F-1802,Cliente 18
+2025-07-12,CN-0320,venta,1,F-1852,Cliente 01
+2025-07-12,CN-0321,consignacion_salida,4,GD-1930,Cliente 01
+2025-07-12,CN-0530,consignacion_salida,2,GD-2178,Cliente 01
+2025-07-13,CN-0034,venta,1,F-1065,Cliente 03
+2025-07-13,CN-0318,venta,2,F-1728,Cliente 03
+2025-07-13,CN-0318,venta,2,F-1729,Cliente 01
+2025-07-13,CN-0672,venta,1,F-2438,Cliente 07
+2025-07-13,CN-0700,consignacion_salida,1,GD-2564,Cliente 11
+2025-07-14,CN-0189,consignacion_devolucion,1,GD-1306,Cliente 06
+2025-07-14,CN-0320,venta,3,F-1856,Cliente 05
+2025-07-14,CN-0321,consignacion_salida,1,GD-1926,Cliente 02
+2025-07-15,CN-0320,venta,1,F-1844,Cliente 15
+2025-07-15,CN-0321,venta,1,F-1932,Cliente 01
+2025-07-15,CN-0322,venta,2,F-1972,Cliente 07
+2025-07-15,CN-0694,consignacion_salida,2,GD-2498,Cliente 01
+2025-07-16,CN-0227,consignacion_devolucion,1,GD-1329,Cliente 06
+2025-07-16,CN-0530,venta,3,F-2180,Cliente 01
+2025-07-17,CN-0320,consignacion_salida,3,GD-1851,Cliente 06
+2025-07-17,CN-0320,venta,4,F-1854,Cliente 01
+2025-07-17,CN-0320,venta,3,F-1857,Cliente 03
+2025-07-18,CN-0320,consignacion_salida,2,GD-1845,Cliente 01
+2025-07-18,CN-0320,venta,1,F-1860,Cliente 14
+2025-07-18,CN-0321,venta,2,F-1939,Cliente 03
+2025-07-19,CN-0321,consignacion_salida,2,GD-1935,Cliente 02
+2025-07-19,CN-0597,consignacion_liquidada,2,F-2315,Cliente 01
+2025-07-20,CN-0052,consignacion_salida,1,GD-1113,Cliente 01
+2025-07-20,CN-0052,consignacion_salida,1,GD-1120,Cliente 02
+2025-07-20,CN-0317,consignacion_devolucion,1,GD-1659,Cliente 04
+2025-07-21,CN-0128,consignacion_salida,3,GD-1280,Cliente 11
+2025-07-21,CN-0321,consignacion_salida,3,GD-1937,Cliente 11
+2025-07-23,CN-0270,consignacion_salida,1,GD-1497,Cliente 02
+2025-07-23,CN-0318,venta,4,F-1727,Cliente 17
+2025-07-23,CN-0319,venta,1,F-1803,Cliente 09
+2025-07-23,CN-0666,consignacion_salida,1,GD-2431,Cliente 20
+2025-07-24,CN-0321,consignacion_liquidada,2,F-1898,Cliente 01
+2025-07-24,CN-0710,venta,2,F-2616,Cliente 13
+2025-07-27,CN-0370,consignacion_salida,4,GD-2021,Cliente 01
+2025-07-28,CN-0318,consignacion_devolucion,3,GD-1719,Cliente 16
+2025-07-28,CN-0592,consignacion_liquidada,3,F-2261,Cliente 01
+2025-07-28,CN-0694,consignacion_salida,1,GD-2496,Cliente 05
+2025-08-01,CN-0291,consignacion_devolucion,1,GD-1555,Cliente 05
+2025-08-02,CN-0232,venta,2,F-1409,Cliente 14
+2025-08-04,CN-0320,consignacion_salida,2,GD-1861,Cliente 01
+2025-08-04,CN-0320,venta,1,F-1862,Cliente 07
+2025-08-04,CN-0321,venta,3,F-1947,Cliente 06
+2025-08-04,CN-0530,venta,2,F-2181,Cliente 20
+2025-08-05,CN-0322,venta,2,F-1973,Cliente 05
+2025-08-06,CN-0052,venta,2,F-1121,Cliente 02
+2025-08-06,CN-0359,consignacion_salida,1,GD-1992,Cliente 18
+2025-08-06,CN-0694,consignacion_salida,2,GD-2501,Cliente 01
 2025-08-08,CN-0005,venta,2,F-1018,Cliente 01
-2025-08-09,CN-0318,venta,2,F-1710,Cliente 02
-2025-08-09,CN-0320,venta,1,F-1847,Cliente 16
-2025-08-09,CN-0565,venta,3,F-2110,Cliente 04
-2025-08-10,CN-0592,consignacion_liquidada,1,F-2183,Cliente 02
-2025-08-11,CN-0304,venta,3,F-1535,Cliente 01
-2025-08-12,CN-0274,venta,1,F-1420,Cliente 04
-2025-08-12,CN-0319,venta,2,F-1763,Cliente 03
-2025-08-12,CN-0319,venta,5,F-1767,Cliente 16
-2025-08-14,CN-0365,venta,1,F-1941,Cliente 05
-2025-08-15,CN-0012,venta,1,F-1034,Cliente 17
-2025-08-16,CN-0319,consignacion_salida,1,GD-1769,Cliente 05
-2025-08-16,CN-0666,consignacion_liquidada,1,F-2351,Cliente 01
-2025-08-17,CN-0304,venta,2,F-1534,Cliente 10
-2025-08-18,CN-0317,consignacion_salida,1,GD-1623,Cliente 05
-2025-08-18,CN-0322,venta,1,F-1906,Cliente 01
-2025-08-19,CN-0257,consignacion_salida,1,GD-1354,Cliente 02
-2025-08-19,CN-0317,consignacion_salida,4,GD-1624,Cliente 05
-2025-08-20,CN-0111,consignacion_salida,1,GD-1126,Cliente 19
-2025-08-20,CN-0318,consignacion_salida,1,GD-1708,Cliente 02
-2025-08-21,CN-0209,venta,1,F-1237,Cliente 17
-2025-08-21,CN-0231,venta,1,F-1303,Cliente 01
-2025-08-21,CN-0317,venta,2,F-1621,Cliente 03
-2025-08-21,CN-0320,consignacion_salida,3,GD-1845,Cliente 21
-2025-08-21,CN-0321,consignacion_salida,2,GD-1897,Cliente 01
-2025-08-22,CN-0270,consignacion_liquidada,1,F-1378,Cliente 02
-2025-08-22,CN-0270,venta,1,F-1388,Cliente 02
-2025-08-22,CN-0319,venta,1,F-1771,Cliente 07
-2025-08-23,CN-0318,venta,3,F-1709,Cliente 06
-2025-08-23,CN-0319,consignacion_devolucion,1,GD-1730,Cliente 02
-2025-08-23,CN-0492,venta,1,F-2075,Cliente 01
-2025-08-25,CN-0304,consignacion_salida,1,GD-1536,Cliente 13
-2025-08-25,CN-0317,consignacion_salida,2,GD-1619,Cliente 01
-2025-08-25,CN-0319,venta,1,F-1766,Cliente 01
-2025-08-25,CN-0710,consignacion_salida,1,GD-2395,Cliente 20
-2025-08-26,CN-0317,venta,3,F-1617,Cliente 07
-2025-08-26,CN-0319,venta,1,F-1768,Cliente 17
-2025-08-26,CN-0321,consignacion_liquidada,2,F-1889,Cliente 02
-2025-08-27,CN-0239,consignacion_salida,2,GD-1319,Cliente 01
-2025-08-27,CN-0317,venta,3,F-1618,Cliente 10
-2025-08-28,CN-0228,consignacion_salida,3,GD-1261,Cliente 10
-2025-08-28,CN-0319,consignacion_salida,5,GD-1764,Cliente 04
-2025-08-28,CN-0470,venta,3,F-2046,Cliente 07
-2025-08-31,CN-0304,consignacion_liquidada,3,F-1522,Cliente 01
-2025-09-01,CN-0226,consignacion_liquidada,1,F-1240,Cliente 06
-2025-09-01,CN-0320,venta,2,F-1848,Cliente 02
-2025-09-03,CN-0029,venta,1,F-1052,Cliente 01
-2025-09-03,CN-0318,consignacion_salida,3,GD-1712,Cliente 13
-2025-09-03,CN-0318,consignacion_salida,2,GD-1714,Cliente 07
-2025-09-03,CN-0319,venta,2,F-1772,Cliente 22
-2025-09-08,CN-0270,consignacion_salida,2,GD-1389,Cliente 06
-2025-09-09,CN-0257,consignacion_salida,1,GD-1356,Cliente 02
-2025-09-10,CN-0304,venta,3,F-1538,Cliente 01
-2025-09-10,CN-0385,consignacion_devolucion,2,GD-1950,Cliente 01
-2025-09-11,CN-0576,consignacion_salida,1,GD-2153,Cliente 03
-2025-09-12,CN-0111,venta,1,F-1128,Cliente 01
-2025-09-13,CN-0304,consignacion_salida,1,GD-1539,Cliente 03
-2025-09-13,CN-0319,venta,2,F-1773,Cliente 08
-2025-09-13,CN-0322,consignacion_salida,1,GD-1907,Cliente 04
-2025-09-13,CN-0576,venta,1,F-2152,Cliente 06
-2025-09-14,CN-0299,consignacion_liquidada,3,F-1435,Cliente 22
-2025-09-14,CN-0592,consignacion_liquidada,2,F-2196,Cliente 01
-2025-09-15,CN-0318,consignacion_liquidada,4,F-1705,Cliente 01
-2025-09-18,CN-0185,consignacion_salida,1,GD-1213,Cliente 01
-2025-09-19,CN-0721,venta,1,F-2415,Cliente 01
-2025-09-20,CN-0228,consignacion_salida,2,GD-1263,Cliente 08
-2025-09-21,CN-0318,consignacion_devolucion,2,GD-1695,Cliente 01
-2025-09-21,CN-0566,venta,2,F-2121,Cliente 01
-2025-09-22,CN-0710,consignacion_salida,1,GD-2397,Cliente 08
-2025-09-24,CN-0187,consignacion_salida,2,GD-1224,Cliente 03
-2025-09-26,CN-0239,venta,1,F-1321,Cliente 11
-2025-09-28,CN-0450,consignacion_salida,1,GD-2011,Cliente 10
-2025-09-28,CN-0592,consignacion_liquidada,3,F-2186,Cliente 01
-2025-09-29,CN-0185,consignacion_liquidada,1,F-1211,Cliente 01
-2025-09-30,CN-0318,consignacion_liquidada,1,F-1707,Cliente 12
-2025-10-01,CN-0320,consignacion_devolucion,1,GD-1821,Cliente 02
-2025-10-02,CN-0317,consignacion_devolucion,1,GD-1577,Cliente 06
-2025-10-02,CN-0704,venta,1,F-2387,Cliente 01
-2025-10-04,CN-0228,importacion,9,IMP-1264,
-2025-10-04,CN-0304,importacion,12,IMP-1541,
-2025-10-04,CN-0318,venta,1,F-1719,Cliente 02
-2025-10-04,CN-0321,importacion,23,IMP-1898,
-2025-10-04,CN-0710,importacion,5,IMP-2398,
-2025-10-05,CN-0231,importacion,5,IMP-1304,
-2025-10-05,CN-0270,importacion,7,IMP-1390,
-2025-10-05,CN-0270,venta,1,F-1391,Cliente 01
-2025-10-05,CN-0319,importacion,40,IMP-1774,
-2025-10-05,CN-0319,venta,2,F-1779,Cliente 01
-2025-10-05,CN-0319,venta,3,F-1780,Cliente 06
-2025-10-06,CN-0299,importacion,70,IMP-1472,
-2025-10-06,CN-0319,venta,1,F-1778,Cliente 01
-2025-10-06,CN-0592,importacion,70,IMP-2206,
-2025-10-06,CN-0648,importacion,70,IMP-2310,
-2025-10-07,CN-0304,venta,4,F-1542,Cliente 01
-2025-10-07,CN-0318,importacion,26,IMP-1716,
-2025-10-07,CN-0576,importacion,4,IMP-2154,
-2025-10-07,CN-0614,venta,1,F-2254,Cliente 01
-2025-10-08,CN-0304,venta,2,F-1543,Cliente 13
-2025-10-08,CN-0429,consignacion_salida,1,GD-1993,Cliente 03
-2025-10-08,CN-0470,importacion,4,IMP-2047,
-2025-10-08,CN-0721,venta,2,F-2417,Cliente 08
-2025-10-09,CN-0111,importacion,12,IMP-1129,
-2025-10-09,CN-0185,importacion,4,IMP-1214,
-2025-10-09,CN-0257,importacion,4,IMP-1358,
-2025-10-09,CN-0318,consignacion_liquidada,3,F-1677,Cliente 02
-2025-10-10,CN-0111,consignacion_liquidada,3,F-1096,Cliente 01
-2025-10-10,CN-0228,consignacion_salida,2,GD-1266,Cliente 01
-2025-10-10,CN-0408,venta,1,F-1981,Cliente 01
-2025-10-11,CN-0566,importacion,5,IMP-2122,
-2025-10-11,CN-0574,consignacion_salida,1,GD-2137,Cliente 19
-2025-10-12,CN-0317,importacion,40,IMP-1626,
-2025-10-12,CN-0492,venta,1,F-2076,Cliente 02
-2025-10-12,CN-0721,importacion,4,IMP-2416,
-2025-10-13,CN-0317,venta,6,F-1627,Cliente 02
-2025-10-13,CN-0318,consignacion_salida,2,GD-1717,Cliente 06
-2025-10-13,CN-0319,consignacion_salida,2,GD-1776,Cliente 02
-2025-10-13,CN-0319,venta,2,F-1781,Cliente 01
-2025-10-14,CN-0111,consignacion_salida,4,GD-1130,Cliente 01
-2025-10-14,CN-0320,venta,1,F-1849,Cliente 06
-2025-10-16,CN-0231,venta,2,F-1305,Cliente 02
-2025-10-17,CN-0317,venta,1,F-1628,Cliente 01
-2025-10-17,CN-0319,consignacion_devolucion,3,GD-1742,Cliente 04
-2025-10-18,CN-0274,consignacion_devolucion,1,GD-1418,Cliente 01
-2025-10-18,CN-0492,venta,1,F-2077,Cliente 01
-2025-10-19,CN-0111,consignacion_salida,1,GD-1132,Cliente 06
-2025-10-20,CN-0270,consignacion_liquidada,1,F-1382,Cliente 07
-2025-10-20,CN-0317,consignacion_salida,1,GD-1630,Cliente 01
-2025-10-20,CN-0434,venta,1,F-2005,Cliente 06
-2025-10-20,CN-0450,consignacion_salida,1,GD-2013,Cliente 02
-2025-10-22,CN-0648,consignacion_liquidada,3,F-2284,Cliente 04
-2025-10-23,CN-0319,consignacion_salida,2,GD-1775,Cliente 03
-2025-10-24,CN-0228,consignacion_salida,1,GD-1265,Cliente 07
-2025-10-24,CN-0317,venta,2,F-1629,Cliente 03
-2025-10-25,CN-0149,consignacion_salida,2,GD-1174,Cliente 09
-2025-10-25,CN-0321,venta,1,F-1899,Cliente 03
-2025-10-27,CN-0321,consignacion_salida,1,GD-1900,Cliente 03
-2025-10-27,CN-0468,venta,1,F-2031,Cliente 05
-2025-10-28,CN-0614,venta,1,F-2253,Cliente 02
-2025-10-31,CN-0317,consignacion_liquidada,2,F-1620,Cliente 01
-2025-11-01,CN-0592,consignacion_salida,1,GD-2221,Cliente 19
-2025-11-02,CN-0319,venta,2,F-1784,Cliente 04
-2025-11-03,CN-0299,venta,2,F-1478,Cliente 04
-2025-11-03,CN-0319,consignacion_salida,2,GD-1782,Cliente 11
-2025-11-04,CN-0111,venta,3,F-1135,Cliente 08
-2025-11-05,CN-0029,venta,1,F-1053,Cliente 02
-2025-11-05,CN-0592,consignacion_salida,1,GD-2214,Cliente 02
-2025-11-06,CN-0592,venta,2,F-2207,Cliente 06
-2025-11-07,CN-0111,venta,1,F-1133,Cliente 11
-2025-11-07,CN-0304,venta,4,F-1544,Cliente 01
-2025-11-07,CN-0397,venta,1,F-1962,Cliente 01
-2025-11-08,CN-0299,consignacion_salida,2,GD-1474,Cliente 14
-2025-11-08,CN-0299,venta,2,F-1476,Cliente 01
-2025-11-08,CN-0721,venta,1,F-2418,Cliente 01
-2025-11-09,CN-0299,venta,2,F-1477,Cliente 04
-2025-11-09,CN-0721,consignacion_liquidada,3,F-2409,Cliente 02
-2025-11-10,CN-0270,venta,1,F-1393,Cliente 08
-2025-11-10,CN-0321,consignacion_liquidada,2,F-1877,Cliente 01
-2025-11-10,CN-0565,consignacion_salida,2,GD-2111,Cliente 02
-2025-11-10,CN-0592,consignacion_salida,1,GD-2223,Cliente 01
-2025-11-10,CN-0648,venta,4,F-2311,Cliente 01
-2025-11-11,CN-0299,consignacion_salida,3,GD-1475,Cliente 03
-2025-11-11,CN-0317,consignacion_salida,3,GD-1633,Cliente 10
-2025-11-11,CN-0592,consignacion_liquidada,2,F-2171,Cliente 21
-2025-11-12,CN-0239,venta,1,F-1322,Cliente 02
-2025-11-12,CN-0402,venta,2,F-1972,Cliente 01
-2025-11-12,CN-0592,consignacion_salida,3,GD-2211,Cliente 01
-2025-11-13,CN-0299,consignacion_salida,4,GD-1480,Cliente 15
-2025-11-13,CN-0299,venta,3,F-1481,Cliente 04
-2025-11-13,CN-0318,venta,2,F-1722,Cliente 09
-2025-11-13,CN-0592,consignacion_salida,2,GD-2209,Cliente 01
-2025-11-14,CN-0317,venta,2,F-1632,Cliente 01
-2025-11-14,CN-0592,consignacion_devolucion,1,GD-2173,Cliente 01
-2025-11-14,CN-0592,consignacion_salida,3,GD-2219,Cliente 02
-2025-11-14,CN-0648,venta,7,F-2314,Cliente 01
-2025-11-15,CN-0318,consignacion_salida,1,GD-1720,Cliente 11
-2025-11-15,CN-0648,venta,4,F-2315,Cliente 01
-2025-11-16,CN-0111,venta,3,F-1136,Cliente 16
-2025-11-16,CN-0228,venta,1,F-1270,Cliente 03
-2025-11-16,CN-0228,venta,1,F-1271,Cliente 04
-2025-11-16,CN-0592,consignacion_salida,4,GD-2218,Cliente 12
-2025-11-16,CN-0648,venta,5,F-2312,Cliente 01
-2025-11-17,CN-0270,consignacion_salida,1,GD-1395,Cliente 02
-2025-11-17,CN-0592,venta,4,F-2215,Cliente 03
-2025-11-18,CN-0592,consignacion_salida,1,GD-2213,Cliente 12
-2025-11-18,CN-0592,consignacion_salida,2,GD-2217,Cliente 02
-2025-11-19,CN-0111,venta,1,F-1134,Cliente 01
-2025-11-20,CN-0319,venta,1,F-1787,Cliente 01
-2025-11-20,CN-0321,consignacion_liquidada,2,F-1873,Cliente 06
-2025-11-20,CN-0323,venta,1,F-1922,Cliente 01
-2025-11-20,CN-0614,venta,1,F-2255,Cliente 22
-2025-11-21,CN-0111,venta,1,F-1137,Cliente 14
-2025-11-22,CN-0270,venta,1,F-1394,Cliente 03
-2025-11-22,CN-0592,venta,4,F-2210,Cliente 09
-2025-11-23,CN-0270,consignacion_salida,1,GD-1392,Cliente 01
-2025-11-23,CN-0299,venta,1,F-1479,Cliente 03
-2025-11-23,CN-0319,consignacion_salida,1,GD-1785,Cliente 16
-2025-11-24,CN-0317,venta,2,F-1634,Cliente 03
-2025-11-24,CN-0319,venta,1,F-1783,Cliente 06
-2025-11-24,CN-0574,venta,1,F-2139,Cliente 01
-2025-11-25,CN-0592,venta,2,F-2208,Cliente 19
-2025-11-27,CN-0228,consignacion_salida,2,GD-1268,Cliente 08
-2025-11-27,CN-0320,venta,2,F-1850,Cliente 05
-2025-11-27,CN-0321,consignacion_salida,1,GD-1901,Cliente 09
-2025-11-27,CN-0565,consignacion_liquidada,3,F-2107,Cliente 04
-2025-11-27,CN-0648,consignacion_liquidada,2,F-2286,Cliente 08
-2025-11-28,CN-0117,consignacion_salida,1,GD-1162,Cliente 07
-2025-11-28,CN-0299,venta,1,F-1473,Cliente 11
-2025-11-28,CN-0323,consignacion_salida,1,GD-1923,Cliente 16
-2025-11-28,CN-0592,venta,3,F-2216,Cliente 01
-2025-11-28,CN-0634,venta,1,F-2269,Cliente 13
-2025-11-28,CN-0648,consignacion_salida,4,GD-2313,Cliente 01
-2025-11-30,CN-0450,consignacion_liquidada,1,F-2012,Cliente 10
-2025-12-01,CN-0249,consignacion_salida,1,GD-1344,Cliente 01
-2025-12-01,CN-0648,venta,2,F-2325,Cliente 01
-2025-12-02,CN-0228,venta,3,F-1274,Cliente 05
-2025-12-02,CN-0299,consignacion_salida,3,GD-1484,Cliente 02
-2025-12-02,CN-0299,venta,1,F-1485,Cliente 01
-2025-12-03,CN-0299,venta,2,F-1495,Cliente 17
-2025-12-03,CN-0576,consignacion_salida,1,GD-2155,Cliente 14
-2025-12-04,CN-0299,consignacion_devolucion,1,GD-1459,Cliente 05
-2025-12-04,CN-0592,venta,2,F-2233,Cliente 05
-2025-12-05,CN-0299,venta,1,F-1489,Cliente 11
-2025-12-05,CN-0319,consignacion_liquidada,4,F-1737,Cliente 08
-2025-12-06,CN-0270,consignacion_liquidada,2,F-1372,Cliente 03
-2025-12-06,CN-0270,consignacion_salida,2,GD-1397,Cliente 09
-2025-12-06,CN-0429,venta,1,F-1995,Cliente 02
-2025-12-06,CN-0592,venta,2,F-2226,Cliente 01
-2025-12-06,CN-0592,consignacion_salida,2,GD-2229,Cliente 01
-2025-12-07,CN-0299,venta,3,F-1492,Cliente 01
-2025-12-07,CN-0648,consignacion_salida,5,GD-2321,Cliente 02
-2025-12-08,CN-0402,venta,2,F-1973,Cliente 01
-2025-12-08,CN-0592,consignacion_salida,2,GD-2224,Cliente 03
-2025-12-08,CN-0648,consignacion_salida,2,GD-2317,Cliente 02
-2025-12-08,CN-0696,venta,1,F-2369,Cliente 10
-2025-12-09,CN-0185,venta,1,F-1215,Cliente 21
-2025-12-09,CN-0299,consignacion_liquidada,4,F-1446,Cliente 01
-2025-12-09,CN-0299,venta,1,F-1487,Cliente 16
-2025-12-10,CN-0111,venta,2,F-1138,Cliente 06
-2025-12-10,CN-0299,venta,3,F-1488,Cliente 01
-2025-12-10,CN-0319,consignacion_salida,2,GD-1788,Cliente 02
-2025-12-10,CN-0450,consignacion_salida,2,GD-2015,Cliente 12
-2025-12-10,CN-0592,venta,3,F-2232,Cliente 03
-2025-12-10,CN-0592,venta,2,F-2237,Cliente 04
-2025-12-11,CN-0172,venta,2,F-1192,Cliente 03
-2025-12-11,CN-0304,consignacion_salida,2,GD-1545,Cliente 14
-2025-12-11,CN-0429,consignacion_salida,2,GD-1994,Cliente 04
-2025-12-11,CN-0681,venta,1,F-2360,Cliente 01
-2025-12-12,CN-0187,consignacion_salida,1,GD-1226,Cliente 12
-2025-12-12,CN-0592,venta,2,F-2239,Cliente 14
-2025-12-12,CN-0648,consignacion_salida,2,GD-2319,Cliente 05
-2025-12-15,CN-0319,consignacion_salida,3,GD-1789,Cliente 01
-2025-12-15,CN-0592,venta,2,F-2234,Cliente 01
-2025-12-15,CN-0648,consignacion_liquidada,2,F-2280,Cliente 15
+2025-08-08,CN-0597,venta,1,F-2319,Cliente 04
+2025-08-09,CN-0120,consignacion_salida,1,GD-1244,Cliente 01
+2025-08-09,CN-0321,venta,2,F-1946,Cliente 01
+2025-08-09,CN-0385,consignacion_salida,2,GD-2065,Cliente 01
+2025-08-10,CN-0370,venta,4,F-2022,Cliente 01
+2025-08-11,CN-0321,venta,1,F-1944,Cliente 01
+2025-08-12,CN-0319,consignacion_salida,3,GD-1804,Cliente 15
+2025-08-13,CN-0415,venta,1,F-2100,Cliente 01
+2025-08-14,CN-0181,venta,1,F-1295,Cliente 08
+2025-08-14,CN-0700,venta,1,F-2566,Cliente 07
+2025-08-15,CN-0321,venta,2,F-1945,Cliente 02
+2025-08-16,CN-0052,venta,2,F-1122,Cliente 05
+2025-08-16,CN-0270,consignacion_salida,3,GD-1498,Cliente 06
+2025-08-17,CN-0317,venta,1,F-1681,Cliente 03
+2025-08-19,CN-0232,consignacion_salida,1,GD-1408,Cliente 08
+2025-08-20,CN-0232,venta,3,F-1407,Cliente 04
+2025-08-20,CN-0320,venta,5,F-1863,Cliente 06
+2025-08-20,CN-0321,consignacion_salida,1,GD-1941,Cliente 15
+2025-08-21,CN-0319,venta,2,F-1806,Cliente 03
+2025-08-21,CN-0700,venta,2,F-2567,Cliente 13
+2025-08-23,CN-0059,venta,2,F-1152,Cliente 08
+2025-08-23,CN-0290,venta,3,F-1545,Cliente 10
+2025-08-24,CN-0128,venta,1,F-1281,Cliente 05
+2025-08-24,CN-0232,venta,1,F-1406,Cliente 01
+2025-08-25,CN-0317,venta,3,F-1680,Cliente 01
+2025-08-26,CN-0120,consignacion_salida,1,GD-1242,Cliente 14
+2025-08-26,CN-0318,consignacion_salida,3,GD-1731,Cliente 09
+2025-08-26,CN-0321,venta,4,F-1943,Cliente 04
+2025-08-26,CN-0592,consignacion_liquidada,2,F-2237,Cliente 01
+2025-08-26,CN-0715,consignacion_devolucion,1,GD-2637,Cliente 01
+2025-08-27,CN-0319,consignacion_salida,3,GD-1807,Cliente 03
+2025-08-27,CN-0319,consignacion_salida,1,GD-1808,Cliente 09
+2025-08-28,CN-0230,consignacion_salida,3,GD-1367,Cliente 01
+2025-08-30,CN-0482,consignacion_liquidada,1,F-2136,Cliente 05
+2025-09-01,CN-0052,consignacion_salida,1,GD-1123,Cliente 10
+2025-09-01,CN-0319,consignacion_salida,2,GD-1809,Cliente 07
+2025-09-01,CN-0694,venta,2,F-2502,Cliente 01
+2025-09-02,CN-0525,venta,1,F-2145,Cliente 15
+2025-09-03,CN-0530,venta,1,F-2183,Cliente 08
+2025-09-03,CN-0597,venta,2,F-2320,Cliente 05
+2025-09-04,CN-0370,consignacion_salida,2,GD-2023,Cliente 01
+2025-09-05,CN-0370,consignacion_salida,2,GD-2025,Cliente 02
+2025-09-05,CN-0702,consignacion_devolucion,1,GD-2594,Cliente 02
+2025-09-06,CN-0228,consignacion_salida,1,GD-1348,Cliente 03
+2025-09-07,CN-0239,consignacion_salida,1,GD-1451,Cliente 01
+2025-09-07,CN-0530,venta,2,F-2182,Cliente 14
+2025-09-08,CN-0318,venta,2,F-1734,Cliente 08
+2025-09-11,CN-0318,consignacion_salida,1,GD-1732,Cliente 02
+2025-09-12,CN-0321,consignacion_devolucion,1,GD-1927,Cliente 02
+2025-09-12,CN-0321,venta,1,F-1954,Cliente 05
+2025-09-13,CN-0094,venta,1,F-1183,Cliente 01
+2025-09-14,CN-0321,consignacion_liquidada,3,F-1894,Cliente 12
+2025-09-14,CN-0321,consignacion_salida,2,GD-1950,Cliente 04
+2025-09-14,CN-0574,consignacion_salida,2,GD-2211,Cliente 21
+2025-09-14,CN-0694,consignacion_salida,2,GD-2503,Cliente 06
+2025-09-15,CN-0270,consignacion_salida,5,GD-1499,Cliente 04
+2025-09-16,CN-0118,venta,1,F-1229,Cliente 04
+2025-09-16,CN-0319,venta,2,F-1810,Cliente 10
+2025-09-16,CN-0700,venta,1,F-2568,Cliente 01
+2025-09-16,CN-0715,consignacion_liquidada,4,F-2651,Cliente 07
+2025-09-17,CN-0321,consignacion_salida,2,GD-1948,Cliente 02
+2025-09-17,CN-0715,consignacion_salida,1,GD-2659,Cliente 06
+2025-09-18,CN-0232,consignacion_liquidada,3,F-1401,Cliente 05
+2025-09-18,CN-0321,venta,1,F-1952,Cliente 01
+2025-09-20,CN-0074,consignacion_salida,1,GD-1165,Cliente 01
+2025-09-20,CN-0321,venta,1,F-1951,Cliente 01
+2025-09-20,CN-0715,venta,2,F-2658,Cliente 03
+2025-09-21,CN-0321,venta,1,F-1955,Cliente 03
+2025-09-22,CN-0318,venta,1,F-1735,Cliente 18
+2025-09-22,CN-0321,venta,2,F-1953,Cliente 03
+2025-09-23,CN-0232,venta,2,F-1411,Cliente 01
+2025-09-23,CN-0320,consignacion_liquidada,1,F-1839,Cliente 16
+2025-09-24,CN-0319,venta,1,F-1811,Cliente 01
+2025-09-24,CN-0429,consignacion_liquidada,2,F-2114,Cliente 01
+2025-09-25,CN-0319,consignacion_liquidada,3,F-1795,Cliente 02
+2025-09-25,CN-0321,venta,1,F-1949,Cliente 20
+2025-09-26,CN-0181,venta,1,F-1296,Cliente 01
+2025-09-26,CN-0232,venta,1,F-1410,Cliente 10
+2025-09-26,CN-0270,consignacion_salida,3,GD-1500,Cliente 02
+2025-09-26,CN-0715,venta,1,F-2660,Cliente 15
+2025-09-27,CN-0012,consignacion_liquidada,1,F-1035,Cliente 01
+2025-09-29,CN-0694,consignacion_devolucion,1,GD-2491,Cliente 04
+2025-10-01,CN-0270,consignacion_devolucion,3,GD-1482,Cliente 01
+2025-10-01,CN-0270,venta,1,F-1507,Cliente 02
+2025-10-02,CN-0402,consignacion_salida,3,GD-2085,Cliente 10
+2025-10-02,CN-0523,venta,1,F-2141,Cliente 02
+2025-10-02,CN-0530,consignacion_liquidada,1,F-2165,Cliente 09
+2025-10-03,CN-0059,consignacion_salida,1,GD-1154,Cliente 09
+2025-10-03,CN-0059,venta,1,F-1156,Cliente 02
+2025-10-04,CN-0270,importacion,12,IMP-1501,
+2025-10-04,CN-0655,venta,2,F-2423,Cliente 05
+2025-10-04,CN-0672,importacion,4,IMP-2440,
+2025-10-04,CN-0690,venta,1,F-2473,Cliente 01
+2025-10-05,CN-0121,venta,3,F-1265,Cliente 02
+2025-10-05,CN-0181,importacion,4,IMP-1297,
+2025-10-05,CN-0232,consignacion_salida,1,GD-1415,Cliente 02
+2025-10-05,CN-0319,venta,2,F-1813,Cliente 03
+2025-10-05,CN-0320,consignacion_salida,1,GD-1868,Cliente 04
+2025-10-05,CN-0370,consignacion_salida,2,GD-2027,Cliente 22
+2025-10-05,CN-0415,consignacion_salida,1,GD-2103,Cliente 01
+2025-10-05,CN-0597,importacion,5,IMP-2321,
+2025-10-05,CN-0694,importacion,11,IMP-2505,
+2025-10-05,CN-0700,importacion,10,IMP-2569,
+2025-10-05,CN-0710,consignacion_salida,1,GD-2619,Cliente 09
+2025-10-06,CN-0128,importacion,5,IMP-1282,
+2025-10-06,CN-0299,importacion,70,IMP-1590,
+2025-10-06,CN-0370,importacion,12,IMP-2026,
+2025-10-06,CN-0385,consignacion_devolucion,1,GD-2064,Cliente 02
+2025-10-06,CN-0385,importacion,4,IMP-2066,
+2025-10-06,CN-0592,importacion,70,IMP-2264,
+2025-10-06,CN-0648,importacion,70,IMP-2380,
+2025-10-07,CN-0052,importacion,10,IMP-1124,
+2025-10-07,CN-0232,importacion,12,IMP-1412,
+2025-10-07,CN-0317,consignacion_liquidada,3,F-1654,Cliente 08
+2025-10-07,CN-0402,importacion,5,IMP-2084,
+2025-10-08,CN-0120,importacion,5,IMP-1245,
+2025-10-09,CN-0017,venta,3,F-1037,Cliente 09
+2025-10-09,CN-0230,importacion,4,IMP-1369,
+2025-10-09,CN-0321,importacion,40,IMP-1956,
+2025-10-09,CN-0710,importacion,5,IMP-2617,
+2025-10-10,CN-0319,importacion,25,IMP-1812,
+2025-10-10,CN-0320,importacion,40,IMP-1864,
+2025-10-10,CN-0429,importacion,5,IMP-2118,
+2025-10-11,CN-0228,importacion,4,IMP-1350,
+2025-10-11,CN-0290,importacion,5,IMP-1546,
+2025-10-11,CN-0320,consignacion_salida,1,GD-1865,Cliente 14
+2025-10-11,CN-0322,importacion,5,IMP-1974,
+2025-10-11,CN-0322,venta,1,F-1975,Cliente 11
+2025-10-11,CN-0530,importacion,10,IMP-2184,
+2025-10-13,CN-0118,consignacion_salida,2,GD-1230,Cliente 04
+2025-10-15,CN-0415,consignacion_salida,1,GD-2101,Cliente 01
+2025-10-16,CN-0318,venta,3,F-1736,Cliente 19
+2025-10-16,CN-0525,venta,1,F-2146,Cliente 17
+2025-10-16,CN-0694,consignacion_salida,2,GD-2506,Cliente 06
+2025-10-17,CN-0128,consignacion_liquidada,1,F-1277,Cliente 01
+2025-10-17,CN-0270,consignacion_salida,2,GD-1506,Cliente 05
+2025-10-18,CN-0113,venta,1,F-1206,Cliente 04
+2025-10-18,CN-0715,venta,1,F-2662,Cliente 19
+2025-10-19,CN-0228,consignacion_salida,1,GD-1351,Cliente 01
+2025-10-19,CN-0275,consignacion_liquidada,1,F-1540,Cliente 15
+2025-10-19,CN-0320,consignacion_salida,4,GD-1867,Cliente 13
+2025-10-19,CN-0530,consignacion_salida,4,GD-2185,Cliente 01
+2025-10-20,CN-0597,consignacion_salida,2,GD-2322,Cliente 02
+2025-10-21,CN-0232,consignacion_salida,2,GD-1417,Cliente 21
+2025-10-21,CN-0270,consignacion_salida,2,GD-1504,Cliente 01
+2025-10-21,CN-0672,venta,1,F-2441,Cliente 16
+2025-10-21,CN-0672,consignacion_salida,2,GD-2442,Cliente 01
+2025-10-21,CN-0694,consignacion_salida,2,GD-2508,Cliente 01
+2025-10-22,CN-0052,consignacion_salida,2,GD-1126,Cliente 10
+2025-10-22,CN-0121,venta,1,F-1264,Cliente 13
+2025-10-22,CN-0715,venta,1,F-2661,Cliente 08
+2025-10-23,CN-0319,consignacion_devolucion,3,GD-1787,Cliente 02
+2025-10-23,CN-0321,consignacion_salida,1,GD-1957,Cliente 10
+2025-10-23,CN-0700,consignacion_salida,3,GD-2570,Cliente 06
+2025-10-25,CN-0094,venta,1,F-1184,Cliente 12
+2025-10-25,CN-0592,consignacion_devolucion,3,GD-2228,Cliente 05
+2025-10-26,CN-0039,venta,2,F-1081,Cliente 04
+2025-10-26,CN-0270,consignacion_salida,1,GD-1502,Cliente 06
+2025-10-26,CN-0700,consignacion_liquidada,1,F-2547,Cliente 03
+2025-10-26,CN-0710,venta,2,F-2618,Cliente 02
+2025-10-26,CN-0721,venta,1,F-2693,Cliente 10
+2025-10-27,CN-0052,venta,2,F-1125,Cliente 16
+2025-10-27,CN-0232,consignacion_salida,1,GD-1413,Cliente 05
+2025-10-28,CN-0059,consignacion_salida,1,GD-1153,Cliente 02
+2025-10-28,CN-0317,consignacion_salida,2,GD-1682,Cliente 04
+2025-10-28,CN-0385,venta,2,F-2067,Cliente 03
+2025-10-30,CN-0321,consignacion_liquidada,2,F-1934,Cliente 04
+2025-11-01,CN-0187,venta,1,F-1302,Cliente 01
+2025-11-01,CN-0592,venta,2,F-2282,Cliente 11
+2025-11-01,CN-0694,consignacion_salida,3,GD-2509,Cliente 02
+2025-11-02,CN-0162,venta,1,F-1292,Cliente 01
+2025-11-02,CN-0270,consignacion_salida,4,GD-1512,Cliente 02
+2025-11-03,CN-0121,venta,1,F-1266,Cliente 01
+2025-11-03,CN-0715,consignacion_salida,2,GD-2664,Cliente 05
+2025-11-04,CN-0321,venta,2,F-1960,Cliente 01
+2025-11-04,CN-0648,consignacion_salida,3,GD-2382,Cliente 19
+2025-11-05,CN-0239,venta,1,F-1452,Cliente 01
+2025-11-05,CN-0648,consignacion_salida,4,GD-2384,Cliente 01
+2025-11-06,CN-0592,consignacion_salida,3,GD-2274,Cliente 01
+2025-11-07,CN-0270,venta,1,F-1513,Cliente 22
+2025-11-07,CN-0299,venta,2,F-1597,Cliente 06
+2025-11-07,CN-0320,consignacion_liquidada,1,F-1826,Cliente 03
+2025-11-08,CN-0228,consignacion_salida,1,GD-1352,Cliente 22
+2025-11-08,CN-0530,venta,1,F-2186,Cliente 03
+2025-11-08,CN-0530,venta,1,F-2187,Cliente 01
+2025-11-09,CN-0113,consignacion_salida,1,GD-1207,Cliente 01
+2025-11-09,CN-0321,consignacion_liquidada,3,F-1938,Cliente 11
+2025-11-09,CN-0592,consignacion_salida,2,GD-2265,Cliente 11
+2025-11-10,CN-0648,consignacion_salida,4,GD-2381,Cliente 11
+2025-11-10,CN-0648,venta,1,F-2386,Cliente 12
+2025-11-10,CN-0702,consignacion_salida,2,GD-2602,Cliente 01
+2025-11-11,CN-0592,venta,1,F-2271,Cliente 01
+2025-11-11,CN-0592,consignacion_salida,4,GD-2272,Cliente 01
+2025-11-11,CN-0592,consignacion_salida,1,GD-2280,Cliente 01
+2025-11-11,CN-0592,consignacion_salida,2,GD-2285,Cliente 08
+2025-11-11,CN-0715,venta,2,F-2663,Cliente 01
+2025-11-12,CN-0299,consignacion_salida,3,GD-1596,Cliente 02
+2025-11-12,CN-0321,consignacion_salida,3,GD-1961,Cliente 08
+2025-11-12,CN-0682,consignacion_salida,1,GD-2459,Cliente 22
+2025-11-13,CN-0074,venta,1,F-1167,Cliente 04
+2025-11-13,CN-0385,venta,1,F-2070,Cliente 04
+2025-11-15,CN-0648,venta,6,F-2389,Cliente 03
+2025-11-16,CN-0020,consignacion_liquidada,1,F-1046,Cliente 02
+2025-11-16,CN-0096,venta,1,F-1190,Cliente 11
+2025-11-16,CN-0270,consignacion_salida,1,GD-1510,Cliente 01
+2025-11-16,CN-0299,consignacion_salida,2,GD-1592,Cliente 01
+2025-11-16,CN-0318,venta,2,F-1737,Cliente 01
+2025-11-16,CN-0318,venta,1,F-1738,Cliente 05
+2025-11-16,CN-0577,venta,1,F-2223,Cliente 09
+2025-11-16,CN-0592,consignacion_salida,2,GD-2278,Cliente 02
+2025-11-17,CN-0299,consignacion_salida,1,GD-1598,Cliente 02
+2025-11-17,CN-0530,consignacion_liquidada,2,F-2172,Cliente 01
+2025-11-17,CN-0592,venta,1,F-2276,Cliente 01
+2025-11-17,CN-0592,venta,2,F-2287,Cliente 01
+2025-11-18,CN-0321,consignacion_devolucion,4,GD-1915,Cliente 16
+2025-11-18,CN-0321,venta,2,F-1959,Cliente 04
+2025-11-18,CN-0370,venta,2,F-2030,Cliente 08
+2025-11-18,CN-0592,consignacion_salida,3,GD-2267,Cliente 04
+2025-11-19,CN-0249,venta,2,F-1463,Cliente 02
+2025-11-19,CN-0592,consignacion_salida,2,GD-2273,Cliente 01
+2025-11-20,CN-0052,venta,3,F-1128,Cliente 04
+2025-11-20,CN-0299,consignacion_salida,4,GD-1594,Cliente 01
+2025-11-20,CN-0700,consignacion_salida,1,GD-2572,Cliente 05
+2025-11-20,CN-0721,consignacion_salida,1,GD-2694,Cliente 13
+2025-11-21,CN-0270,venta,1,F-1508,Cliente 15
+2025-11-21,CN-0320,venta,2,F-1871,Cliente 04
+2025-11-21,CN-0710,venta,1,F-2621,Cliente 03
+2025-11-22,CN-0017,consignacion_salida,1,GD-1038,Cliente 22
+2025-11-22,CN-0232,consignacion_salida,1,GD-1418,Cliente 02
+2025-11-22,CN-0592,consignacion_salida,1,GD-2269,Cliente 01
+2025-11-22,CN-0592,venta,2,F-2270,Cliente 21
+2025-11-23,CN-0052,consignacion_devolucion,1,GD-1096,Cliente 01
+2025-11-23,CN-0370,venta,2,F-2029,Cliente 05
+2025-11-23,CN-0370,venta,2,F-2031,Cliente 01
+2025-11-24,CN-0415,venta,2,F-2105,Cliente 05
+2025-11-24,CN-0648,consignacion_salida,3,GD-2387,Cliente 01
+2025-11-24,CN-0700,consignacion_liquidada,1,F-2565,Cliente 11
+2025-11-25,CN-0320,venta,2,F-1870,Cliente 14
+2025-11-25,CN-0530,consignacion_liquidada,1,F-2176,Cliente 10
+2025-11-26,CN-0074,venta,2,F-1168,Cliente 19
+2025-11-26,CN-0385,consignacion_salida,2,GD-2068,Cliente 03
+2025-11-26,CN-0592,venta,2,F-2277,Cliente 01
+2025-11-26,CN-0592,consignacion_salida,2,GD-2283,Cliente 01
+2025-11-27,CN-0232,consignacion_liquidada,1,F-1394,Cliente 05
+2025-11-27,CN-0592,venta,3,F-2268,Cliente 03
+2025-11-27,CN-0592,consignacion_salida,2,GD-2279,Cliente 01
+2025-11-28,CN-0270,venta,1,F-1509,Cliente 02
+2025-11-28,CN-0299,venta,7,F-1591,Cliente 03
+2025-11-28,CN-0319,venta,3,F-1814,Cliente 11
+2025-12-01,CN-0052,venta,2,F-1130,Cliente 02
+2025-12-01,CN-0120,consignacion_salida,2,GD-1246,Cliente 02
+2025-12-01,CN-0231,venta,1,F-1377,Cliente 01
+2025-12-01,CN-0370,consignacion_salida,2,GD-2033,Cliente 09
+2025-12-01,CN-0715,consignacion_liquidada,2,F-2655,Cliente 06
+2025-12-02,CN-0096,venta,1,F-1192,Cliente 17
+2025-12-02,CN-0299,venta,6,F-1605,Cliente 10
+2025-12-02,CN-0299,consignacion_salida,1,GD-1610,Cliente 14
+2025-12-02,CN-0299,venta,3,F-1612,Cliente 06
+2025-12-02,CN-0530,venta,1,F-2188,Cliente 01
+2025-12-02,CN-0592,venta,2,F-2290,Cliente 13
+2025-12-03,CN-0319,consignacion_devolucion,1,GD-1763,Cliente 05
+2025-12-03,CN-0648,venta,2,F-2395,Cliente 06
+2025-12-03,CN-0694,venta,2,F-2514,Cliente 13
+2025-12-04,CN-0239,venta,1,F-1454,Cliente 01
+2025-12-05,CN-0320,venta,1,F-1874,Cliente 01
+2025-12-05,CN-0370,venta,1,F-2034,Cliente 01
+2025-12-05,CN-0648,consignacion_liquidada,1,F-2343,Cliente 06
+2025-12-05,CN-0648,consignacion_salida,2,GD-2392,Cliente 01
+2025-12-05,CN-0682,venta,1,F-2461,Cliente 01
+2025-12-06,CN-0299,venta,4,F-1601,Cliente 02
+2025-12-06,CN-0321,consignacion_devolucion,4,GD-1920,Cliente 04
+2025-12-06,CN-0592,consignacion_salida,3,GD-2291,Cliente 11
+2025-12-06,CN-0592,venta,4,F-2293,Cliente 11
+2025-12-06,CN-0655,consignacion_salida,1,GD-2424,Cliente 16
+2025-12-06,CN-0694,venta,1,F-2513,Cliente 01
+2025-12-07,CN-0239,venta,1,F-1453,Cliente 11
+2025-12-08,CN-0320,consignacion_salida,4,GD-1872,Cliente 01
+2025-12-09,CN-0299,venta,2,F-1599,Cliente 12
+2025-12-09,CN-0654,venta,1,F-2413,Cliente 01
+2025-12-09,CN-0700,consignacion_salida,1,GD-2574,Cliente 04
+2025-12-10,CN-0574,venta,1,F-2213,Cliente 01
+2025-12-10,CN-0648,venta,3,F-2393,Cliente 05
+2025-12-10,CN-0690,venta,1,F-2474,Cliente 03
+2025-12-11,CN-0299,consignacion_salida,3,GD-1603,Cliente 02
+2025-12-11,CN-0299,consignacion_salida,1,GD-1606,Cliente 03
+2025-12-11,CN-0648,consignacion_liquidada,3,F-2347,Cliente 03
+2025-12-12,CN-0052,venta,1,F-1131,Cliente 01
+2025-12-12,CN-0299,venta,1,F-1607,Cliente 01
+2025-12-12,CN-0321,consignacion_salida,1,GD-1962,Cliente 08
+2025-12-12,CN-0574,venta,1,F-2214,Cliente 19
+2025-12-12,CN-0592,consignacion_liquidada,3,F-2239,Cliente 07
+2025-12-13,CN-0525,venta,2,F-2147,Cliente 02
+2025-12-13,CN-0592,consignacion_liquidada,1,F-2263,Cliente 02
+2025-12-13,CN-0592,venta,1,F-2292,Cliente 17
+2025-12-13,CN-0648,venta,3,F-2391,Cliente 02
+2025-12-13,CN-0672,consignacion_salida,2,GD-2443,Cliente 01
+2025-12-14,CN-0034,venta,2,F-1066,Cliente 02
+2025-12-14,CN-0096,consignacion_salida,1,GD-1191,Cliente 09
+2025-12-14,CN-0299,venta,1,F-1608,Cliente 01
+2025-12-14,CN-0299,venta,2,F-1609,Cliente 04
+2025-12-14,CN-0694,consignacion_salida,3,GD-2515,Cliente 05
+2025-12-14,CN-0694,venta,1,F-2516,Cliente 01
 2025-12-16,CN-0005,consignacion_salida,1,GD-1019,Cliente 01
-2025-12-16,CN-0086,consignacion_salida,1,GD-1087,Cliente 16
-2025-12-16,CN-0228,consignacion_salida,2,GD-1272,Cliente 08
-2025-12-16,CN-0231,venta,1,F-1306,Cliente 07
-2025-12-16,CN-0317,consignacion_salida,1,GD-1635,Cliente 21
+2025-12-16,CN-0299,venta,2,F-1600,Cliente 22
+2025-12-16,CN-0666,consignacion_liquidada,1,F-2432,Cliente 20
 2025-12-17,CN-0001,consignacion_salida,1,GD-1007,Cliente 16
 2025-12-17,CN-0005,venta,1,F-1020,Cliente 02
-2025-12-17,CN-0172,venta,2,F-1193,Cliente 01
-2025-12-17,CN-0648,consignacion_liquidada,4,F-2274,Cliente 15
-2025-12-18,CN-0172,venta,1,F-1191,Cliente 02
-2025-12-18,CN-0299,venta,2,F-1493,Cliente 12
-2025-12-18,CN-0317,venta,1,F-1638,Cliente 03
-2025-12-18,CN-0648,venta,2,F-2316,Cliente 13
-2025-12-19,CN-0648,consignacion_salida,2,GD-2320,Cliente 02
-2025-12-20,CN-0270,venta,1,F-1396,Cliente 10
-2025-12-20,CN-0299,consignacion_salida,2,GD-1482,Cliente 03
-2025-12-20,CN-0299,venta,3,F-1483,Cliente 13
-2025-12-20,CN-0648,consignacion_salida,1,GD-2323,Cliente 17
-2025-12-21,CN-0149,venta,1,F-1176,Cliente 05
-2025-12-21,CN-0319,consignacion_liquidada,2,F-1777,Cliente 02
-2025-12-22,CN-0299,venta,2,F-1486,Cliente 01
-2025-12-22,CN-0299,consignacion_salida,5,GD-1490,Cliente 03
-2025-12-23,CN-0317,venta,3,F-1637,Cliente 10
-2025-12-23,CN-0592,consignacion_salida,1,GD-2225,Cliente 05
-2025-12-23,CN-0592,venta,1,F-2238,Cliente 01
-2025-12-24,CN-0299,consignacion_liquidada,3,F-1440,Cliente 05
-2025-12-24,CN-0321,consignacion_liquidada,1,F-1886,Cliente 19
-2025-12-25,CN-0592,consignacion_salida,3,GD-2227,Cliente 01
-2025-12-25,CN-0648,venta,4,F-2324,Cliente 17
-2025-12-26,CN-0299,venta,2,F-1494,Cliente 03
-2025-12-26,CN-0592,consignacion_salida,4,GD-2230,Cliente 01
-2025-12-26,CN-0592,consignacion_salida,4,GD-2236,Cliente 01
-2025-12-28,CN-0592,venta,2,F-2235,Cliente 07
-2025-12-28,CN-0648,venta,1,F-2322,Cliente 06
-2025-12-29,CN-0470,consignacion_devolucion,2,GD-2043,Cliente 03
-2026-01-01,CN-0319,consignacion_salida,1,GD-1792,Cliente 22
-2026-01-01,CN-0321,consignacion_salida,1,GD-1902,Cliente 07
-2026-01-01,CN-0648,consignacion_salida,2,GD-2326,Cliente 01
-2026-01-02,CN-0648,venta,2,F-2341,Cliente 13
-2026-01-02,CN-0654,venta,1,F-2344,Cliente 03
-2026-01-03,CN-0249,consignacion_devolucion,1,GD-1337,Cliente 02
-2026-01-03,CN-0299,consignacion_salida,1,GD-1507,Cliente 01
-2026-01-03,CN-0299,consignacion_salida,2,GD-1508,Cliente 18
-2026-01-03,CN-0614,venta,1,F-2257,Cliente 08
-2026-01-04,CN-0117,consignacion_salida,1,GD-1163,Cliente 18
-2026-01-04,CN-0322,consignacion_salida,1,GD-1909,Cliente 08
-2026-01-04,CN-0323,importacion,5,IMP-1925,
-2026-01-04,CN-0648,consignacion_salida,2,GD-2340,Cliente 05
-2026-01-04,CN-0665,venta,1,F-2348,Cliente 05
+2025-12-17,CN-0592,consignacion_liquidada,1,F-2233,Cliente 17
+2025-12-17,CN-0597,consignacion_salida,1,GD-2324,Cliente 03
+2025-12-17,CN-0648,venta,2,F-2394,Cliente 01
+2025-12-18,CN-0318,consignacion_liquidada,2,F-1688,Cliente 01
+2025-12-19,CN-0232,consignacion_liquidada,3,F-1391,Cliente 22
+2025-12-19,CN-0370,venta,1,F-2032,Cliente 02
+2025-12-19,CN-0530,venta,1,F-2189,Cliente 01
+2025-12-19,CN-0592,venta,1,F-2289,Cliente 01
+2025-12-19,CN-0592,venta,1,F-2298,Cliente 01
+2025-12-20,CN-0052,consignacion_salida,1,GD-1129,Cliente 19
+2025-12-20,CN-0415,venta,1,F-2106,Cliente 01
+2025-12-21,CN-0113,consignacion_salida,1,GD-1209,Cliente 02
+2025-12-21,CN-0228,venta,1,F-1353,Cliente 03
+2025-12-21,CN-0592,consignacion_salida,3,GD-2299,Cliente 01
+2025-12-21,CN-0648,consignacion_liquidada,1,F-2374,Cliente 10
+2025-12-22,CN-0232,consignacion_salida,1,GD-1420,Cliente 01
+2025-12-22,CN-0299,consignacion_salida,2,GD-1602,Cliente 01
+2025-12-22,CN-0317,consignacion_liquidada,1,F-1677,Cliente 02
+2025-12-22,CN-0318,venta,1,F-1739,Cliente 01
+2025-12-22,CN-0592,venta,3,F-2294,Cliente 04
+2025-12-23,CN-0592,venta,1,F-2297,Cliente 02
+2025-12-24,CN-0232,venta,2,F-1419,Cliente 04
+2025-12-24,CN-0299,venta,1,F-1604,Cliente 01
+2025-12-24,CN-0592,consignacion_salida,3,GD-2288,Cliente 02
+2025-12-24,CN-0592,venta,2,F-2295,Cliente 07
+2025-12-24,CN-0648,venta,4,F-2390,Cliente 21
+2025-12-25,CN-0231,venta,1,F-1378,Cliente 03
+2025-12-25,CN-0317,venta,1,F-1684,Cliente 01
+2025-12-25,CN-0322,consignacion_salida,1,GD-1976,Cliente 02
+2025-12-25,CN-0530,consignacion_devolucion,1,GD-2160,Cliente 06
+2025-12-26,CN-0525,venta,1,F-2148,Cliente 02
+2025-12-26,CN-0592,consignacion_salida,1,GD-2296,Cliente 20
+2025-12-27,CN-0318,consignacion_liquidada,2,F-1700,Cliente 13
+2025-12-27,CN-0370,consignacion_liquidada,2,F-2024,Cliente 01
+2025-12-28,CN-0648,venta,7,F-2396,Cliente 08
+2025-12-28,CN-0694,consignacion_salida,1,GD-2511,Cliente 01
+2026-01-01,CN-0039,venta,1,F-1083,Cliente 01
+2026-01-01,CN-0429,venta,1,F-2119,Cliente 01
+2026-01-03,CN-0299,consignacion_salida,3,GD-1615,Cliente 13
+2026-01-03,CN-0592,venta,2,F-2307,Cliente 09
+2026-01-03,CN-0648,venta,3,F-2403,Cliente 02
+2026-01-04,CN-0017,importacion,5,IMP-1040,
+2026-01-04,CN-0052,venta,1,F-1138,Cliente 08
+2026-01-04,CN-0239,importacion,4,IMP-1455,
+2026-01-04,CN-0299,venta,3,F-1618,Cliente 12
+2026-01-04,CN-0715,importacion,12,IMP-2665,
 2026-01-05,CN-0005,importacion,5,IMP-1021,
-2026-01-05,CN-0111,venta,3,F-1140,Cliente 10
-2026-01-05,CN-0228,venta,1,F-1279,Cliente 02
-2026-01-05,CN-0648,consignacion_liquidada,4,F-2293,Cliente 01
+2026-01-05,CN-0121,importacion,5,IMP-1267,
+2026-01-05,CN-0592,consignacion_salida,2,GD-2301,Cliente 09
 2026-01-06,CN-0001,importacion,4,IMP-1008,
-2026-01-06,CN-0710,venta,2,F-2401,Cliente 03
-2026-01-07,CN-0029,importacion,4,IMP-1054,
-2026-01-07,CN-0299,consignacion_salida,3,GD-1499,Cliente 22
-2026-01-07,CN-0304,importacion,12,IMP-1547,
-2026-01-07,CN-0319,importacion,24,IMP-1791,
-2026-01-07,CN-0429,importacion,4,IMP-1996,
-2026-01-07,CN-0450,importacion,5,IMP-2016,
-2026-01-07,CN-0470,consignacion_devolucion,3,GD-2045,Cliente 04
-2026-01-07,CN-0566,consignacion_salida,1,GD-2123,Cliente 01
-2026-01-07,CN-0648,venta,2,F-2339,Cliente 01
-2026-01-08,CN-0299,venta,1,F-1498,Cliente 02
-2026-01-08,CN-0721,venta,1,F-2419,Cliente 14
-2026-01-09,CN-0318,venta,1,F-1723,Cliente 17
-2026-01-09,CN-0402,importacion,4,IMP-1974,
-2026-01-09,CN-0574,importacion,4,IMP-2140,
-2026-01-09,CN-0592,venta,3,F-2244,Cliente 03
-2026-01-10,CN-0226,venta,1,F-1241,Cliente 04
-2026-01-10,CN-0270,venta,1,F-1399,Cliente 22
-2026-01-10,CN-0299,consignacion_devolucion,1,GD-1461,Cliente 17
-2026-01-10,CN-0317,importacion,22,IMP-1639,
-2026-01-10,CN-0492,importacion,5,IMP-2078,
-2026-01-10,CN-0592,venta,1,F-2241,Cliente 01
-2026-01-11,CN-0111,importacion,12,IMP-1139,
-2026-01-11,CN-0149,importacion,5,IMP-1177,
-2026-01-11,CN-0172,importacion,5,IMP-1194,
-2026-01-11,CN-0228,importacion,10,IMP-1275,
-2026-01-11,CN-0270,importacion,8,IMP-1398,
-2026-01-11,CN-0322,consignacion_liquidada,1,F-1908,Cliente 04
-2026-01-11,CN-0614,importacion,5,IMP-2256,
-2026-01-11,CN-0648,consignacion_salida,2,GD-2333,Cliente 04
-2026-01-12,CN-0299,venta,3,F-1510,Cliente 08
-2026-01-12,CN-0648,venta,2,F-2331,Cliente 02
-2026-01-12,CN-0648,venta,1,F-2335,Cliente 07
-2026-01-13,CN-0270,venta,2,F-1400,Cliente 04
-2026-01-13,CN-0299,venta,2,F-1496,Cliente 02
-2026-01-13,CN-0648,consignacion_liquidada,1,F-2299,Cliente 01
-2026-01-13,CN-0710,venta,1,F-2399,Cliente 01
-2026-01-13,CN-0710,venta,2,F-2400,Cliente 11
-2026-01-14,CN-0317,venta,2,F-1642,Cliente 18
-2026-01-14,CN-0648,consignacion_salida,3,GD-2328,Cliente 07
-2026-01-14,CN-0648,venta,4,F-2338,Cliente 02
-2026-01-15,CN-0299,venta,1,F-1511,Cliente 15
-2026-01-15,CN-0385,venta,2,F-1955,Cliente 14
-2026-01-17,CN-0228,consignacion_salida,3,GD-1276,Cliente 02
-2026-01-17,CN-0648,consignacion_salida,2,GD-2329,Cliente 01
+2026-01-06,CN-0239,consignacion_salida,1,GD-1456,Cliente 02
+2026-01-06,CN-0648,consignacion_salida,1,GD-2398,Cliente 01
+2026-01-06,CN-0648,venta,2,F-2399,Cliente 05
+2026-01-07,CN-0052,venta,1,F-1136,Cliente 11
+2026-01-07,CN-0320,venta,3,F-1875,Cliente 11
+2026-01-07,CN-0385,consignacion_salida,2,GD-2071,Cliente 10
+2026-01-07,CN-0592,consignacion_devolucion,3,GD-2257,Cliente 04
+2026-01-07,CN-0654,venta,1,F-2414,Cliente 03
+2026-01-08,CN-0370,importacion,10,IMP-2035,
+2026-01-08,CN-0648,consignacion_salida,3,GD-2402,Cliente 05
+2026-01-08,CN-0694,importacion,11,IMP-2517,
+2026-01-09,CN-0052,importacion,11,IMP-1132,
+2026-01-09,CN-0059,importacion,5,IMP-1157,
+2026-01-09,CN-0074,importacion,4,IMP-1169,
+2026-01-09,CN-0249,importacion,4,IMP-1464,
+2026-01-09,CN-0270,importacion,12,IMP-1514,
+2026-01-09,CN-0299,venta,1,F-1627,Cliente 02
+2026-01-09,CN-0318,importacion,22,IMP-1740,
+2026-01-09,CN-0370,consignacion_devolucion,2,GD-2028,Cliente 22
+2026-01-09,CN-0721,importacion,4,IMP-2696,
+2026-01-10,CN-0034,importacion,5,IMP-1067,
+2026-01-10,CN-0530,importacion,8,IMP-2190,
+2026-01-10,CN-0621,consignacion_salida,1,GD-2334,Cliente 07
+2026-01-10,CN-0648,consignacion_salida,2,GD-2401,Cliente 01
+2026-01-10,CN-0672,importacion,5,IMP-2445,
+2026-01-11,CN-0270,venta,1,F-1516,Cliente 01
+2026-01-11,CN-0359,consignacion_devolucion,1,GD-1993,Cliente 18
+2026-01-11,CN-0525,importacion,5,IMP-2149,
+2026-01-11,CN-0694,consignacion_salida,2,GD-2518,Cliente 07
+2026-01-11,CN-0715,consignacion_liquidada,2,F-2632,Cliente 01
+2026-01-12,CN-0039,consignacion_salida,2,GD-1082,Cliente 21
+2026-01-12,CN-0094,importacion,4,IMP-1185,
+2026-01-12,CN-0270,venta,3,F-1517,Cliente 05
+2026-01-12,CN-0415,importacion,5,IMP-2107,
+2026-01-12,CN-0574,importacion,4,IMP-2215,
+2026-01-12,CN-0700,consignacion_salida,3,GD-2575,Cliente 01
+2026-01-12,CN-0700,venta,1,F-2577,Cliente 01
+2026-01-13,CN-0299,venta,1,F-1620,Cliente 01
+2026-01-13,CN-0318,consignacion_liquidada,1,F-1708,Cliente 02
+2026-01-13,CN-0690,consignacion_salida,1,GD-2475,Cliente 03
+2026-01-13,CN-0721,consignacion_salida,1,GD-2697,Cliente 08
+2026-01-14,CN-0052,consignacion_salida,4,GD-1133,Cliente 01
+2026-01-14,CN-0370,consignacion_liquidada,3,F-2013,Cliente 16
+2026-01-14,CN-0370,consignacion_salida,1,GD-2036,Cliente 06
+2026-01-14,CN-0592,venta,1,F-2305,Cliente 10
+2026-01-15,CN-0034,consignacion_salida,3,GD-1068,Cliente 01
+2026-01-15,CN-0299,consignacion_salida,4,GD-1617,Cliente 01
+2026-01-15,CN-0299,consignacion_salida,4,GD-1621,Cliente 01
+2026-01-15,CN-0592,consignacion_liquidada,3,F-2259,Cliente 04
+2026-01-15,CN-0710,venta,1,F-2622,Cliente 02
+2026-01-16,CN-0592,venta,3,F-2304,Cliente 03
+2026-01-16,CN-0648,venta,1,F-2397,Cliente 01
+2026-01-17,CN-0228,venta,1,F-1354,Cliente 03
+2026-01-17,CN-0230,consignacion_salida,1,GD-1370,Cliente 17
+2026-01-17,CN-0321,venta,1,F-1964,Cliente 01
+2026-01-17,CN-0592,venta,1,F-2300,Cliente 03
+2026-01-17,CN-0592,venta,1,F-2308,Cliente 01
+2026-01-17,CN-0648,venta,3,F-2404,Cliente 01
+2026-01-17,CN-0648,consignacion_salida,4,GD-2407,Cliente 01
+2026-01-17,CN-0655,venta,1,F-2425,Cliente 01
 2026-01-18,CN-0005,venta,3,F-1022,Cliente 04
-2026-01-19,CN-0029,venta,1,F-1055,Cliente 02
-2026-01-19,CN-0299,consignacion_salida,2,GD-1497,Cliente 02
-2026-01-19,CN-0299,consignacion_salida,1,GD-1505,Cliente 06
-2026-01-19,CN-0317,consignacion_salida,2,GD-1640,Cliente 18
-2026-01-20,CN-0270,consignacion_salida,1,GD-1401,Cliente 01
-2026-01-20,CN-0299,venta,3,F-1502,Cliente 06
-2026-01-21,CN-0318,consignacion_devolucion,3,GD-1697,Cliente 13
-2026-01-21,CN-0319,consignacion_liquidada,1,F-1760,Cliente 02
-2026-01-22,CN-0228,venta,1,F-1278,Cliente 13
-2026-01-22,CN-0299,venta,1,F-1501,Cliente 01
-2026-01-22,CN-0317,venta,1,F-1641,Cliente 01
-2026-01-22,CN-0592,venta,1,F-2240,Cliente 04
-2026-01-22,CN-0648,venta,4,F-2332,Cliente 05
-2026-01-22,CN-0690,venta,1,F-2363,Cliente 01
-2026-01-22,CN-0698,venta,1,F-2377,Cliente 20
+2026-01-18,CN-0131,consignacion_liquidada,1,F-1289,Cliente 01
+2026-01-18,CN-0232,consignacion_devolucion,1,GD-1416,Cliente 02
+2026-01-18,CN-0232,venta,1,F-1422,Cliente 01
+2026-01-18,CN-0232,venta,1,F-1423,Cliente 11
+2026-01-18,CN-0270,venta,4,F-1515,Cliente 01
+2026-01-18,CN-0270,consignacion_salida,3,GD-1518,Cliente 02
+2026-01-19,CN-0052,consignacion_salida,1,GD-1135,Cliente 06
+2026-01-19,CN-0052,venta,1,F-1137,Cliente 01
+2026-01-20,CN-0299,consignacion_salida,1,GD-1625,Cliente 02
+2026-01-20,CN-0325,consignacion_devolucion,1,GD-1985,Cliente 20
+2026-01-20,CN-0648,consignacion_salida,1,GD-2405,Cliente 03
+2026-01-21,CN-0402,consignacion_salida,2,GD-2087,Cliente 01
+2026-01-21,CN-0715,consignacion_salida,2,GD-2667,Cliente 08
 2026-01-23,CN-0001,venta,1,F-1009,Cliente 01
-2026-01-23,CN-0468,venta,1,F-2032,Cliente 01
-2026-01-23,CN-0696,venta,1,F-2370,Cliente 02
-2026-01-24,CN-0429,consignacion_devolucion,1,GD-1991,Cliente 02
-2026-01-25,CN-0299,venta,3,F-1509,Cliente 01
-2026-01-25,CN-0304,consignacion_salida,2,GD-1550,Cliente 09
-2026-01-26,CN-0319,consignacion_salida,1,GD-1793,Cliente 01
-2026-01-26,CN-0648,consignacion_salida,3,GD-2336,Cliente 02
-2026-01-27,CN-0592,consignacion_salida,3,GD-2242,Cliente 10
-2026-01-27,CN-0648,consignacion_devolucion,2,GD-2296,Cliente 15
-2026-01-28,CN-0299,consignacion_salida,2,GD-1503,Cliente 03
-2026-01-28,CN-0304,consignacion_salida,3,GD-1548,Cliente 01
-2026-01-28,CN-0397,consignacion_salida,1,GD-1963,Cliente 07
-2026-01-30,CN-0228,consignacion_devolucion,1,GD-1251,Cliente 01
-2026-01-30,CN-0320,consignacion_liquidada,3,F-1846,Cliente 21
-2026-02-02,CN-0187,venta,1,F-1227,Cliente 01
-2026-02-02,CN-0321,consignacion_devolucion,1,GD-1880,Cliente 02
-2026-02-02,CN-0473,consignacion_salida,1,GD-2051,Cliente 14
-2026-02-03,CN-0111,consignacion_salida,3,GD-1141,Cliente 04
-2026-02-03,CN-0172,consignacion_salida,1,GD-1196,Cliente 01
-2026-02-03,CN-0228,venta,1,F-1280,Cliente 01
-2026-02-04,CN-0704,consignacion_devolucion,3,GD-2385,Cliente 09
-2026-02-05,CN-0228,venta,1,F-1281,Cliente 01
-2026-02-05,CN-0304,venta,1,F-1551,Cliente 04
-2026-02-05,CN-0317,venta,1,F-1643,Cliente 06
-2026-02-05,CN-0319,venta,1,F-1795,Cliente 11
-2026-02-06,CN-0111,venta,2,F-1144,Cliente 01
-2026-02-07,CN-0111,consignacion_devolucion,1,GD-1112,Cliente 01
-2026-02-07,CN-0434,consignacion_liquidada,1,F-2004,Cliente 01
-2026-02-08,CN-0231,consignacion_salida,1,GD-1307,Cliente 05
-2026-02-08,CN-0270,venta,2,F-1403,Cliente 03
-2026-02-08,CN-0274,venta,2,F-1421,Cliente 03
-2026-02-08,CN-0318,consignacion_liquidada,3,F-1674,Cliente 14
-2026-02-09,CN-0020,venta,2,F-1041,Cliente 09
-2026-02-09,CN-0231,consignacion_liquidada,1,F-1299,Cliente 01
-2026-02-09,CN-0565,consignacion_salida,1,GD-2113,Cliente 01
-2026-02-12,CN-0318,consignacion_liquidada,2,F-1654,Cliente 18
-2026-02-12,CN-0574,venta,1,F-2141,Cliente 07
-2026-02-15,CN-0320,venta,1,F-1851,Cliente 18
-2026-02-17,CN-0320,consignacion_devolucion,4,GD-1815,Cliente 03
-2026-02-17,CN-0323,venta,3,F-1926,Cliente 03
-2026-02-19,CN-0172,venta,1,F-1195,Cliente 17
-2026-02-19,CN-0450,consignacion_salida,2,GD-2017,Cliente 07
-2026-02-20,CN-0249,consignacion_liquidada,1,F-1339,Cliente 01
-2026-02-20,CN-0270,consignacion_salida,3,GD-1402,Cliente 09
-2026-02-21,CN-0111,venta,1,F-1143,Cliente 01
+2026-01-23,CN-0299,consignacion_salida,4,GD-1613,Cliente 01
+2026-01-23,CN-0299,venta,3,F-1626,Cliente 06
+2026-01-23,CN-0319,consignacion_liquidada,1,F-1792,Cliente 19
+2026-01-23,CN-0592,consignacion_salida,3,GD-2303,Cliente 06
+2026-01-24,CN-0299,consignacion_salida,2,GD-1619,Cliente 11
+2026-01-24,CN-0299,consignacion_salida,3,GD-1623,Cliente 12
+2026-01-24,CN-0592,venta,3,F-2302,Cliente 19
+2026-01-24,CN-0648,consignacion_salida,2,GD-2408,Cliente 03
+2026-01-24,CN-0648,consignacion_salida,5,GD-2409,Cliente 01
+2026-01-24,CN-0694,venta,1,F-2519,Cliente 02
+2026-01-25,CN-0094,consignacion_devolucion,1,GD-1180,Cliente 01
+2026-01-25,CN-0189,venta,2,F-1312,Cliente 01
+2026-01-26,CN-0319,venta,3,F-1815,Cliente 21
+2026-01-26,CN-0319,consignacion_salida,1,GD-1816,Cliente 05
+2026-01-26,CN-0592,consignacion_salida,2,GD-2306,Cliente 03
+2026-01-26,CN-0715,venta,1,F-2666,Cliente 16
+2026-01-27,CN-0530,consignacion_salida,2,GD-2191,Cliente 01
+2026-01-28,CN-0648,venta,1,F-2400,Cliente 06
+2026-01-29,CN-0597,consignacion_liquidada,2,F-2323,Cliente 02
+2026-02-01,CN-0321,consignacion_devolucion,3,GD-1892,Cliente 01
+2026-02-04,CN-0113,consignacion_salida,1,GD-1210,Cliente 09
+2026-02-04,CN-0227,consignacion_liquidada,1,F-1336,Cliente 01
+2026-02-04,CN-0252,venta,1,F-1467,Cliente 02
+2026-02-04,CN-0320,consignacion_liquidada,2,F-1846,Cliente 01
+2026-02-05,CN-0121,consignacion_liquidada,1,F-1262,Cliente 01
+2026-02-05,CN-0319,consignacion_liquidada,2,F-1781,Cliente 01
+2026-02-05,CN-0715,consignacion_salida,2,GD-2668,Cliente 01
+2026-02-07,CN-0299,consignacion_devolucion,1,GD-1611,Cliente 14
+2026-02-09,CN-0694,consignacion_devolucion,3,GD-2510,Cliente 02
+2026-02-09,CN-0710,venta,1,F-2623,Cliente 01
+2026-02-11,CN-0597,consignacion_liquidada,2,F-2318,Cliente 01
+2026-02-11,CN-0672,consignacion_liquidada,2,F-2444,Cliente 01
+2026-02-11,CN-0715,consignacion_liquidada,2,F-2647,Cliente 08
+2026-02-12,CN-0232,consignacion_salida,3,GD-1424,Cliente 08
+2026-02-12,CN-0299,consignacion_liquidada,2,F-1579,Cliente 18
+2026-02-12,CN-0370,venta,1,F-2037,Cliente 02
+2026-02-13,CN-0206,consignacion_liquidada,1,F-1320,Cliente 06
+2026-02-13,CN-0525,consignacion_salida,1,GD-2150,Cliente 02
+2026-02-14,CN-0530,venta,6,F-2192,Cliente 01
+2026-02-14,CN-0700,consignacion_salida,3,GD-2578,Cliente 03
+2026-02-15,CN-0270,consignacion_devolucion,2,GD-1487,Cliente 01
+2026-02-15,CN-0672,venta,1,F-2446,Cliente 02
+2026-02-16,CN-0232,venta,2,F-1425,Cliente 22
+2026-02-16,CN-0321,consignacion_salida,1,GD-1965,Cliente 03
+2026-02-17,CN-0322,venta,1,F-1978,Cliente 03
+2026-02-17,CN-0592,consignacion_devolucion,2,GD-2286,Cliente 08
+2026-02-17,CN-0690,consignacion_devolucion,1,GD-2470,Cliente 01
+2026-02-18,CN-0121,venta,2,F-1268,Cliente 04
+2026-02-18,CN-0370,venta,2,F-2038,Cliente 01
+2026-02-19,CN-0074,venta,1,F-1170,Cliente 02
+2026-02-19,CN-0694,venta,1,F-2522,Cliente 01
+2026-02-20,CN-0700,consignacion_salida,1,GD-2579,Cliente 01
+2026-02-20,CN-0715,consignacion_salida,1,GD-2670,Cliente 04
+2026-02-21,CN-0320,venta,1,F-1877,Cliente 04
+2026-02-22,CN-0270,consignacion_salida,1,GD-1519,Cliente 06
 2026-02-23,CN-0001,venta,1,F-1010,Cliente 02
-2026-02-23,CN-0304,consignacion_salida,1,GD-1552,Cliente 13
-2026-02-24,CN-0111,consignacion_liquidada,5,F-1100,Cliente 02
-2026-02-24,CN-0111,consignacion_salida,1,GD-1142,Cliente 02
-2026-02-24,CN-0696,venta,1,F-2371,Cliente 01
-2026-02-25,CN-0304,consignacion_salida,2,GD-1554,Cliente 16
-2026-02-25,CN-0614,consignacion_salida,3,GD-2258,Cliente 10
-2026-02-28,CN-0239,venta,1,F-1323,Cliente 14
-2026-02-28,CN-0270,consignacion_liquidada,2,F-1386,Cliente 22
-2026-02-28,CN-0299,consignacion_liquidada,3,F-1467,Cliente 08
-2026-02-28,CN-0320,consignacion_devolucion,2,GD-1811,Cliente 02
+2026-02-23,CN-0530,venta,1,F-2193,Cliente 02
+2026-02-24,CN-0228,consignacion_liquidada,1,F-1349,Cliente 03
+2026-02-24,CN-0525,venta,1,F-2151,Cliente 03
+2026-02-25,CN-0231,venta,3,F-1379,Cliente 07
+2026-02-25,CN-0320,venta,2,F-1876,Cliente 07
+2026-02-26,CN-0113,venta,1,F-1212,Cliente 06
+2026-02-27,CN-0694,consignacion_salida,2,GD-2520,Cliente 02
+2026-02-28,CN-0648,consignacion_liquidada,2,F-2378,Cliente 07
 2026-03-01,CN-0005,venta,1,F-1023,Cliente 13
-2026-03-01,CN-0187,consignacion_salida,1,GD-1228,Cliente 01
-2026-03-01,CN-0304,consignacion_salida,3,GD-1555,Cliente 01
-2026-03-01,CN-0566,venta,1,F-2125,Cliente 06
-2026-03-02,CN-0172,venta,1,F-1198,Cliente 01
-2026-03-02,CN-0304,venta,1,F-1556,Cliente 04
-2026-03-03,CN-0319,consignacion_liquidada,1,F-1786,Cliente 16
-2026-03-05,CN-0249,consignacion_salida,1,GD-1345,Cliente 04
-2026-03-06,CN-0402,venta,1,F-1975,Cliente 01
-2026-03-07,CN-0574,consignacion_liquidada,1,F-2138,Cliente 19
-2026-03-07,CN-0696,venta,1,F-2372,Cliente 20
-2026-03-08,CN-0111,consignacion_liquidada,2,F-1110,Cliente 01
-2026-03-08,CN-0318,venta,1,F-1724,Cliente 06
-2026-03-08,CN-0323,venta,2,F-1927,Cliente 04
-2026-03-08,CN-0592,consignacion_liquidada,1,F-2222,Cliente 19
-2026-03-09,CN-0318,consignacion_devolucion,5,GD-1658,Cliente 01
-2026-03-09,CN-0468,venta,1,F-2033,Cliente 12
-2026-03-10,CN-0648,consignacion_devolucion,2,GD-2318,Cliente 02
-2026-03-11,CN-0092,consignacion_salida,1,GD-1091,Cliente 01
-2026-03-11,CN-0231,venta,1,F-1308,Cliente 01
-2026-03-12,CN-0317,venta,1,F-1644,Cliente 01
-2026-03-16,CN-0111,consignacion_devolucion,3,GD-1123,Cliente 07
-2026-03-16,CN-0320,venta,1,F-1852,Cliente 01
-2026-03-17,CN-0576,venta,1,F-2157,Cliente 06
-2026-03-18,CN-0111,venta,1,F-1145,Cliente 08
-2026-03-19,CN-0304,venta,2,F-1557,Cliente 07
-2026-03-20,CN-0318,consignacion_liquidada,1,F-1687,Cliente 03
-2026-03-22,CN-0614,venta,1,F-2259,Cliente 01
-2026-03-23,CN-0317,consignacion_liquidada,2,F-1585,Cliente 21
-2026-03-23,CN-0321,consignacion_liquidada,2,F-1894,Cliente 15
-2026-03-23,CN-0592,consignacion_liquidada,4,F-2231,Cliente 01
-2026-03-25,CN-0149,consignacion_liquidada,2,F-1175,Cliente 09
-2026-03-25,CN-0566,venta,1,F-2126,Cliente 19
-2026-03-25,CN-0566,venta,1,F-2127,Cliente 05
-2026-03-26,CN-0228,consignacion_liquidada,2,F-1255,Cliente 22
-2026-03-26,CN-0323,consignacion_liquidada,1,F-1924,Cliente 16
-2026-03-27,CN-0257,consignacion_salida,1,GD-1359,Cliente 02
-2026-03-28,CN-0228,consignacion_salida,1,GD-1282,Cliente 02
-2026-03-30,CN-0111,consignacion_liquidada,2,F-1115,Cliente 03
-2026-03-30,CN-0648,consignacion_devolucion,2,GD-2330,Cliente 01
-2026-04-01,CN-0270,consignacion_liquidada,2,F-1374,Cliente 05
-2026-04-01,CN-0492,venta,1,F-2079,Cliente 11
-2026-04-02,CN-0621,consignacion_salida,1,GD-2265,Cliente 01
-2026-04-04,CN-0228,importacion,8,IMP-1283,
-2026-04-04,CN-0228,venta,2,F-1284,Cliente 01
-2026-04-04,CN-0274,importacion,5,IMP-1422,
-2026-04-04,CN-0566,importacion,4,IMP-2128,
+2026-03-01,CN-0320,venta,3,F-1878,Cliente 02
+2026-03-01,CN-0370,venta,1,F-2039,Cliente 04
+2026-03-02,CN-0370,consignacion_salida,1,GD-2043,Cliente 08
+2026-03-02,CN-0530,consignacion_liquidada,2,F-2158,Cliente 02
+2026-03-04,CN-0290,venta,1,F-1549,Cliente 01
+2026-03-05,CN-0034,venta,1,F-1070,Cliente 01
+2026-03-05,CN-0121,consignacion_salida,1,GD-1269,Cliente 21
+2026-03-07,CN-0118,consignacion_salida,2,GD-1231,Cliente 17
+2026-03-07,CN-0320,consignacion_salida,1,GD-1879,Cliente 14
+2026-03-07,CN-0530,venta,3,F-2194,Cliente 13
+2026-03-08,CN-0270,consignacion_devolucion,2,GD-1505,Cliente 01
+2026-03-08,CN-0694,consignacion_salida,1,GD-2523,Cliente 08
+2026-03-08,CN-0721,venta,1,F-2698,Cliente 22
+2026-03-09,CN-0230,consignacion_liquidada,2,F-1362,Cliente 03
+2026-03-10,CN-0290,consignacion_salida,1,GD-1547,Cliente 01
+2026-03-10,CN-0370,consignacion_devolucion,2,GD-2019,Cliente 04
+2026-03-12,CN-0322,consignacion_liquidada,1,F-1977,Cliente 02
+2026-03-13,CN-0318,consignacion_liquidada,4,F-1697,Cliente 01
+2026-03-14,CN-0120,venta,3,F-1248,Cliente 02
+2026-03-14,CN-0370,venta,3,F-2042,Cliente 07
+2026-03-14,CN-0715,consignacion_salida,2,GD-2671,Cliente 02
+2026-03-14,CN-0715,consignacion_salida,1,GD-2672,Cliente 05
+2026-03-15,CN-0320,consignacion_devolucion,1,GD-1869,Cliente 04
+2026-03-16,CN-0052,venta,3,F-1139,Cliente 16
+2026-03-16,CN-0694,venta,1,F-2524,Cliente 04
+2026-03-18,CN-0299,consignacion_liquidada,4,F-1622,Cliente 01
+2026-03-18,CN-0654,consignacion_salida,1,GD-2415,Cliente 06
+2026-03-19,CN-0694,consignacion_liquidada,2,F-2499,Cliente 01
+2026-03-19,CN-0700,venta,2,F-2580,Cliente 15
+2026-03-20,CN-0370,venta,1,F-2040,Cliente 11
+2026-03-23,CN-0365,consignacion_devolucion,2,GD-1997,Cliente 01
+2026-03-26,CN-0592,consignacion_liquidada,2,F-2266,Cliente 11
+2026-03-27,CN-0239,venta,1,F-1457,Cliente 08
+2026-03-27,CN-0370,consignacion_salida,2,GD-2041,Cliente 01
+2026-03-28,CN-0034,venta,1,F-1069,Cliente 07
+2026-03-28,CN-0291,venta,3,F-1558,Cliente 08
+2026-03-29,CN-0228,consignacion_liquidada,1,F-1346,Cliente 01
+2026-03-29,CN-0370,consignacion_liquidada,1,F-2015,Cliente 01
+2026-04-02,CN-0052,consignacion_salida,3,GD-1141,Cliente 02
+2026-04-02,CN-0128,consignacion_salida,1,GD-1283,Cliente 02
+2026-04-02,CN-0217,venta,1,F-1324,Cliente 01
+2026-04-02,CN-0230,consignacion_liquidada,3,F-1368,Cliente 01
+2026-04-02,CN-0299,consignacion_liquidada,3,F-1624,Cliente 12
+2026-04-02,CN-0321,venta,1,F-1966,Cliente 14
+2026-04-03,CN-0230,venta,2,F-1371,Cliente 08
+2026-04-03,CN-0370,venta,1,F-2047,Cliente 04
+2026-04-03,CN-0385,consignacion_salida,2,GD-2073,Cliente 02
+2026-04-04,CN-0181,consignacion_salida,1,GD-1298,Cliente 01
+2026-04-04,CN-0270,consignacion_salida,2,GD-1523,Cliente 04
+2026-04-04,CN-0318,venta,1,F-1741,Cliente 05
+2026-04-04,CN-0429,venta,1,F-2120,Cliente 03
+2026-04-04,CN-0721,consignacion_liquidada,1,F-2695,Cliente 13
 2026-04-05,CN-0005,importacion,4,IMP-1024,
-2026-04-05,CN-0111,importacion,11,IMP-1146,
-2026-04-05,CN-0187,importacion,5,IMP-1229,
-2026-04-05,CN-0318,venta,1,F-1725,Cliente 06
-2026-04-05,CN-0721,importacion,4,IMP-2420,
-2026-04-06,CN-0111,consignacion_salida,2,GD-1147,Cliente 01
-2026-04-06,CN-0565,importacion,4,IMP-2114,
-2026-04-07,CN-0020,importacion,5,IMP-1042,
-2026-04-07,CN-0231,importacion,5,IMP-1309,
-2026-04-07,CN-0299,consignacion_liquidada,3,F-1500,Cliente 22
-2026-04-07,CN-0614,importacion,5,IMP-2260,
-2026-04-08,CN-0304,importacion,12,IMP-1558,
-2026-04-08,CN-0323,importacion,5,IMP-1928,
-2026-04-08,CN-0468,importacion,4,IMP-2034,
-2026-04-09,CN-0117,importacion,4,IMP-1164,
-2026-04-09,CN-0228,consignacion_devolucion,2,GD-1273,Cliente 08
-2026-04-10,CN-0317,consignacion_salida,1,GD-1645,Cliente 02
-2026-04-10,CN-0710,importacion,5,IMP-2402,
-2026-04-10,CN-0710,venta,1,F-2403,Cliente 04
-2026-04-11,CN-0270,importacion,9,IMP-1404,
-2026-04-11,CN-0304,consignacion_salida,1,GD-1561,Cliente 01
-2026-04-11,CN-0317,consignacion_liquidada,1,F-1631,Cliente 01
-2026-04-11,CN-0319,consignacion_liquidada,1,F-1794,Cliente 01
-2026-04-11,CN-0402,consignacion_salida,1,GD-1977,Cliente 01
-2026-04-11,CN-0696,importacion,4,IMP-2373,
-2026-04-13,CN-0672,consignacion_devolucion,1,GD-2356,Cliente 04
+2026-04-05,CN-0034,importacion,5,IMP-1071,
+2026-04-05,CN-0121,venta,1,F-1272,Cliente 01
+2026-04-05,CN-0228,consignacion_devolucion,1,GD-1343,Cliente 02
+2026-04-05,CN-0385,importacion,5,IMP-2072,
+2026-04-05,CN-0530,importacion,12,IMP-2195,
+2026-04-05,CN-0700,importacion,12,IMP-2581,
+2026-04-05,CN-0715,importacion,9,IMP-2673,
+2026-04-05,CN-0715,venta,3,F-2676,Cliente 21
+2026-04-06,CN-0530,consignacion_salida,1,GD-2198,Cliente 19
+2026-04-06,CN-0721,venta,1,F-2699,Cliente 10
+2026-04-07,CN-0017,consignacion_salida,1,GD-1041,Cliente 02
+2026-04-07,CN-0270,consignacion_salida,2,GD-1522,Cliente 01
+2026-04-07,CN-0370,importacion,12,IMP-2044,
+2026-04-07,CN-0654,importacion,5,IMP-2417,
+2026-04-07,CN-0694,consignacion_liquidada,1,F-2497,Cliente 05
+2026-04-07,CN-0715,venta,2,F-2675,Cliente 02
+2026-04-08,CN-0039,importacion,5,IMP-1084,
+2026-04-08,CN-0120,importacion,5,IMP-1249,
+2026-04-08,CN-0228,importacion,4,IMP-1355,
+2026-04-08,CN-0270,importacion,12,IMP-1520,
+2026-04-08,CN-0402,importacion,5,IMP-2088,
+2026-04-09,CN-0052,importacion,7,IMP-1140,
+2026-04-09,CN-0189,importacion,5,IMP-1313,
+2026-04-09,CN-0231,importacion,5,IMP-1380,
+2026-04-09,CN-0322,venta,1,F-1979,Cliente 19
+2026-04-09,CN-0694,importacion,8,IMP-2525,
+2026-04-10,CN-0232,importacion,12,IMP-1426,
+2026-04-10,CN-0648,consignacion_liquidada,3,F-2383,Cliente 19
+2026-04-11,CN-0118,importacion,5,IMP-1232,
+2026-04-11,CN-0710,importacion,5,IMP-2624,
+2026-04-12,CN-0113,importacion,4,IMP-1213,
+2026-04-12,CN-0320,venta,1,F-1880,Cliente 02
+2026-04-12,CN-0655,importacion,4,IMP-2426,
+2026-04-12,CN-0700,consignacion_salida,2,GD-2582,Cliente 14
+2026-04-13,CN-0113,consignacion_devolucion,1,GD-1211,Cliente 09
 2026-04-14,CN-0005,consignacion_salida,2,GD-1025,Cliente 06
-2026-04-14,CN-0402,consignacion_salida,1,GD-1976,Cliente 07
-2026-04-14,CN-0566,consignacion_liquidada,1,F-2124,Cliente 01
-2026-04-14,CN-0576,consignacion_devolucion,1,GD-2156,Cliente 14
+2026-04-14,CN-0113,consignacion_liquidada,1,F-1208,Cliente 01
+2026-04-14,CN-0232,consignacion_salida,2,GD-1427,Cliente 02
 2026-04-15,CN-0001,consignacion_liquidada,1,F-1005,Cliente 18
-2026-04-15,CN-0450,consignacion_salida,1,GD-2018,Cliente 10
-2026-04-16,CN-0239,venta,1,F-1324,Cliente 02
-2026-04-16,CN-0270,venta,3,F-1406,Cliente 01
-2026-04-16,CN-0321,venta,1,F-1903,Cliente 10
-2026-04-18,CN-0299,consignacion_liquidada,2,F-1504,Cliente 03
-2026-04-19,CN-0477,venta,1,F-2059,Cliente 19
-2026-04-20,CN-0228,venta,2,F-1285,Cliente 02
-2026-04-20,CN-0320,consignacion_liquidada,1,F-1841,Cliente 02
-2026-04-20,CN-0477,consignacion_salida,1,GD-2058,Cliente 14
-2026-04-21,CN-0648,consignacion_devolucion,3,GD-2337,Cliente 02
-2026-04-23,CN-0172,venta,2,F-1199,Cliente 13
-2026-04-24,CN-0304,consignacion_salida,1,GD-1560,Cliente 01
-2026-04-25,CN-0029,consignacion_salida,1,GD-1056,Cliente 11
-2026-04-25,CN-0039,consignacion_liquidada,1,F-1073,Cliente 03
-2026-04-25,CN-0270,venta,2,F-1405,Cliente 05
-2026-04-25,CN-0322,consignacion_salida,1,GD-1910,Cliente 01
-2026-04-28,CN-0304,consignacion_salida,2,GD-1559,Cliente 01
-2026-04-28,CN-0317,consignacion_liquidada,3,F-1604,Cliente 06
-2026-04-30,CN-0318,consignacion_liquidada,2,F-1679,Cliente 14
-2026-05-02,CN-0696,consignacion_salida,1,GD-2374,Cliente 06
-2026-05-03,CN-0299,consignacion_liquidada,5,F-1491,Cliente 03
-2026-05-05,CN-0249,venta,1,F-1346,Cliente 15
-2026-05-05,CN-0318,venta,2,F-1726,Cliente 01
-2026-05-05,CN-0402,consignacion_liquidada,1,F-1969,Cliente 01
-2026-05-06,CN-0304,venta,1,F-1562,Cliente 01
-2026-05-06,CN-0576,venta,1,F-2158,Cliente 04
-2026-05-06,CN-0648,consignacion_liquidada,2,F-2334,Cliente 04
-2026-05-07,CN-0318,consignacion_devolucion,2,GD-1702,Cliente 11
-2026-05-07,CN-0385,venta,2,F-1956,Cliente 01
-2026-05-08,CN-0565,consignacion_devolucion,2,GD-2112,Cliente 02
-2026-05-09,CN-0304,consignacion_devolucion,1,GD-1537,Cliente 13
-2026-05-09,CN-0304,consignacion_liquidada,1,F-1553,Cliente 13
-2026-05-09,CN-0574,venta,1,F-2142,Cliente 02
-2026-05-10,CN-0429,consignacion_salida,1,GD-1997,Cliente 05
-2026-05-13,CN-0172,consignacion_devolucion,1,GD-1190,Cliente 10
-2026-05-13,CN-0245,consignacion_liquidada,1,F-1333,Cliente 01
-2026-05-14,CN-0185,venta,1,F-1216,Cliente 01
-2026-05-14,CN-0319,consignacion_liquidada,5,F-1765,Cliente 04
-2026-05-14,CN-0402,consignacion_salida,1,GD-1978,Cliente 15
-2026-05-14,CN-0492,venta,1,F-2081,Cliente 07
-2026-05-16,CN-0319,venta,1,F-1796,Cliente 01
-2026-05-17,CN-0257,consignacion_liquidada,1,F-1357,Cliente 02
-2026-05-17,CN-0323,venta,2,F-1929,Cliente 01
-2026-05-17,CN-0323,venta,1,F-1930,Cliente 06
-2026-05-17,CN-0492,consignacion_devolucion,1,GD-2073,Cliente 02
-2026-05-18,CN-0239,venta,1,F-1325,Cliente 02
-2026-05-18,CN-0304,venta,3,F-1563,Cliente 06
-2026-05-18,CN-0356,venta,1,F-1939,Cliente 01
-2026-05-18,CN-0566,consignacion_salida,1,GD-2129,Cliente 02
-2026-05-19,CN-0318,consignacion_liquidada,3,F-1713,Cliente 13
-2026-05-20,CN-0111,venta,1,F-1148,Cliente 01
-2026-05-23,CN-0111,consignacion_salida,3,GD-1149,Cliente 05
-2026-05-23,CN-0317,consignacion_liquidada,1,F-1608,Cliente 05
-2026-05-23,CN-0318,consignacion_devolucion,2,GD-1670,Cliente 01
-2026-05-23,CN-0322,venta,1,F-1911,Cliente 01
-2026-05-24,CN-0321,venta,1,F-1904,Cliente 01
-2026-05-26,CN-0181,consignacion_salida,1,GD-1204,Cliente 01
-2026-05-26,CN-0257,venta,1,F-1360,Cliente 01
-2026-05-26,CN-0317,consignacion_devolucion,3,GD-1602,Cliente 01
-2026-05-27,CN-0492,consignacion_salida,2,GD-2080,Cliente 01
-2026-05-27,CN-0696,consignacion_devolucion,1,GD-2368,Cliente 01
-2026-05-28,CN-0270,venta,3,F-1407,Cliente 01
-2026-05-28,CN-0304,consignacion_liquidada,2,F-1546,Cliente 14
-2026-05-28,CN-0565,venta,2,F-2115,Cliente 03
-2026-05-29,CN-0231,consignacion_liquidada,1,F-1301,Cliente 13
-2026-05-30,CN-0317,consignacion_liquidada,1,F-1636,Cliente 21
+2026-04-15,CN-0232,consignacion_salida,2,GD-1428,Cliente 03
+2026-04-15,CN-0370,venta,1,F-2045,Cliente 07
+2026-04-16,CN-0320,consignacion_liquidada,1,F-1848,Cliente 01
+2026-04-16,CN-0530,consignacion_salida,1,GD-2197,Cliente 10
+2026-04-17,CN-0121,venta,1,F-1271,Cliente 02
+2026-04-17,CN-0702,venta,1,F-2603,Cliente 01
+2026-04-20,CN-0530,consignacion_liquidada,2,F-2179,Cliente 01
+2026-04-21,CN-0715,venta,1,F-2674,Cliente 11
+2026-04-23,CN-0230,consignacion_salida,1,GD-1372,Cliente 02
+2026-04-23,CN-0270,venta,1,F-1521,Cliente 11
+2026-04-23,CN-0530,venta,2,F-2196,Cliente 05
+2026-04-24,CN-0270,venta,3,F-1525,Cliente 09
+2026-04-24,CN-0690,consignacion_salida,1,GD-2476,Cliente 05
+2026-04-26,CN-0370,consignacion_salida,1,GD-2046,Cliente 04
+2026-04-26,CN-0714,consignacion_devolucion,1,GD-2628,Cliente 01
+2026-04-27,CN-0270,consignacion_devolucion,2,GD-1490,Cliente 01
+2026-04-27,CN-0429,venta,1,F-2121,Cliente 07
+2026-04-28,CN-0270,consignacion_liquidada,1,F-1511,Cliente 01
+2026-05-01,CN-0318,consignacion_devolucion,1,GD-1733,Cliente 02
+2026-05-02,CN-0530,consignacion_salida,2,GD-2199,Cliente 14
+2026-05-02,CN-0648,consignacion_liquidada,3,F-2388,Cliente 01
+2026-05-02,CN-0700,consignacion_salida,2,GD-2584,Cliente 06
+2026-05-04,CN-0232,venta,3,F-1429,Cliente 01
+2026-05-04,CN-0597,venta,2,F-2325,Cliente 12
+2026-05-06,CN-0270,consignacion_salida,1,GD-1527,Cliente 01
+2026-05-09,CN-0052,consignacion_devolucion,3,GD-1116,Cliente 01
+2026-05-10,CN-0232,venta,2,F-1430,Cliente 02
+2026-05-10,CN-0530,consignacion_salida,3,GD-2200,Cliente 15
+2026-05-11,CN-0694,consignacion_liquidada,2,F-2507,Cliente 06
+2026-05-12,CN-0118,venta,2,F-1233,Cliente 01
+2026-05-12,CN-0715,consignacion_salida,3,GD-2677,Cliente 02
+2026-05-13,CN-0189,venta,4,F-1314,Cliente 04
+2026-05-13,CN-0694,venta,4,F-2526,Cliente 08
+2026-05-13,CN-0715,consignacion_devolucion,1,GD-2653,Cliente 01
+2026-05-14,CN-0113,venta,1,F-1214,Cliente 01
+2026-05-14,CN-0385,consignacion_salida,1,GD-2075,Cliente 01
+2026-05-15,CN-0370,consignacion_salida,1,GD-2048,Cliente 14
+2026-05-15,CN-0385,venta,1,F-2074,Cliente 22
+2026-05-16,CN-0017,consignacion_liquidada,1,F-1039,Cliente 22
+2026-05-16,CN-0227,consignacion_liquidada,1,F-1333,Cliente 02
+2026-05-16,CN-0231,venta,2,F-1381,Cliente 01
+2026-05-16,CN-0270,venta,3,F-1526,Cliente 08
+2026-05-16,CN-0694,consignacion_liquidada,2,F-2521,Cliente 02
+2026-05-17,CN-0415,consignacion_liquidada,1,F-2104,Cliente 01
+2026-05-17,CN-0592,consignacion_liquidada,2,F-2284,Cliente 01
+2026-05-18,CN-0118,venta,2,F-1234,Cliente 01
+2026-05-19,CN-0059,consignacion_liquidada,1,F-1155,Cliente 09
+2026-05-19,CN-0682,venta,1,F-2462,Cliente 03
+2026-05-20,CN-0052,venta,1,F-1142,Cliente 02
+2026-05-21,CN-0096,consignacion_salida,1,GD-1193,Cliente 01
+2026-05-21,CN-0230,venta,1,F-1374,Cliente 02
+2026-05-22,CN-0648,consignacion_devolucion,4,GD-2385,Cliente 01
+2026-05-22,CN-0721,venta,1,F-2700,Cliente 04
+2026-05-23,CN-0270,consignacion_liquidada,1,F-1503,Cliente 06
+2026-05-24,CN-0299,consignacion_devolucion,4,GD-1614,Cliente 01
+2026-05-24,CN-0592,consignacion_liquidada,3,F-2275,Cliente 01
+2026-05-26,CN-0365,consignacion_salida,3,GD-1998,Cliente 05
+2026-05-27,CN-0232,venta,2,F-1431,Cliente 02
+2026-05-28,CN-0059,consignacion_salida,1,GD-1158,Cliente 06
+2026-05-30,CN-0052,consignacion_liquidada,2,F-1119,Cliente 03
 2026-06-01,CN-0001,venta,1,F-1012,Cliente 02
-2026-06-01,CN-0111,venta,4,F-1151,Cliente 02
-2026-06-01,CN-0318,venta,1,F-1727,Cliente 01
-2026-06-02,CN-0492,consignacion_salida,1,GD-2082,Cliente 08
-2026-06-02,CN-0592,consignacion_liquidada,3,F-2228,Cliente 01
-2026-06-03,CN-0045,venta,2,F-1077,Cliente 16
-2026-06-03,CN-0317,consignacion_liquidada,2,F-1598,Cliente 02
-2026-06-03,CN-0456,consignacion_salida,1,GD-2021,Cliente 02
-2026-06-04,CN-0318,consignacion_liquidada,3,F-1672,Cliente 04
-2026-06-05,CN-0111,consignacion_salida,1,GD-1152,Cliente 16
-2026-06-07,CN-0270,venta,2,F-1408,Cliente 01
-2026-06-09,CN-0500,consignacion_salida,1,GD-2088,Cliente 07
-2026-06-10,CN-0228,consignacion_liquidada,3,F-1277,Cliente 02
+2026-06-01,CN-0094,consignacion_salida,1,GD-1186,Cliente 05
+2026-06-02,CN-0319,venta,1,F-1817,Cliente 01
+2026-06-02,CN-0715,consignacion_salida,1,GD-2679,Cliente 01
+2026-06-03,CN-0321,consignacion_devolucion,4,GD-1931,Cliente 01
+2026-06-03,CN-0632,consignacion_salida,1,GD-2338,Cliente 17
+2026-06-03,CN-0694,consignacion_salida,2,GD-2529,Cliente 18
+2026-06-04,CN-0128,consignacion_salida,1,GD-1285,Cliente 01
+2026-06-04,CN-0320,consignacion_liquidada,3,F-1859,Cliente 03
+2026-06-05,CN-0017,consignacion_salida,1,GD-1042,Cliente 03
+2026-06-06,CN-0700,consignacion_liquidada,3,F-2571,Cliente 06
+2026-06-08,CN-0017,consignacion_salida,1,GD-1043,Cliente 04
+2026-06-09,CN-0113,venta,1,F-1215,Cliente 04
+2026-06-09,CN-0232,consignacion_liquidada,1,F-1403,Cliente 01
+2026-06-10,CN-0370,consignacion_salida,1,GD-2050,Cliente 01
+2026-06-10,CN-0402,venta,1,F-2089,Cliente 01
+2026-06-10,CN-0682,consignacion_liquidada,1,F-2460,Cliente 22
 2026-06-11,CN-0005,consignacion_salida,2,GD-1027,Cliente 03
-2026-06-12,CN-0576,consignacion_salida,1,GD-2159,Cliente 14
-2026-06-13,CN-0304,consignacion_liquidada,1,F-1540,Cliente 03
-2026-06-14,CN-0318,consignacion_liquidada,2,F-1718,Cliente 06
-2026-06-15,CN-0429,consignacion_salida,1,GD-1999,Cliente 07
-2026-06-16,CN-0592,consignacion_liquidada,3,F-2220,Cliente 02
-2026-06-17,CN-0111,venta,1,F-1150,Cliente 13
+2026-06-12,CN-0530,consignacion_salida,1,GD-2202,Cliente 05
+2026-06-12,CN-0574,venta,1,F-2216,Cliente 09
+2026-06-14,CN-0702,venta,1,F-2604,Cliente 08
+2026-06-15,CN-0694,consignacion_liquidada,2,F-2504,Cliente 06
+2026-06-15,CN-0694,venta,1,F-2528,Cliente 10
+2026-06-16,CN-0052,venta,4,F-1143,Cliente 01
+2026-06-16,CN-0370,consignacion_salida,2,GD-2049,Cliente 01
+2026-06-16,CN-0694,consignacion_salida,1,GD-2527,Cliente 04
+2026-06-16,CN-0700,venta,2,F-2586,Cliente 05
+2026-06-17,CN-0052,consignacion_liquidada,1,F-1114,Cliente 01
+2026-06-17,CN-0322,consignacion_salida,1,GD-1980,Cliente 09
+2026-06-17,CN-0694,venta,1,F-2530,Cliente 04
 2026-06-18,CN-0001,venta,1,F-1011,Cliente 04
-2026-06-19,CN-0228,consignacion_salida,4,GD-1286,Cliente 13
-2026-06-20,CN-0681,consignacion_devolucion,1,GD-2359,Cliente 12
-2026-06-22,CN-0614,venta,1,F-2261,Cliente 01
-2026-06-23,CN-0318,consignacion_liquidada,1,F-1721,Cliente 11
-2026-06-23,CN-0592,consignacion_devolucion,3,GD-2212,Cliente 01
-2026-06-25,CN-0450,consignacion_devolucion,1,GD-2010,Cliente 01
-2026-06-25,CN-0710,consignacion_liquidada,1,F-2396,Cliente 20
-2026-06-26,CN-0304,venta,4,F-1564,Cliente 11
-2026-06-27,CN-0111,consignacion_devolucion,4,GD-1131,Cliente 01
-2026-06-27,CN-0319,consignacion_salida,1,GD-1797,Cliente 07
-2026-06-30,CN-0239,consignacion_devolucion,2,GD-1320,Cliente 01
-2026-07-01,CN-0172,consignacion_salida,3,GD-1201,Cliente 01
-2026-07-01,CN-0187,venta,2,F-1230,Cliente 01
-2026-07-01,CN-0576,venta,1,F-2160,Cliente 01
-2026-07-03,CN-0304,venta,2,F-1566,Cliente 04
-2026-07-03,CN-0317,consignacion_liquidada,2,F-1615,Cliente 03
-2026-07-04,CN-0111,importacion,12,IMP-1153,
-2026-07-04,CN-0239,consignacion_salida,1,GD-1327,Cliente 11
-2026-07-05,CN-0257,consignacion_salida,1,GD-1361,Cliente 01
-2026-07-05,CN-0304,importacion,12,IMP-1565,
-2026-07-05,CN-0318,consignacion_liquidada,2,F-1715,Cliente 07
+2026-06-19,CN-0228,consignacion_salida,1,GD-1356,Cliente 02
+2026-06-19,CN-0232,venta,1,F-1432,Cliente 01
+2026-06-19,CN-0319,consignacion_liquidada,3,F-1805,Cliente 15
+2026-06-20,CN-0530,consignacion_salida,2,GD-2201,Cliente 04
+2026-06-23,CN-0030,consignacion_devolucion,1,GD-1051,Cliente 04
+2026-06-24,CN-0128,consignacion_salida,1,GD-1284,Cliente 03
+2026-06-25,CN-0700,consignacion_salida,3,GD-2585,Cliente 01
+2026-06-25,CN-0715,venta,2,F-2680,Cliente 14
+2026-06-27,CN-0695,venta,1,F-2540,Cliente 04
+2026-06-28,CN-0318,consignacion_salida,1,GD-1742,Cliente 15
+2026-06-29,CN-0230,consignacion_liquidada,2,F-1364,Cliente 05
+2026-06-30,CN-0230,consignacion_liquidada,1,F-1373,Cliente 02
+2026-07-01,CN-0290,consignacion_liquidada,1,F-1548,Cliente 01
+2026-07-02,CN-0232,consignacion_devolucion,1,GD-1421,Cliente 01
+2026-07-03,CN-0319,consignacion_salida,1,GD-1818,Cliente 05
+2026-07-04,CN-0052,importacion,8,IMP-1144,
+2026-07-04,CN-0232,importacion,12,IMP-1433,
+2026-07-04,CN-0320,importacion,21,IMP-1881,
+2026-07-04,CN-0370,importacion,7,IMP-2051,
+2026-07-04,CN-0530,consignacion_salida,5,GD-2204,Cliente 15
+2026-07-04,CN-0654,consignacion_liquidada,1,F-2416,Cliente 06
+2026-07-05,CN-0299,consignacion_devolucion,2,GD-1593,Cliente 01
+2026-07-05,CN-0530,importacion,12,IMP-2203,
 2026-07-06,CN-0005,importacion,4,IMP-1029,
-2026-07-06,CN-0317,consignacion_liquidada,3,F-1610,Cliente 03
-2026-07-06,CN-0470,venta,2,F-2048,Cliente 03
-2026-07-07,CN-0005,venta,1,F-1030,Cliente 01
-2026-07-07,CN-0228,importacion,8,IMP-1287,
-2026-07-07,CN-0228,venta,3,F-1288,Cliente 11
-2026-07-07,CN-0304,consignacion_devolucion,3,GD-1549,Cliente 01
-2026-07-07,CN-0492,importacion,5,IMP-2083,
-2026-07-08,CN-0322,importacion,5,IMP-1912,
+2026-07-06,CN-0270,importacion,12,IMP-1528,
+2026-07-06,CN-0690,importacion,4,IMP-2478,
+2026-07-07,CN-0189,importacion,4,IMP-1315,
+2026-07-07,CN-0230,importacion,5,IMP-1375,
+2026-07-07,CN-0322,importacion,5,IMP-1981,
+2026-07-07,CN-0385,importacion,4,IMP-2076,
+2026-07-07,CN-0700,importacion,9,IMP-2587,
+2026-07-08,CN-0317,consignacion_liquidada,2,F-1673,Cliente 01
+2026-07-08,CN-0721,importacion,4,IMP-2701,
 2026-07-09,CN-0001,importacion,4,IMP-1013,
-2026-07-09,CN-0032,consignacion_salida,1,GD-1063,Cliente 01
-2026-07-09,CN-0172,importacion,5,IMP-1200,
-2026-07-09,CN-0270,importacion,10,IMP-1409,
-2026-07-09,CN-0402,importacion,4,IMP-1979,
-2026-07-10,CN-0228,consignacion_salida,1,GD-1289,Cliente 07
-2026-07-10,CN-0239,importacion,5,IMP-1326,
-2026-07-10,CN-0249,importacion,4,IMP-1347,
-2026-07-10,CN-0385,importacion,4,IMP-1957,
-2026-07-10,CN-0592,consignacion_devolucion,3,GD-2243,Cliente 10
-2026-07-11,CN-0045,importacion,5,IMP-1078,
-2026-07-11,CN-0086,consignacion_devolucion,1,GD-1088,Cliente 16
-2026-07-12,CN-0468,venta,2,F-2035,Cliente 22
-2026-07-13,CN-0035,venta,1,F-1067,Cliente 15
-2026-07-13,CN-0319,consignacion_liquidada,1,F-1770,Cliente 05
-2026-07-13,CN-0477,consignacion_salida,2,GD-2060,Cliente 13
-2026-07-15,CN-0149,venta,1,F-1179,Cliente 02
-2026-07-17,CN-0206,consignacion_salida,1,GD-1235,Cliente 07
-2026-07-17,CN-0231,consignacion_salida,2,GD-1310,Cliente 05
-2026-07-20,CN-0704,venta,2,F-2388,Cliente 02
-2026-07-21,CN-0111,venta,4,F-1154,Cliente 18
-2026-07-22,CN-0270,venta,1,F-1410,Cliente 01
-2026-07-22,CN-0304,venta,1,F-1568,Cliente 04
-2026-07-23,CN-0429,consignacion_liquidada,1,F-1998,Cliente 05
-2026-07-24,CN-0149,consignacion_salida,1,GD-1178,Cliente 15
-2026-07-25,CN-0111,venta,3,F-1155,Cliente 04
-2026-07-25,CN-0304,consignacion_salida,2,GD-1567,Cliente 05
-2026-07-26,CN-0696,consignacion_salida,1,GD-2375,Cliente 20
-2026-07-27,CN-0045,venta,3,F-1079,Cliente 16
-2026-07-27,CN-0274,venta,1,F-1423,Cliente 02
-2026-08-01,CN-0257,consignacion_salida,2,GD-1362,Cliente 03
-2026-08-02,CN-0299,consignacion_liquidada,1,F-1506,Cliente 06
-2026-08-02,CN-0566,venta,1,F-2130,Cliente 01
-2026-08-03,CN-0239,consignacion_salida,1,GD-1328,Cliente 01
-2026-08-03,CN-0304,venta,2,F-1569,Cliente 08
-2026-08-04,CN-0029,consignacion_liquidada,1,F-1057,Cliente 11
-2026-08-05,CN-0029,consignacion_salida,2,GD-1058,Cliente 19
-2026-08-05,CN-0187,venta,1,F-1231,Cliente 01
-2026-08-05,CN-0429,venta,1,F-2000,Cliente 15
-2026-08-06,CN-0317,consignacion_liquidada,2,F-1606,Cliente 02
-2026-08-06,CN-0323,consignacion_salida,1,GD-1932,Cliente 05
-2026-08-06,CN-0477,venta,1,F-2061,Cliente 10
-2026-08-08,CN-0111,venta,1,F-1157,Cliente 08
-2026-08-08,CN-0473,consignacion_liquidada,1,F-2052,Cliente 14
-2026-08-10,CN-0257,consignacion_devolucion,1,GD-1355,Cliente 02
-2026-08-11,CN-0249,consignacion_salida,1,GD-1348,Cliente 04
-2026-08-12,CN-0270,consignacion_salida,1,GD-1411,Cliente 02
-2026-08-15,CN-0492,venta,1,F-2084,Cliente 07
-2026-08-16,CN-0111,venta,2,F-1156,Cliente 14
+2026-07-10,CN-0321,consignacion_liquidada,1,F-1958,Cliente 10
+2026-07-10,CN-0597,importacion,5,IMP-2326,
+2026-07-11,CN-0118,importacion,4,IMP-1235,
+2026-07-11,CN-0121,importacion,5,IMP-1273,
+2026-07-11,CN-0429,consignacion_liquidada,2,F-2117,Cliente 21
+2026-07-11,CN-0694,importacion,9,IMP-2531,
+2026-07-12,CN-0034,consignacion_salida,2,GD-1072,Cliente 12
+2026-07-12,CN-0096,importacion,4,IMP-1194,
+2026-07-12,CN-0702,importacion,5,IMP-2605,
+2026-07-12,CN-0715,importacion,12,IMP-2681,
+2026-07-13,CN-0034,consignacion_salida,1,GD-1073,Cliente 01
+2026-07-13,CN-0710,consignacion_devolucion,1,GD-2620,Cliente 09
+2026-07-14,CN-0317,consignacion_liquidada,2,F-1683,Cliente 04
+2026-07-14,CN-0320,consignacion_devolucion,4,GD-1873,Cliente 01
+2026-07-14,CN-0321,consignacion_liquidada,1,F-1963,Cliente 08
+2026-07-17,CN-0648,consignacion_liquidada,1,F-2406,Cliente 03
+2026-07-17,CN-0694,consignacion_salida,2,GD-2532,Cliente 01
+2026-07-18,CN-0291,consignacion_salida,2,GD-1560,Cliente 11
+2026-07-19,CN-0270,consignacion_salida,1,GD-1533,Cliente 01
+2026-07-19,CN-0682,consignacion_salida,1,GD-2463,Cliente 19
+2026-07-20,CN-0415,consignacion_salida,2,GD-2108,Cliente 03
+2026-07-20,CN-0574,consignacion_liquidada,2,F-2212,Cliente 21
+2026-07-20,CN-0715,consignacion_liquidada,3,F-2678,Cliente 02
+2026-07-23,CN-0228,consignacion_salida,1,GD-1357,Cliente 11
+2026-07-24,CN-0052,consignacion_salida,2,GD-1146,Cliente 01
+2026-07-25,CN-0429,consignacion_salida,1,GD-2123,Cliente 10
+2026-07-26,CN-0321,consignacion_liquidada,1,F-1942,Cliente 15
+2026-07-26,CN-0370,consignacion_salida,2,GD-2052,Cliente 16
+2026-07-26,CN-0694,consignacion_devolucion,1,GD-2512,Cliente 01
+2026-07-28,CN-0052,consignacion_liquidada,2,F-1127,Cliente 10
+2026-08-01,CN-0530,consignacion_devolucion,1,GD-2174,Cliente 01
+2026-08-03,CN-0074,consignacion_liquidada,1,F-1166,Cliente 01
+2026-08-03,CN-0700,consignacion_liquidada,2,F-2583,Cliente 14
+2026-08-04,CN-0189,consignacion_salida,1,GD-1317,Cliente 01
+2026-08-05,CN-0530,consignacion_salida,4,GD-2207,Cliente 04
+2026-08-05,CN-0574,consignacion_salida,1,GD-2219,Cliente 01
+2026-08-05,CN-0700,consignacion_devolucion,3,GD-2576,Cliente 01
+2026-08-10,CN-0290,consignacion_salida,2,GD-1550,Cliente 06
+2026-08-10,CN-0715,consignacion_liquidada,2,F-2669,Cliente 01
+2026-08-11,CN-0665,consignacion_salida,1,GD-2429,Cliente 06
+2026-08-12,CN-0385,consignacion_devolucion,2,GD-2069,Cliente 03
+2026-08-13,CN-0672,consignacion_salida,1,GD-2448,Cliente 04
+2026-08-14,CN-0319,consignacion_liquidada,1,F-1800,Cliente 19
+2026-08-15,CN-0319,consignacion_salida,1,GD-1819,Cliente 01
+2026-08-15,CN-0530,consignacion_salida,2,GD-2208,Cliente 08
+2026-08-16,CN-0316,consignacion_salida,1,GD-1631,Cliente 05
+2026-08-16,CN-0402,consignacion_liquidada,3,F-2086,Cliente 10
+2026-08-16,CN-0715,consignacion_salida,1,GD-2684,Cliente 02
 2026-08-18,CN-0005,consignacion_liquidada,2,F-1028,Cliente 03
-2026-08-18,CN-0149,venta,1,F-1180,Cliente 01
-2026-08-20,CN-0322,consignacion_salida,1,GD-1913,Cliente 02
-2026-08-20,CN-0385,consignacion_salida,2,GD-1958,Cliente 04
-2026-08-21,CN-0245,ajuste,-1,CONTEO-2422,
-2026-08-21,CN-0319,consignacion_salida,1,GD-1798,Cliente 01
-2026-08-21,CN-0450,consignacion_liquidada,1,F-2014,Cliente 02
-2026-08-21,CN-0690,ajuste,-1,CONTEO-2423,
-2026-08-21,CN-0694,ajuste,1,CONTEO-2424,
-2026-08-23,CN-0111,venta,1,F-1158,Cliente 07
-2026-08-24,CN-0500,consignacion_salida,1,GD-2089,Cliente 17
-2026-08-25,CN-0304,consignacion_salida,1,GD-1570,Cliente 06
-2026-08-25,CN-0450,venta,1,F-2019,Cliente 09
-2026-08-26,CN-0270,consignacion_salida,2,GD-1412,Cliente 12
-2026-08-26,CN-0323,consignacion_salida,1,GD-1931,Cliente 02
-2026-08-26,CN-0492,consignacion_salida,1,GD-2085,Cliente 04
-2026-08-26,CN-0721,consignacion_salida,1,GD-2421,Cliente 03
-2026-08-27,CN-0020,consignacion_salida,2,GD-1043,Cliente 22
-2026-08-27,CN-0228,consignacion_salida,2,GD-1290,Cliente 04
-2026-09-02,CN-0005,venta,2,F-1031,Cliente 20
-2026-09-02,CN-0577,consignacion_salida,1,GD-2163,Cliente 01
-2026-09-02,CN-0614,venta,1,F-2262,Cliente 01
-2026-09-03,CN-0492,venta,1,F-2086,Cliente 04
-2026-09-04,CN-0228,venta,2,F-1291,Cliente 07
-2026-09-05,CN-0228,consignacion_liquidada,2,F-1269,Cliente 08
-2026-09-05,CN-0385,venta,1,F-1960,Cliente 01
-2026-09-07,CN-0172,consignacion_liquidada,1,F-1197,Cliente 01
-2026-09-07,CN-0319,consignacion_liquidada,3,F-1756,Cliente 01
-2026-09-08,CN-0172,consignacion_salida,1,GD-1202,Cliente 02
-2026-09-08,CN-0249,consignacion_salida,1,GD-1349,Cliente 08
-2026-09-09,CN-0187,consignacion_liquidada,2,F-1225,Cliente 03
-2026-09-09,CN-0270,venta,2,F-1413,Cliente 01
-2026-09-09,CN-0270,venta,2,F-1414,Cliente 02
-2026-09-09,CN-0470,consignacion_salida,1,GD-2049,Cliente 05
-2026-09-10,CN-0111,venta,1,F-1159,Cliente 01
-2026-09-10,CN-0429,consignacion_salida,2,GD-2001,Cliente 17
-2026-09-12,CN-0231,venta,2,F-1311,Cliente 18
-2026-09-13,CN-0228,consignacion_liquidada,2,F-1267,Cliente 01
+2026-08-18,CN-0120,consignacion_liquidada,1,F-1243,Cliente 14
+2026-08-19,CN-0299,consignacion_devolucion,4,GD-1595,Cliente 01
+2026-08-19,CN-0682,consignacion_salida,1,GD-2464,Cliente 15
+2026-08-19,CN-0710,consignacion_salida,1,GD-2625,Cliente 02
+2026-08-21,CN-0162,ajuste,-1,CONTEO-2704,
+2026-08-21,CN-0232,consignacion_devolucion,1,GD-1414,Cliente 05
+2026-08-21,CN-0270,consignacion_liquidada,2,F-1524,Cliente 04
+2026-08-21,CN-0365,consignacion_salida,3,GD-2000,Cliente 07
+2026-08-21,CN-0376,ajuste,1,CONTEO-2706,
+2026-08-21,CN-0704,ajuste,1,CONTEO-2705,
+2026-08-22,CN-0700,consignacion_salida,3,GD-2589,Cliente 15
+2026-08-22,CN-0700,consignacion_salida,1,GD-2590,Cliente 01
+2026-08-23,CN-0299,consignacion_devolucion,3,GD-1616,Cliente 13
+2026-08-24,CN-0694,consignacion_salida,1,GD-2533,Cliente 10
+2026-08-26,CN-0120,consignacion_liquidada,2,F-1247,Cliente 02
+2026-08-26,CN-0715,consignacion_salida,2,GD-2683,Cliente 10
+2026-08-26,CN-0721,consignacion_salida,1,GD-2702,Cliente 04
+2026-09-02,CN-0052,consignacion_salida,1,GD-1148,Cliente 17
+2026-09-02,CN-0365,consignacion_devolucion,3,GD-1999,Cliente 05
+2026-09-03,CN-0320,consignacion_liquidada,1,F-1866,Cliente 14
+2026-09-04,CN-0370,consignacion_salida,2,GD-2054,Cliente 11
+2026-09-06,CN-0702,consignacion_salida,2,GD-2608,Cliente 01
+2026-09-07,CN-0700,consignacion_liquidada,1,F-2573,Cliente 05
+2026-09-10,CN-0415,consignacion_devolucion,1,GD-2102,Cliente 01
+2026-09-11,CN-0385,consignacion_salida,1,GD-2077,Cliente 17
+2026-09-11,CN-0592,consignacion_liquidada,1,F-2281,Cliente 01
+2026-09-12,CN-0715,consignacion_salida,4,GD-2685,Cliente 09
+2026-09-13,CN-0113,consignacion_salida,1,GD-1217,Cliente 12
+2026-09-13,CN-0690,consignacion_liquidada,1,F-2477,Cliente 05
 2026-09-14,CN-0001,consignacion_salida,1,GD-1014,Cliente 01
-2026-09-15,CN-0385,consignacion_salida,2,GD-1959,Cliente 03
-2026-09-21,CN-0304,venta,4,F-1571,Cliente 03
-2026-09-22,CN-0319,consignacion_liquidada,3,F-1790,Cliente 01
-2026-09-22,CN-0322,consignacion_salida,1,GD-1914,Cliente 02
-2026-09-23,CN-0228,consignacion_salida,2,GD-1292,Cliente 12
-2026-09-24,CN-0029,venta,1,F-1059,Cliente 04
-2026-09-26,CN-0045,venta,2,F-1080,Cliente 01
-2026-09-26,CN-0648,consignacion_liquidada,2,F-2327,Cliente 01
+2026-09-14,CN-0525,consignacion_salida,2,GD-2152,Cliente 05
+2026-09-15,CN-0321,consignacion_salida,1,GD-1969,Cliente 10
+2026-09-19,CN-0231,consignacion_salida,2,GD-1384,Cliente 02
+2026-09-21,CN-0694,consignacion_salida,3,GD-2536,Cliente 14
+2026-09-21,CN-0700,consignacion_salida,5,GD-2591,Cliente 05
+2026-09-24,CN-0321,consignacion_salida,2,GD-1968,Cliente 07
+2026-09-24,CN-0434,consignacion_salida,1,GD-2125,Cliente 03
+2026-09-25,CN-0702,consignacion_salida,1,GD-2607,Cliente 02
 2026-09-27,CN-0005,consignacion_liquidada,2,F-1026,Cliente 06
-2026-09-27,CN-0473,consignacion_salida,1,GD-2053,Cliente 07
+2026-09-27,CN-0052,consignacion_devolucion,4,GD-1134,Cliente 01
+2026-09-27,CN-0121,consignacion_liquidada,1,F-1270,Cliente 21
 2026-09-28,CN-0001,consignacion_salida,2,GD-1015,Cliente 13
+2026-09-28,CN-0694,consignacion_salida,3,GD-2535,Cliente 02

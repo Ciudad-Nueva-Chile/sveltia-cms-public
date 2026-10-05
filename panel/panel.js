@@ -91,6 +91,52 @@
     });
   }
 
+  // ---------- Dónde conviene comprar ----------
+  // Cada combinación trae su costo sin envíos (libros + esperar/adelantar). El costo fijo de cada envío no cambia
+  // qué libros van en cada una, así que la recomendación se puede recalcular aquí al instante.
+  function usd(v) { return "US$ " + fmt.format(Math.round(v)); }
+
+  function pintarComparacion() {
+    var S = D.semana, C = S.combinaciones || [];
+    if (C.length < 2) { $("#comparacion").innerHTML = ""; return; }
+    var origenes = Object.keys(S.envios || {});
+    $("#comparacion").innerHTML = '<article class="tarjeta comparacion"><header><h2>Dónde conviene comprar</h2>' +
+      "<p>Anota cuánto cuesta cada envío (courier, despacho y trámites) y la recomendación se recalcula al instante.</p></header>" +
+      '<div class="envios">' + origenes.map(function (o) {
+        return "<label>Envío a " + esc(o) + ' <span>US$</span><input type="number" min="0" step="10" inputmode="decimal" data-origen="' + esc(o) + '" value="' + (+S.envios[o] || 0) + '"></label>';
+      }).join("") + "</div>" +
+      '<div class="tabla-envoltura" style="border:0"><table class="tabla-comp"><thead><tr><th>Opción</th><th>Qué incluye</th><th class="num">Libros</th><th class="num">Esperar o adelantar</th><th class="num">Envíos</th><th class="num">Total</th></tr></thead><tbody></tbody></table></div>' +
+      '<p class="veredicto" aria-live="polite"></p>' +
+      '<p class="nota">En US$. «Libros» incluye lo que queda para después a su mejor precio, para comparar opciones parejas; «Esperar o adelantar» es el castigo por la espera o por comprar antes de tiempo. ' +
+      "Los costos que anotes aquí no se guardan: para que el cálculo los use, anótalos en la planilla (pestaña «Pedido sugerido»).</p></article>";
+    var inputs = $("#comparacion").querySelectorAll("input[data-origen]");
+    function recalcular() {
+      var costo = {};
+      inputs.forEach(function (i) { costo[i.dataset.origen] = Math.max(0, parseFloat(i.value) || 0); });
+      var filas = C.map(function (c) {
+        var envio = c.envia.reduce(function (s, o) { return s + (costo[o] || 0); }, 0);
+        return { c: c, envio: envio, total: c.libros_usd + c.castigo_usd + envio };
+      });
+      var validas = filas.filter(function (f) { return f.c.valida; });
+      var mejor = validas.reduce(function (a, b) { return !a || b.total < a.total - 0.005 ? b : a; }, null);
+      $("#comparacion tbody").innerHTML = filas.map(function (f) {
+        var cls = f === mejor ? "mejor" : (f.c.valida ? "" : "invalida");
+        return '<tr class="' + cls + '"><td>' + esc(f.c.nombre) + (f === mejor ? "<small>Conviene</small>" : "") + "</td><td>" + esc(f.c.incluye) + "</td>" +
+          '<td class="num">' + usd(f.c.libros_usd) + '</td><td class="num">' + usd(f.c.castigo_usd) + "</td>" +
+          '<td class="num">' + (f.c.valida ? usd(f.envio) : "—") + '</td><td class="num"><b>' + (f.c.valida ? usd(f.total) : "No alcanza el mínimo") + "</b></td></tr>";
+      }).join("");
+      var elegida = C.find(function (c) { return c.elegida; });
+      var v = $("#comparacion .veredicto");
+      if (!mejor) { v.textContent = ""; return; }
+      var segunda = validas.filter(function (f) { return f !== mejor; }).sort(function (a, b) { return a.total - b.total; })[0];
+      v.innerHTML = "Conviene <b>" + esc(mejor.c.nombre.charAt(0).toLowerCase() + mejor.c.nombre.slice(1)) + "</b>: " + usd(mejor.total) +
+        (segunda ? ", " + usd(segunda.total - mejor.total) + " menos que la siguiente opción." : ".") +
+        (elegida && elegida.nombre !== mejor.c.nombre ? "<em>La lista de arriba se calculó para «" + esc(elegida.nombre) + "». Con estos costos cambia: anótalos en la planilla y se actualiza en el próximo cálculo.</em>" : "");
+    }
+    inputs.forEach(function (i) { i.addEventListener("input", recalcular); });
+    recalcular();
+  }
+
   function tarjetaLista(opt) {
     var MAX = 6;
     if (!opt.items.length) return "";
@@ -111,6 +157,12 @@
       tarjetaLista({ titulo: "Se venden y están sin stock", tono: "urgente", items: S.sin_stock,
         bajada: "Ya van en el pedido sugerido, salvo los que vienen en camino.",
         dato: function (r) { return "se vende " + esc(r.se_vende) + (r.en_camino ? ' · <b class="ok">vienen ' + r.en_camino + "</b>" : ""); } }),
+      tarjetaLista({ titulo: "Te los pidieron y no había", tono: "urgente", items: S.perdidas || [],
+        bajada: "Anotados en «Ventas» como «No había stock» en los últimos 90 días. Ya cuentan como demanda en el pronóstico.",
+        dato: function (r) { return r.unidades + " ejemplares · " + r.veces + (r.veces === 1 ? " pedido" : " pedidos") + " · último el " + fechaCl(r.ultima); } }),
+      tarjetaLista({ titulo: "Bajas de stock sin venta anotada", tono: "info", items: S.sin_anotar || [],
+        bajada: "Bajó «En bodega» pero no hay una venta en «Ventas». Si fue una venta, anótala con su precio y canal.",
+        dato: function (r) { return "bajó " + r.unidades + " en bodega"; } }),
       tarjetaLista({ titulo: "Para liquidar, devolver o revisar", tono: "atencion", items: S.liquidar,
         bajada: "$" + fmt.format(S.valor_liquidar) + " a precio de lista en libros que no salen.",
         dato: function (r) { return r.bodega + " en bodega · $" + fmt.format(r.valor) + " · " + esc(r.sin_salida); } }),
@@ -288,6 +340,12 @@
       ["Títulos A / B / C", valor("Títulos A / B / C")],
       ["Nivel de servicio objetivo", valor("Nivel de servicio objetivo")],
     ];
+    var V = D.ventas || {};
+    if (V.filas) {
+      tiles.push(["Ventas anotadas con descuento (12 meses)", Math.round(V.pct_con_descuento * 100) + " %"]);
+      tiles.push(["Descuento promedio cuando hay", Math.round(V.descuento_promedio * 100) + " %"]);
+      tiles.push(["Ejemplares pedidos que no había (12 meses)", fmt.format(V.unidades_perdidas)]);
+    }
     $("#tiles").innerHTML = tiles.map(function (t) {
       return '<div class="tile"><div class="tile-valor">' + esc(t[1]) + '</div><div class="tile-titulo">' + esc(t[0]) + "</div></div>";
     }).join("");
@@ -397,6 +455,7 @@
       $("#etiqueta-datos").textContent = D.etiqueta || "";
       $("#etiqueta-datos").hidden = !D.etiqueta;
       pintarPedidos();
+      pintarComparacion();
       pintarListas();
       pintarChips();
       pintarLibros();

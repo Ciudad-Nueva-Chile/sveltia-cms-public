@@ -33,8 +33,8 @@ python herramientas/crear_planilla.py --planilla 1AbC…xyz --con-ejemplo
 python -m inventario --fuente sheets --planilla 1AbC…xyz
 ```
 
-La primera orden prepara lo que no se ve (Registro de movimientos y Configuración, ocultas); la segunda crea la
-pestaña **Inventario** con las existencias que dan los movimientos cargados, más **Esta semana** y **Pedido sugerido**.
+La primera orden prepara **Ventas** y lo que no se ve (Registro de movimientos y Configuración, ocultas); la segunda
+crea la pestaña **Inventario** con las existencias que dan los movimientos cargados, más **Esta semana** y **Pedido sugerido**.
 
 ## 3. Cargar los datos reales
 
@@ -44,7 +44,11 @@ pestaña **Inventario** con las existencias que dan los movimientos cargados, m�
   puesto en bodega / precio neto y pesos por dólar. Si un origen vende libros de otra edición con otras condiciones
   (por ejemplo, libros españoles comprados en Argentina), se agrega una fila con esa «Edición del libro»; la fila
   con la edición vacía vale para todo lo demás.
-- **Inventario**: la crea el primer cálculo. Desde entonces Roberto corrige ahí las cantidades.
+- **Inventario**: la crea el primer cálculo. Desde entonces Roberto corrige ahí las llegadas, conteos y consignaciones.
+- **Ventas**: Roberto anota cada venta (y cada pedido que no se pudo atender, como «No había stock»). Se descuenta
+  sola del stock cada mañana; no hay que restarla también en «Inventario».
+- **Pedido sugerido**: Roberto anota en las celdas amarillas cuánto cuesta cada envío. La recomendación de dónde
+  comprar se recalcula al instante, y el cálculo del día siguiente arma la lista con esa opción.
 
 ## 4. Cálculo automático cada mañana
 

@@ -25,6 +25,9 @@ CORTE = pd.Timestamp("2026-09-28")
 PREFIJO = {"inventario_inicial": "CONTEO", "ajuste": "CONTEO", "importacion": "IMP", "consignacion_salida": "GD",
            "consignacion_devolucion": "GD", "consignacion_liquidada": "F", "venta": "F"}
 CLIENTES = [f"Cliente {i:02d}" for i in range(1, 23)]
+# Desde esta fecha las ventas directas se anotan en la pestaña «Ventas» (con canal, descuento y ventas perdidas)
+VENTAS_DESDE = pd.Timestamp("2026-07-01")
+CANALES = (["Web / WhatsApp", "Local", "Evento o feria", "Librería", "Parroquia o institución"], [0.35, 0.25, 0.15, 0.15, 0.10])
 
 
 def leer_libros(carpeta: Path) -> pd.DataFrame:
@@ -82,17 +85,25 @@ def demanda_mensual(tipo: str, meses: pd.PeriodIndex, rng) -> np.ndarray:
     return d
 
 
-def generar(catalogo: pd.DataFrame, rng) -> tuple[pd.DataFrame, pd.DataFrame]:
+def generar(catalogo: pd.DataFrame, rng) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     meses = pd.period_range(INICIO, CORTE, freq="M")
     peso_cliente = 1 / np.arange(1, len(CLIENTES) + 1) ** 1.1
     peso_cliente /= peso_cliente.sum()
-    movs, transito = [], []
+    movs, transito, ventas = [], [], []
     folio = [1000]
 
     def mov(fecha, id_, tipo, cant, cliente=""):
         folio[0] += 1
         movs.append({"fecha": fecha.date().isoformat(), "id": id_, "tipo": tipo, "cantidad": int(cant),
                      "documento": f"{PREFIJO.get(tipo, 'F')}-{folio[0]}", "cliente": cliente})
+
+    def venta(fecha, fila, cant, estado="Vendido"):
+        folio[0] += 1
+        desc = int(rng.choice([10, 15, 20, 30])) if estado == "Vendido" and rng.random() < 0.25 else ""
+        ventas.append({"fecha": fecha.date().isoformat(), "documento": f"B-{folio[0]}" if estado == "Vendido" else "",
+                       "id": f"{fila.id} · {fila.titulo}", "cantidad": int(cant), "descuento": desc,
+                       "canal": rng.choice(CANALES[0], p=CANALES[1]), "estado": estado, "notas": "",
+                       "descontado": "Histórico (no descuenta)"})
 
     for fila in catalogo.itertuples():
         tipo = perfil(fila, rng)
@@ -112,6 +123,11 @@ def generar(catalogo: pd.DataFrame, rng) -> tuple[pd.DataFrame, pd.DataFrame]:
                 mov(inicio_mes + pd.Timedelta(days=5), fila.id, "importacion", 70)
                 stock += 70
             vendidas = min(int(dem[i]), max(stock, 0))  # lo que no hay en bodega es venta perdida
+            perdidas = int(dem[i]) - vendidas
+            if perdidas and inicio_mes >= VENTAS_DESDE:  # desde que existe «Ventas», se anota quién lo pidió
+                fecha = inicio_mes + pd.Timedelta(days=int(rng.integers(0, 28)))
+                if fecha <= CORTE:
+                    venta(fecha, fila, perdidas, "No había stock")
             while vendidas > 0:
                 lote = int(min(vendidas, 1 + rng.poisson(1.5)))
                 fecha = inicio_mes + pd.Timedelta(days=int(rng.integers(0, 28)))
@@ -127,6 +143,8 @@ def generar(catalogo: pd.DataFrame, rng) -> tuple[pd.DataFrame, pd.DataFrame]:
                     elif fecha2 <= CORTE and destino < 0.65:
                         mov(fecha2, fila.id, "consignacion_devolucion", lote, cliente)
                         stock += lote
+                elif fecha >= VENTAS_DESDE:
+                    venta(fecha, fila, lote)
                 else:
                     mov(fecha, fila.id, "venta", lote, cliente)
                 stock -= lote
@@ -138,7 +156,8 @@ def generar(catalogo: pd.DataFrame, rng) -> tuple[pd.DataFrame, pd.DataFrame]:
     for id_ in rng.choice(catalogo["id"], 3, replace=False):
         mov(pd.Timestamp("2026-08-21"), id_, "ajuste", int(rng.choice([-1, 1])))
     m = pd.DataFrame(movs).sort_values(["fecha", "id"]).reset_index(drop=True)
-    return m, pd.DataFrame(transito, columns=["id", "cantidad", "origen", "fecha_estimada"])
+    v = pd.DataFrame(ventas).sort_values(["fecha", "id"]).reset_index(drop=True)
+    return m, pd.DataFrame(transito, columns=["id", "cantidad", "origen", "fecha_estimada"]), v
 
 
 def main():
@@ -153,16 +172,19 @@ def main():
         catalogo[["id", "isbn", "titulo", "origen", "categoria", "precio_lista", "clase_manual", "politica_manual", "compra_en"]] \
             .to_csv(SALIDA / "Catalogo.csv", index=False)
     catalogo = pd.read_csv(SALIDA / "Catalogo.csv", dtype=str, keep_default_na=False)
-    movimientos, transito = generar(catalogo, rng)
+    movimientos, transito, ventas = generar(catalogo, rng)
     movimientos.to_csv(SALIDA / "Movimientos.csv", index=False)
     transito.to_csv(SALIDA / "EnTransito.csv", index=False)
+    ventas.to_csv(SALIDA / "Ventas.csv", index=False)
+    # Costo fijo de cada envío (courier, despacho, trámites), inventado
+    pd.DataFrame([{"origen": "España", "costo_usd": 180}, {"origen": "Argentina", "costo_usd": 120}]).to_csv(SALIDA / "Envios.csv", index=False)
     # Costos inventados. Un libro español comprado vía Argentina: FOB más alto (menos descuento) pero flete menor
     pd.DataFrame([
         {"origen": "España", "edicion": "", "fob_sobre_precio_neto": 0.45, "costo_sobre_precio_neto": 0.60, "tipo_cambio": 950},
         {"origen": "Argentina", "edicion": "Argentina", "fob_sobre_precio_neto": 0.40, "costo_sobre_precio_neto": 0.50, "tipo_cambio": 950},
         {"origen": "Argentina", "edicion": "España", "fob_sobre_precio_neto": 0.50, "costo_sobre_precio_neto": 0.57, "tipo_cambio": 950},
     ]).to_csv(SALIDA / "Costos.csv", index=False)
-    print(f"{len(catalogo)} títulos, {len(movimientos)} movimientos, {len(transito)} en tránsito → {SALIDA}")
+    print(f"{len(catalogo)} títulos, {len(movimientos)} movimientos, {len(ventas)} filas de ventas, {len(transito)} en tránsito → {SALIDA}")
 
 
 if __name__ == "__main__":

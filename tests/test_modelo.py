@@ -253,3 +253,107 @@ def test_si_argentina_no_alcanza_el_minimo_el_libro_se_compra_en_espana():
     l = lineas.set_index("id")
     assert l.loc["x", "origen"] == "España" and l.loc["x", "cuando"] == "Ahora"
     assert l.loc["arg", "cuando"] == "Próximo envío"
+
+
+# ---------- Costo fijo de cada envío ----------
+def test_el_costo_del_envio_puede_juntar_todo_en_un_solo_pais():
+    from inventario import pedido
+    t = pd.DataFrame([
+        _titulo("esp", "España", 16, 119000),                         # España: 720 US$ FOB
+        _titulo("arg", "Argentina", 20, 119000),                      # Argentina: 800 US$ FOB
+        _titulo("x", "España", 5, 119000, "España o Argentina"),      # vía Argentina sale más barato
+    ])
+    p = Parametros()
+    _, sin_envio = pedido.sugerir(t, COSTOS, p, pd.Timestamp("2026-10-01"))
+    elegida = next(c for c in sin_envio.attrs["combinaciones"] if c["elegida"])
+    assert elegida["envia"] == ["España", "Argentina"]                # sin costo fijo, conviene dividir
+    _, con_envio = pedido.sugerir(t, COSTOS, p, pd.Timestamp("2026-10-01"), envios={"España": 5000, "Argentina": 5000})
+    combos = con_envio.attrs["combinaciones"]
+    elegida = next(c for c in combos if c["elegida"])
+    assert len(elegida["envia"]) <= 1                                 # con envíos caros, uno solo (o esperar)
+    # El total es siempre libros + esperar/adelantar + envíos: la planilla lo recalcula con fórmulas
+    for c in combos:
+        assert c["total_usd"] == pytest.approx(c["libros_usd"] + c["castigo_usd"] + c["envio_usd"], abs=0.02)
+    assert elegida["total_usd"] == min(c["total_usd"] for c in combos if c["valida"])
+
+
+# ---------- Pestaña «Ventas» ----------
+def _ventas(filas):
+    df = pd.DataFrame(filas, columns=["fecha", "id", "cantidad", "descuento", "canal", "estado", "descontado"])
+    df["fecha"] = pd.to_datetime(df["fecha"])
+    df["documento"] = df["notas"] = ""
+    df["fila_planilla"] = range(2, len(df) + 2)
+    return df
+
+
+def test_descuento_acepta_numero_porcentaje_y_fraccion():
+    from inventario.ventas import descuento
+    assert descuento("10") == descuento("10%") == descuento(0.1) == pytest.approx(0.1)
+    assert descuento("") == 0 and descuento(None) == 0
+
+
+def test_tipos_de_venta():
+    from inventario import ventas
+    v = _ventas([("2026-10-01", "a", 2, "", "Local", "", ""),
+                 ("2026-10-01", "a", 1, "", "Consignación (factura)", "Vendido", ""),
+                 ("2026-10-01", "a", 3, "", "Web / WhatsApp", "No había stock", ""),
+                 ("2026-10-01", "a", 1, "", "Local", "Devolución", ""),
+                 ("", "a", 1, "", "", "", "")])                                  # incompleta: se ignora
+    assert ventas.a_movimientos(v)["tipo"].tolist() == ["venta", "consignacion_liquidada", "venta_perdida", "devolucion_cliente"]
+
+
+def test_venta_perdida_cuenta_como_demanda_pero_no_mueve_stock():
+    mov = _mov([("2026-01-01", "x", "importacion", 5), ("2026-02-01", "x", "venta_perdida", 3)])
+    ex = stock.existencias(mov, pd.DataFrame(columns=["id", "cantidad"]), pd.Timestamp("2026-03-01")).set_index("id")
+    assert ex.loc["x", "bodega"] == 5
+    serie = demanda.demanda_mensual(mov, ["x"], pd.Timestamp("2026-03-01"), 3)
+    assert serie.loc["x"].sum() == 3
+
+
+def test_aplicar_descuenta_una_vez_y_reconoce_lo_bajado_a_mano():
+    from inventario import ventas
+    hoy = pd.Timestamp("2026-10-05")
+    v = _ventas([("2026-10-05", "a", 2, 15, "Web / WhatsApp", "Vendido", ""),
+                 ("2026-10-05", "b", 1, "", "Local", "", ""),                   # Roberto ya bajó la bodega de «b»
+                 ("2026-10-05", "c", 2, "", "Consignación (factura)", "Vendido", ""),
+                 ("2026-10-05", "d", 3, "", "Web / WhatsApp", "No había stock", ""),
+                 ("2026-10-05", "a", 9, "", "Local", "", "Descontado el 01-10-2026")])  # ya procesada
+    cant = pd.DataFrame([{"id": "a", "bodega": 4, "consignacion": 0, "en_camino": 0},
+                         {"id": "b", "bodega": 3, "consignacion": 0, "en_camino": 0},
+                         {"id": "c", "bodega": 1, "consignacion": 4, "en_camino": 0},
+                         {"id": "d", "bodega": 0, "consignacion": 0, "en_camino": 0}])
+    derivados = pd.DataFrame([{"fecha": hoy, "id": "b", "tipo": "venta", "cantidad": 1, "documento": "Cambio en Inventario", "cliente": ""}])
+    pend = ventas.validas(v)[ventas.validas(v)["descontado"] == ""]
+    nuevas, der, marcas, cambiados = ventas.aplicar(pend, cant, derivados, hoy)
+    n = nuevas.set_index("id")
+    assert n.loc["a", "bodega"] == 2 and n.loc["b", "bodega"] == 3
+    assert n.loc["c", "consignacion"] == 2 and n.loc["c", "bodega"] == 1
+    assert n.loc["d", "bodega"] == 0
+    assert der.empty                                                          # la baja de «b» la explica la venta
+    assert cambiados == {"a", "c"}
+    assert marcas[3].startswith("Ya estaba descontado") and "no mueve stock" in marcas[5]
+    assert 6 not in marcas
+
+
+def test_venta_mayor_que_el_stock_queda_en_cero_y_avisa():
+    from inventario import ventas
+    v = _ventas([("2026-10-05", "a", 5, "", "Local", "", "")])
+    cant = pd.DataFrame([{"id": "a", "bodega": 2, "consignacion": 0, "en_camino": 0}])
+    nuevas, _, marcas, _ = ventas.aplicar(v, cant, pd.DataFrame(columns=["fecha", "id", "tipo", "cantidad"]), pd.Timestamp("2026-10-05"))
+    assert nuevas.set_index("id").loc["a", "bodega"] == 0 and "Revisar" in marcas[2]
+
+
+def test_hoja_pedido_formulas_con_separador_de_la_planilla():
+    from inventario import lenguaje
+    combos = [{"nombre": "Todo a España", "envia": ["España"], "elegida": True, "valida": True, "libros_ahora": 3,
+               "adelantados": 0, "para_despues": 0, "libros_usd": 100.0, "castigo_usd": 0.0, "envio_usd": 0.0, "total_usd": 100.0},
+              {"nombre": "No pedir nada ahora", "envia": [], "elegida": False, "valida": True, "libros_ahora": 0,
+               "adelantados": 0, "para_despues": 3, "libros_usd": 100.0, "castigo_usd": 40.0, "envio_usd": 0.0, "total_usd": 140.0}]
+    h = lenguaje.hoja_pedido(pd.DataFrame(), combos, {"España": 50, "Argentina": 0}, "2026-10-05", sep=";")
+    filas = h["filas"]
+    assert filas[5][:3] == [lenguaje.ETIQUETA_ENVIO, 50, 0]
+    assert filas[8][4] == "=B6" and filas[8][5] == "=C9+D9+E9"
+    conviene = next(f for f in filas if f[0] == "CONVIENE")[1]
+    assert ";" in conviene and "," not in conviene
+    assert h["editables"] == [(5, 1), (5, 2)]
+    assert lenguaje.formula('=IF(A1="a, b",1,2)', ";") == '=IF(A1="a, b";1;2)'

@@ -2,13 +2,14 @@
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import numpy as np
 import pandas as pd
 
 from . import clasificacion_abc as abc_mod
 from . import demanda, pedido, politica, stock
+from . import ventas as ventas_mod
 from .config import Parametros
 
 
@@ -21,6 +22,8 @@ class Resultado:
     series: pd.DataFrame
     errores: list[str]
     fecha_corte: pd.Timestamp
+    ventas: dict = field(default_factory=dict)        # indicadores de la pestaña «Ventas»
+    perdidas: list = field(default_factory=list)      # pedidos sin stock recientes
 
 
 def _meses_entre(desde: pd.Timestamp, hasta: pd.Timestamp) -> float:
@@ -30,7 +33,9 @@ def _meses_entre(desde: pd.Timestamp, hasta: pd.Timestamp) -> float:
 
 
 def calcular(catalogo: pd.DataFrame, movimientos: pd.DataFrame, transito: pd.DataFrame, costos: pd.DataFrame,
-             p: Parametros, fecha_corte: pd.Timestamp | None = None, semilla: int = 7) -> Resultado:
+             p: Parametros, fecha_corte: pd.Timestamp | None = None, semilla: int = 7,
+             envios: dict | None = None, hoja_ventas: pd.DataFrame | None = None) -> Resultado:
+    """movimientos ya incluye los de «Ventas»; `hoja_ventas` (la pestaña) solo se usa para los indicadores de venta."""
     errores = stock.validar(movimientos, catalogo)
     mov = stock.limpiar(movimientos)
     if fecha_corte is None:
@@ -104,13 +109,18 @@ def calcular(catalogo: pd.DataFrame, movimientos: pd.DataFrame, transito: pd.Dat
         })
 
     titulos = pd.DataFrame(filas)
-    lineas, por_origen = pedido.sugerir(titulos, costos, p, fecha_corte)
-    resumen = _resumen(titulos, por_origen, errores, fecha_corte, p)
+    lineas, por_origen = pedido.sugerir(titulos, costos, p, fecha_corte, envios)
+    ind, perdidas = {}, []
+    if hoja_ventas is not None and len(ventas_mod.validas(hoja_ventas)):
+        errores += ventas_mod.errores(hoja_ventas, set(ids))
+        ind = ventas_mod.indicadores(hoja_ventas, fecha_corte)
+        perdidas = ventas_mod.perdidas_recientes(hoja_ventas, catalogo, fecha_corte)
+    resumen = _resumen(titulos, por_origen, errores, fecha_corte, p, ind)
     serie.columns = [str(c) for c in serie.columns]
-    return Resultado(titulos, lineas, por_origen, resumen, serie, errores, fecha_corte)
+    return Resultado(titulos, lineas, por_origen, resumen, serie, errores, fecha_corte, ind, perdidas)
 
 
-def _resumen(t: pd.DataFrame, por_origen: pd.DataFrame, errores: list[str], fecha_corte, p: Parametros) -> pd.DataFrame:
+def _resumen(t: pd.DataFrame, por_origen: pd.DataFrame, errores: list[str], fecha_corte, p: Parametros, ventas: dict | None = None) -> pd.DataFrame:
     filas = [
         ("Fecha de corte", fecha_corte.date().isoformat()),
         ("Títulos en catálogo", len(t)),
@@ -130,6 +140,13 @@ def _resumen(t: pd.DataFrame, por_origen: pd.DataFrame, errores: list[str], fech
         filas.append((f"Política: {pol}", int(n)))
     for o in por_origen.itertuples():
         filas.append((f"Pedido {o.origen}", f"{o.estado} — {o.unidades} unidades, US$ {o.total_usd:,.0f} (mínimo US$ {o.minimo_usd:,.0f})"))
+    if ventas:
+        filas += [
+            ("Ventas anotadas: unidades (12 meses)", ventas["unidades_vendidas"]),
+            ("Ventas anotadas: con descuento", f"{ventas['pct_con_descuento']:.0%}"),
+            ("Ventas anotadas: descuento promedio", f"{ventas['descuento_promedio']:.0%}"),
+            ("Ventas perdidas por falta de stock (unidades, 12 meses)", ventas["unidades_perdidas"]),
+        ]
     for e in errores:
         filas.append(("Revisar datos", e))
     return pd.DataFrame(filas, columns=["indicador", "valor"])

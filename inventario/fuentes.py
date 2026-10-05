@@ -1,7 +1,8 @@
 """Lectura y escritura de tablas: CSV locales (datos de ejemplo) o una Google Sheet privada.
 
-En la planilla, Roberto edita una sola pestaña: «Movimientos». El catálogo sale del sitio (src/libros),
-los costos de la pestaña oculta «Configuración» y todo lo demás lo escribe el cálculo.
+En la planilla, Roberto edita las columnas amarillas de «Inventario», la pestaña «Ventas» y el costo de cada envío
+en «Pedido sugerido». El catálogo sale del sitio (src/libros), los costos de la pestaña oculta «Configuración» y
+todo lo demás lo escribe el cálculo.
 
 Internamente las tablas usan nombres cortos (Catalogo, Movimientos, EnTransito, Costos) y columnas en
 minúscula; en la planilla se ven con nombres legibles (ver lenguaje.py). Se aceptan ambas formas.
@@ -15,7 +16,8 @@ from pathlib import Path
 
 import pandas as pd
 
-from .lenguaje import ENCABEZADOS, TIPO_INTERNO
+from .lenguaje import ENCABEZADOS, ETIQUETA_ENVIO, TIPO_INTERNO
+from . import ventas as ventas_mod
 
 COLUMNAS = {
     "Catalogo": ["id", "isbn", "titulo", "origen", "categoria", "precio_lista", "clase_manual", "politica_manual", "compra_en"],
@@ -25,6 +27,9 @@ COLUMNAS = {
     "Inventario": ["id", "isbn", "titulo", "autor", "origen", "compra_en", "categoria", "precio_lista",
                    "bodega", "consignacion", "en_camino", "actualizado", "se_vende", "que_hacer", "notas"],
     "Historial": ["fecha", "id", "bodega", "consignacion", "en_camino"],
+    "Ventas": ventas_mod.COLUMNAS,
+    "Envios": ["origen", "costo_usd"],
+    "ListaLibros": ["libro", "isbn", "precio_lista"],
 }
 # Nombre de la pestaña en la planilla (el primero es el que se crea; los demás se aceptan al leer)
 PESTANA = {
@@ -34,6 +39,9 @@ PESTANA = {
     "Historial": ["Historial"],
     "EnTransito": ["En tránsito", "EnTransito"],
     "Costos": ["Configuración", "Costos"],
+    "Ventas": ["Ventas"],
+    "ListaLibros": ["Lista de libros"],
+    "Pedido": ["Pedido sugerido"],
 }
 SEPARADOR_LIBRO = " · "   # «CN-0016 · CARTAS CRISTOLOGICAS» en la lista desplegable
 
@@ -50,6 +58,9 @@ def _fechas(serie: pd.Series) -> pd.Series:
 
 def _normalizar(nombre: str, df: pd.DataFrame) -> pd.DataFrame:
     df.columns = [str(c).strip() for c in df.columns]
+    if nombre == "Ventas":
+        df = df.reset_index(drop=True)
+        df["fila_planilla"] = range(2, len(df) + 2)  # fila en la planilla, para anotar «Descontado del stock»
     legibles = {v.lower(): k for k, v in ENCABEZADOS.get(nombre, {}).items()}
     df = df.rename(columns=lambda c: legibles.get(c.lower(), c))
     for col in COLUMNAS.get(nombre, []):
@@ -71,6 +82,13 @@ def _normalizar(nombre: str, df: pd.DataFrame) -> pd.DataFrame:
         df = df[df["id"] != ""]
     if nombre == "Historial":
         df["fecha"] = _fechas(df["fecha"])
+    if nombre == "Ventas":
+        df["fecha"] = _fechas(df["fecha"])
+        df["cantidad"] = pd.to_numeric(df["cantidad"], errors="coerce").fillna(0).astype(int)
+        for col in ("canal", "estado", "descontado", "documento", "notas"):
+            df[col] = df[col].astype(str).str.strip()
+    if nombre == "Envios":
+        df["costo_usd"] = pd.to_numeric(df["costo_usd"].astype(str).str.replace(",", "."), errors="coerce").fillna(0)
     if nombre == "EnTransito":
         df["cantidad"] = pd.to_numeric(df["cantidad"], errors="coerce").fillna(0)
     if nombre == "Catalogo":
@@ -168,7 +186,29 @@ class FuenteSheets:
                 return self._hojas[titulo]
         return None
 
+    @property
+    def separador(self) -> str:
+        """Separador de argumentos en las fórmulas: «,» en inglés; «;» donde la coma es decimal (español, etc.)."""
+        if not hasattr(self, "_sep"):
+            locale = self.libro.fetch_sheet_metadata({"fields": "properties.locale"})["properties"].get("locale", "en_US")
+            punto = locale.startswith(("en", "ja", "zh", "ko", "th", "he", "iw")) or locale in ("es_MX", "es_US", "es_419")
+            self._sep = "," if punto else ";"
+        return self._sep
+
+    def _leer_envios(self) -> pd.DataFrame:
+        """Costo de cada envío: la fila «Costo de cada envío (US$)» de «Pedido sugerido», bajo los nombres de origen."""
+        hoja = self.hoja("Pedido")
+        filas = hoja.get_all_values(value_render_option="UNFORMATTED_VALUE") if hoja is not None else []
+        for i, fila in enumerate(filas):
+            if i and fila and str(fila[0]).strip() == ETIQUETA_ENVIO:
+                origenes = filas[i - 1]
+                datos = [{"origen": str(o).strip(), "costo_usd": v} for o, v in zip(origenes[1:], fila[1:]) if str(o).strip()]
+                return _normalizar("Envios", pd.DataFrame(datos, columns=COLUMNAS["Envios"]))
+        return _normalizar("Envios", pd.DataFrame(columns=COLUMNAS["Envios"]))
+
     def leer(self, nombre: str) -> pd.DataFrame:
+        if nombre == "Envios":
+            return self._leer_envios()
         hoja = self.hoja(nombre)
         if hoja is None:
             return _normalizar(nombre, pd.DataFrame(columns=COLUMNAS[nombre]))
@@ -204,30 +244,40 @@ class FuenteSheets:
             s = chr(65 + r) + s
         return s
 
-    def escribir(self, nombre: str, df: pd.DataFrame, oculta: bool = False, solo_lectura: bool = False,
+    def escribir(self, nombre: str, df, oculta: bool = False, solo_lectura: bool = False,
                  secciones: bool = False, anchos: dict | None = None, editables: list[int] | None = None,
                  filtro: bool = False, congelar_columnas: int = 0, formatos: dict | None = None,
-                 notas: dict | None = None, listas: dict | None = None) -> None:
+                 notas: dict | None = None, listas: dict | None = None, listas_rango: dict | None = None,
+                 celdas_editables: list | None = None, negritas: list | None = None,
+                 formatos_rango: list | None = None, filas_minimas: int = 0, reglas: dict | None = None) -> None:
         """Reemplaza el contenido de una pestaña y le da formato legible.
 
+        df: una tabla, o una lista de filas (la primera es el encabezado).
         editables: índices de columnas que el usuario puede editar (fondo amarillo, sin protección).
+        celdas_editables: celdas sueltas (fila, columna) editables, para hojas armadas por filas.
+        listas_rango: listas desplegables que toman sus valores de un rango, p. ej. {2: "='Lista de libros'!A2:A"}.
+        formatos_rango: [(fila_desde, fila_hasta, col_desde, col_hasta, patrón)], índices desde 0 y finales excluidos.
+        reglas: otras validaciones por columna, {col: (condición de la API, texto de ayuda)}.
         """
         titulo = PESTANA.get(nombre, [nombre])[0]
         hoja = self.hoja(nombre)
+        valores = self._valores(df) if isinstance(df, pd.DataFrame) else [[self._celda(v) for v in f] for f in df]
+        n = max(len(f) for f in valores)
+        valores = [f + [""] * (n - len(f)) for f in valores]
+        filas = max(len(valores), filas_minimas)
         if hoja is None:
-            hoja = self.libro.add_worksheet(title=titulo, rows=max(len(df) + 20, 50), cols=max(len(df.columns), 4))
+            hoja = self.libro.add_worksheet(title=titulo, rows=max(filas + 20, 50), cols=max(n, 4))
             self._hojas = None
         else:
             if hoja.title != titulo:  # pestaña de una versión anterior: se renombra
                 hoja.update_title(titulo)
                 self._hojas = None
             hoja.clear()
-            if hoja.row_count < len(df) + 1:
-                hoja.add_rows(len(df) + 1 - hoja.row_count)
-        valores = self._valores(df)
+            if hoja.row_count < filas:
+                hoja.add_rows(filas - hoja.row_count)
         hoja.update(values=valores, range_name="A1", value_input_option="USER_ENTERED")
         editables = editables or []
-        n = len(df.columns)
+        celdas_editables = celdas_editables or []
 
         pedidos = [
             {"updateSheetProperties": {"properties": {"sheetId": hoja.id, "hidden": oculta,
@@ -239,9 +289,10 @@ class FuenteSheets:
                                                            "wrapStrategy": "WRAP", "verticalAlignment": "TOP"}},
                             "fields": "userEnteredFormat(textFormat,backgroundColor,wrapStrategy,verticalAlignment)"}},
         ]
+        amarillo = {"red": 1, "green": 0.973, "blue": 0.827}
         for col in editables:
             pedidos.append({"repeatCell": {"range": {"sheetId": hoja.id, "startRowIndex": 1, "startColumnIndex": col, "endColumnIndex": col + 1},
-                                           "cell": {"userEnteredFormat": {"backgroundColor": {"red": 1, "green": 0.973, "blue": 0.827}}},
+                                           "cell": {"userEnteredFormat": {"backgroundColor": amarillo}},
                                            "fields": "userEnteredFormat.backgroundColor"}})
         if secciones:
             # Filas de título de sección: texto en mayúsculas en la primera columna
@@ -251,6 +302,15 @@ class FuenteSheets:
                                                    "cell": {"userEnteredFormat": {"textFormat": {"bold": True, "fontSize": 12 if i == 0 else 11},
                                                                                   "backgroundColor": self.COLOR_ENCABEZADO}},
                                                    "fields": "userEnteredFormat(textFormat,backgroundColor)"}})
+            for i in negritas or []:
+                pedidos.append({"repeatCell": {"range": {"sheetId": hoja.id, "startRowIndex": i, "endRowIndex": i + 1},
+                                               "cell": {"userEnteredFormat": {"textFormat": {"bold": True}}},
+                                               "fields": "userEnteredFormat.textFormat.bold"}})
+            for r, c in celdas_editables:
+                pedidos.append({"repeatCell": {"range": {"sheetId": hoja.id, "startRowIndex": r, "endRowIndex": r + 1, "startColumnIndex": c, "endColumnIndex": c + 1},
+                                               "cell": {"userEnteredFormat": {"backgroundColor": {"red": 1, "green": 0.894, "blue": 0.6},
+                                                                              "textFormat": {"bold": True}}},
+                                               "fields": "userEnteredFormat(backgroundColor,textFormat)"}})
         else:
             pedidos.append({"repeatCell": {"range": {"sheetId": hoja.id, "startRowIndex": 0, "endRowIndex": 1},
                                            "cell": {"userEnteredFormat": {"textFormat": {"bold": True}, "backgroundColor": self.COLOR_ENCABEZADO}},
@@ -264,6 +324,17 @@ class FuenteSheets:
             pedidos.append({"repeatCell": {"range": {"sheetId": hoja.id, "startRowIndex": 1, "startColumnIndex": col, "endColumnIndex": col + 1},
                                            "cell": {"userEnteredFormat": {"numberFormat": {"type": tipo, "pattern": patron}}},
                                            "fields": "userEnteredFormat.numberFormat"}})
+        for r0, r1, c0, c1, patron in formatos_rango or []:
+            pedidos.append({"repeatCell": {"range": {"sheetId": hoja.id, "startRowIndex": r0, "endRowIndex": r1, "startColumnIndex": c0, "endColumnIndex": c1},
+                                           "cell": {"userEnteredFormat": {"numberFormat": {"type": "NUMBER", "pattern": patron}}},
+                                           "fields": "userEnteredFormat.numberFormat"}})
+        for col, rango in (listas_rango or {}).items():
+            pedidos.append({"setDataValidation": {"range": {"sheetId": hoja.id, "startRowIndex": 1, "startColumnIndex": col, "endColumnIndex": col + 1},
+                                                  "rule": {"condition": {"type": "ONE_OF_RANGE", "values": [{"userEnteredValue": rango}]},
+                                                           "strict": True, "showCustomUi": True}}})
+        for col, (condicion, ayuda) in (reglas or {}).items():
+            pedidos.append({"setDataValidation": {"range": {"sheetId": hoja.id, "startRowIndex": 1, "startColumnIndex": col, "endColumnIndex": col + 1},
+                                                  "rule": {"condition": condicion, "inputMessage": ayuda, "strict": True}}})
         for col, valores_lista in (listas or {}).items():  # listas desplegables
             pedidos.append({"setDataValidation": {"range": {"sheetId": hoja.id, "startRowIndex": 1, "startColumnIndex": col, "endColumnIndex": col + 1},
                                                   "rule": {"condition": {"type": "ONE_OF_LIST", "values": [{"userEnteredValue": v} for v in valores_lista]},
@@ -275,7 +346,7 @@ class FuenteSheets:
             pedidos.append({"updateDimensionProperties": {"range": {"sheetId": hoja.id, "dimension": "COLUMNS", "startIndex": col, "endIndex": col + 1},
                                                           "properties": {"pixelSize": ancho}, "fields": "pixelSize"}})
         if filtro:
-            pedidos.append({"setBasicFilter": {"filter": {"range": {"sheetId": hoja.id, "startRowIndex": 0, "endRowIndex": len(df) + 1,
+            pedidos.append({"setBasicFilter": {"filter": {"range": {"sheetId": hoja.id, "startRowIndex": 0, "endRowIndex": len(valores),
                                                                     "startColumnIndex": 0, "endColumnIndex": n}}}})
         # Protección de solo advertencia: evita editar por error lo que escribe el cálculo
         meta = self.libro.fetch_sheet_metadata({"fields": "sheets(properties.sheetId,protectedRanges.protectedRangeId)"})
@@ -287,10 +358,16 @@ class FuenteSheets:
             protegidas = [c for c in range(n) if c not in editables] if editables else None
             rangos = ([{"sheetId": hoja.id}] if protegidas is None else
                       [{"sheetId": hoja.id, "startColumnIndex": c, "endColumnIndex": c + 1} for c in protegidas])
+            if celdas_editables:  # protegida entera salvo esas celdas
+                rangos = [{"sheetId": hoja.id, "_sin": [{"sheetId": hoja.id, "startRowIndex": r, "endRowIndex": r + 1,
+                                                         "startColumnIndex": c, "endColumnIndex": c + 1} for r, c in celdas_editables]}]
             for r in rangos:
-                pedidos.append({"addProtectedRange": {"protectedRange": {
-                    "range": r, "warningOnly": True,
-                    "description": "La completa el cálculo: los cambios aquí se pierden en el próximo cálculo."}}})
+                sin = r.pop("_sin", None)
+                rango = {"range": r, "warningOnly": True,
+                         "description": "La completa el cálculo: los cambios aquí se pierden en el próximo cálculo."}
+                if sin:
+                    rango["unprotectedRanges"] = sin
+                pedidos.append({"addProtectedRange": {"protectedRange": rango}})
         self.libro.batch_update({"requests": pedidos})
 
     def agregar_filas(self, nombre: str, df: pd.DataFrame) -> None:
@@ -321,6 +398,41 @@ class FuenteSheets:
             rangos.append({"range": f"{letra}2:{letra}{len(ids) + 1}", "values": valores})
         if rangos:
             hoja.batch_update(rangos, value_input_option="USER_ENTERED")
+
+    def escribir_celdas(self, nombre: str, columna: str, valores_por_fila: dict) -> None:
+        """Escribe celdas sueltas de una columna (por encabezado) según el número de fila: {fila: valor}."""
+        if not valores_por_fila:
+            return
+        hoja = self.hoja(nombre)
+        encabezado = hoja.row_values(1)
+        letra = self._letra(encabezado.index(columna))
+        hoja.batch_update([{"range": f"{letra}{fila}", "values": [[self._celda(v)]]} for fila, v in valores_por_fila.items()],
+                          value_input_option="USER_ENTERED")
+
+    def actualizar_celdas(self, nombre: str, columna_id: str, cambios: dict) -> None:
+        """Escribe solo las celdas que cambian, buscando la fila por código: {código: {columna: valor}}."""
+        if not cambios:
+            return
+        hoja = self.hoja(nombre)
+        filas = hoja.get_all_values()
+        encabezado = filas[0]
+        j = encabezado.index(columna_id)
+        fila_de = {f[j]: i + 2 for i, f in enumerate(filas[1:]) if len(f) > j}
+        rangos = [{"range": f"{self._letra(encabezado.index(col))}{fila_de[id_]}", "values": [[self._celda(v)]]}
+                  for id_, cols in cambios.items() if id_ in fila_de for col, v in cols.items()]
+        if rangos:
+            hoja.batch_update(rangos, value_input_option="USER_ENTERED")
+
+    def notas_encabezado(self, nombre: str, notas: dict) -> None:
+        """Pone (o actualiza) la nota de algunas columnas del encabezado: {encabezado: texto}."""
+        hoja = self.hoja(nombre)
+        encabezado = hoja.row_values(1)
+        pedidos = [{"updateCells": {"range": {"sheetId": hoja.id, "startRowIndex": 0, "endRowIndex": 1,
+                                              "startColumnIndex": encabezado.index(c), "endColumnIndex": encabezado.index(c) + 1},
+                                    "rows": [{"values": [{"note": t}]}], "fields": "note"}}
+                   for c, t in notas.items() if c in encabezado]
+        if pedidos:
+            self.libro.batch_update({"requests": pedidos})
 
     def ordenar(self, nombres: list[str], visibles: int | None = None) -> None:
         """Deja las pestañas en este orden (las no mencionadas quedan al final).
