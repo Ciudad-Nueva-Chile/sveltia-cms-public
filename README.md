@@ -6,6 +6,9 @@ Repositorio de prueba con dos partes que se publican juntas:
 - **El inventario** (`inventario/`, Python): existencias, clasificación ABC, patrón de demanda, pronóstico y pedido sugerido por origen.
   Los datos reales viven en una Google Sheet privada; este repositorio público solo tiene código y **datos de ejemplo sintéticos**.
 
+**Contexto completo** (cómo se conectan sitio, Sveltia, planilla, GitHub y panel, y todas las fórmulas del modelo con
+un ejemplo): [`docs/CONTEXTO.md`](docs/CONTEXTO.md). Configuración paso a paso: [`docs/CONFIGURAR.md`](docs/CONFIGURAR.md).
+
 | Dirección | Qué es |
 |---|---|
 | <https://ciudad-nueva-chile.github.io/sveltia-cms-public/> | El sitio (versión de prueba, no indexada en buscadores) |

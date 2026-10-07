@@ -165,7 +165,7 @@ collections:
   # ---------------------------------------------------------------- Inventario
   - name: modelo
     label: Modelo de inventario
-    description: "Cada guardado queda en el historial y el próximo cálculo semanal usa los valores nuevos."
+    description: "Cada guardado queda en el historial y vuelve a publicar el sitio: ese mismo cálculo ya usa los valores nuevos."
     files:
       - name: parametros
         label: Parámetros

@@ -8,6 +8,7 @@ node_modules/
 # Resultados generados: nunca se suben (con datos reales serían públicos)
 salida/
 panel/datos.json
+panel/datos.cifrado.json
 _site/
 
 # Credenciales de Google: jamás al repositorio
