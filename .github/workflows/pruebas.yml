@@ -30,3 +30,28 @@ jobs:
         env:
           PATH_PREFIX: /${{ github.event.repository.name }}/
         run: npx eleventy --quiet --output=/tmp/sitio
+      - name: El mapa del sitio trae todas las categorías y cada ficha tiene su propia descripción
+        run: |
+          python - <<'PY'
+          import pathlib, re, sys
+          sitio = pathlib.Path("/tmp/sitio")
+          mapa = (sitio / "sitemap.xml").read_text(encoding="utf-8")
+          en_mapa = len(re.findall(r"/categoria/[^<]+/</loc>", mapa))
+          paginas = len(list((sitio / "categoria").glob("*/index.html")))
+          fichas = list((sitio / "catalogo").glob("*/index.html"))
+          desc = [re.search(r'<meta name="description" content="([^"]*)"', f.read_text(encoding="utf-8")).group(1) for f in fichas]
+          repetidas = len(desc) - len(set(desc))
+          fuera = [u for u in ("/solicitud/", "/404") if u in mapa]
+          print(f"URLs en el mapa: {mapa.count('<url>')} · categorías en el mapa: {en_mapa} de {paginas} · fichas: {len(fichas)} · descripciones repetidas: {repetidas}")
+          errores = []
+          if en_mapa != paginas or en_mapa < 16:
+              errores.append(f"el mapa trae {en_mapa} categorías y hay {paginas} páginas de categoría (la memoria espera 16)")
+          if repetidas:
+              errores.append(f"{repetidas} fichas repiten la descripción de otra")
+          if fuera:
+              errores.append(f"el mapa no debe incluir {fuera}")
+          if "fonts.googleapis.com" in (sitio / "index.html").read_text(encoding="utf-8"):
+              errores.append("el sitio sigue cargando tipografías desde un servicio externo")
+          if errores:
+              sys.exit("Error: " + "; ".join(errores))
+          PY

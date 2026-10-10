@@ -17,7 +17,7 @@ from __future__ import annotations
 import pandas as pd
 
 EDITABLES = ["compra_en", "bodega", "consignacion", "en_camino", "notas"]
-COLUMNAS = ["id", "isbn", "titulo", "autor", "origen", "compra_en", "categoria", "precio_lista",
+COLUMNAS = ["id", "isbn", "titulo", "autor", "origen", "compra_en", "categoria", "categoria_gestion", "precio_lista",
             "bodega", "consignacion", "en_camino", "actualizado", "se_vende", "que_hacer", "notas"]
 CANTIDADES = ["bodega", "consignacion", "en_camino"]
 

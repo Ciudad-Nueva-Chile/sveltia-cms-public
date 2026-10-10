@@ -71,13 +71,13 @@ collections:
         widget: select
         required: false
         options: ["", "Estacional", "Coyuntural"]
-        hint: "Estacional: calendarios y agendas. Coyuntural: un fenómeno que no se repite (una canonización, una visita). Vacío: el cálculo lo decide solo."
+        hint: "Estacional: calendarios y agendas (un pedido al año antes de septiembre). Coyuntural: un acontecimiento que no se repite, como la línea Carlo Acutis (se atiende por reacción). Ambos van a la categoría AA. Vacío: la clase la decide el cálculo por meses con venta."
       - name: inventario_decision
         label: "Inventario: decisión manual"
         widget: select
         required: false
-        options: ["", "Reponer", "Stock mínimo", "A pedido", "Temporada", "No reponer", "Liquidar o revisar"]
-        hint: "Solo si quieres pasar por encima de la recomendación del cálculo. Vacío: la decide el cálculo."
+        options: ["", "Reponer", "Reponer lo vendido", "Temporada", "No reponer", "A pedido"]
+        hint: "Solo si quieres pasar por encima de la política que asigna la categoría (AA repone hasta S, BB repone lo vendido, CC y DD no se reponen). Vacío: la decide el cálculo."
       - { name: precio_neto, label: "Precio neto (CLP, sin IVA) — uso interno", widget: number, value_type: int, required: false }
       - { name: estado_comercial, label: "Estado comercial — uso interno", widget: string, required: false }
       - { name: id_catalogo, label: "ID interno del catálogo", widget: string, required: false }
@@ -165,12 +165,13 @@ collections:
   # ---------------------------------------------------------------- Inventario
   - name: modelo
     label: Modelo de inventario
-    description: "Cada guardado queda en el historial y vuelve a publicar el sitio: ese mismo cálculo ya usa los valores nuevos."
+    description: "Parámetros del cálculo según la memoria (sección 4.2.5). Cada guardado queda en el historial y vuelve a publicar el sitio: ese mismo cálculo ya usa los valores nuevos. Los costos, el tipo de cambio y el costo de cada envío no van aquí: viven en la planilla privada."
     files:
       - name: parametros
         label: Parámetros
         file: config/parametros.yml
         fields:
+          - { label: "Meses de la ventana de observación", name: historia_meses, widget: number, value_type: int, min: 6, max: 60, hint: "Memoria: 21 meses (diciembre de 2024 a agosto de 2026). La clase de demanda se cuenta en esta ventana." }
           - label: Nivel de servicio
             name: nivel_servicio
             widget: number
@@ -178,25 +179,36 @@ collections:
             min: 0.5
             max: 0.99
             step: 0.01
-            hint: "Probabilidad de no quedarse sin stock mientras llega el pedido. 0,90 = 90 %. Más alto significa más stock."
-          - { label: "Revisión (semanas)", name: revision_semanas, widget: number, value_type: int, min: 1, max: 26, hint: "Cada cuánto se revisa y se decide un pedido." }
-          - label: Orígenes
+            hint: "CRITERIO, no optimización (memoria, 4.2.5): 0,95. Percentil de la distribución de Poisson con que se calcula el nivel objetivo S. Más alto significa más stock."
+          - { label: "Suavizamiento (alfa) de SBA", name: alfa_suavizado, widget: number, value_type: float, min: 0.05, max: 0.5, step: 0.01, hint: "SUPUESTO ABIERTO: 0,15, dentro del rango 0,05 a 0,20 de Syntetos, Boylan y Croston (2005)." }
+          - label: Orígenes y embarques
             name: origenes
             widget: list
-            summary: "{{fields.nombre}} · {{fields.plazo_semanas}} sem. · mínimo US$ {{fields.minimo_embarque_usd}}"
+            summary: "{{fields.nombre}} · embarque cada {{fields.intervalo_embarque_meses}} meses · plazo {{fields.plazo_dias}} días · mínimo US$ {{fields.minimo_embarque_usd}}"
+            hint: "Todo origen distinto de Argentina se trata como España."
             fields:
-              - { label: "Nombre (igual que en la columna «origen» de la planilla)", name: nombre, widget: string }
-              - { label: "Plazo de reposición (semanas)", name: plazo_semanas, widget: number, value_type: float, min: 0.5 }
-              - { label: "Mínimo de embarque (US$)", name: minimo_embarque_usd, widget: number, value_type: int, min: 0 }
-          - { label: "Meses de historia", name: historia_meses, widget: number, value_type: int, min: 6, max: 60 }
-          - { label: "Meses para la clasificación ABC", name: abc_meses, widget: number, value_type: int, min: 3, max: 36 }
-          - { label: "Corte A (participación acumulada)", name: abc_corte_a, widget: number, value_type: float, min: 0.5, max: 0.95, step: 0.01 }
-          - { label: "Corte B (participación acumulada)", name: abc_corte_b, widget: number, value_type: float, min: 0.6, max: 0.99, step: 0.01 }
-          - { label: "Corte ADI", name: corte_adi, widget: number, value_type: float, step: 0.01, hint: "Syntetos, Boylan y Croston (2005): 1,32" }
-          - { label: "Corte CV²", name: corte_cv2, widget: number, value_type: float, step: 0.01, hint: "Syntetos, Boylan y Croston (2005): 0,49" }
-          - { label: "Suavizamiento (alfa)", name: alfa_suavizado, widget: number, value_type: float, min: 0.05, max: 0.5, step: 0.01 }
-          - { label: "Simulaciones", name: simulaciones, widget: number, value_type: int, min: 200, max: 20000 }
-          - { label: "Meses sin movimiento para liquidar o revisar", name: meses_sin_movimiento, widget: number, value_type: int, min: 3 }
-          - { label: "Días para alertar una consignación abierta", name: dias_consignacion_antigua, widget: number, value_type: int, min: 30 }
-          - { label: "Castigo por postergar un libro que hace falta", name: costo_postergar, widget: number, value_type: float, min: 0, max: 2, step: 0.05, hint: "Fracción del precio neto. Más alto: el cálculo prefiere hacer un envío antes que esperar." }
-          - { label: "Castigo por adelantar compras", name: costo_adelantar, widget: number, value_type: float, min: 0, max: 1, step: 0.05, hint: "Fracción del costo de lo comprado antes de tiempo para completar un mínimo de embarque." }
+              - { label: "Nombre (igual que la editorial del libro)", name: nombre, widget: string }
+              - { label: "Intervalo entre embarques (meses), T", name: intervalo_embarque_meses, widget: number, value_type: float, min: 1, max: 24, step: 0.5, hint: "Memoria, 4.2.5: Argentina 12 y España 8,5, del análisis de lote por embarque con tasa de costo de capital de 15 % (rango 10 % a 20 %). Si cambia la tasa, se recalcula fuera del sistema." }
+              - { label: "Plazo de reposición (días), L", name: plazo_dias, widget: number, value_type: float, min: 1, max: 60, step: 0.5, hint: "Memoria: 5 a 7 días. Argentina 5,5 y España 7." }
+              - { label: "Mínimo de embarque (US$ FOB)", name: minimo_embarque_usd, widget: number, value_type: int, min: 0, hint: "Memoria: US$ 700, el mínimo económico del embarque." }
+          - label: Conteos al año por categoría
+            name: conteos_por_anio
+            widget: object
+            hint: "Memoria, Tabla 4.26 (estructura de Flores y Whybark, 1987): AA mensual, BB cada 6 meses, CC y DD una vez al año."
+            fields:
+              - { label: "AA", name: AA, widget: number, value_type: int, min: 0, max: 52 }
+              - { label: "BB", name: BB, widget: number, value_type: int, min: 0, max: 52 }
+              - { label: "CC", name: CC, widget: number, value_type: int, min: 0, max: 52 }
+              - { label: "DD", name: DD, widget: number, value_type: int, min: 0, max: 52 }
+          - label: Revisión de la clasificación (meses)
+            name: revision_clasificacion_meses
+            widget: object
+            hint: "Memoria, Tabla 4.26: cada 6 meses en AA y BB, una vez al año en CC y DD."
+            fields:
+              - { label: "AA", name: AA, widget: number, value_type: int, min: 1, max: 24 }
+              - { label: "BB", name: BB, widget: number, value_type: int, min: 1, max: 24 }
+              - { label: "CC", name: CC, widget: number, value_type: int, min: 1, max: 24 }
+              - { label: "DD", name: DD, widget: number, value_type: int, min: 1, max: 24 }
+          - { label: "Días para alertar una consignación abierta", name: dias_consignacion_antigua, widget: number, value_type: int, min: 30, hint: "Criterio de operación: 365." }
+          - { label: "Corte ADI (informativo)", name: corte_adi, widget: number, value_type: float, step: 0.01, hint: "Syntetos, Boylan y Croston (2005): 1,32. Solo distingue Regular de Intermitente y ubica las obras en el gráfico. No conviene moverlo." }
+          - { label: "Corte CV² (informativo)", name: corte_cv2, widget: number, value_type: float, step: 0.01, hint: "Syntetos, Boylan y Croston (2005): 0,49. No conviene moverlo." }

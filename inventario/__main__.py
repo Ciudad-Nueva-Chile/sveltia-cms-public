@@ -30,7 +30,7 @@ COLUMNAS_MOV = COLUMNAS["Movimientos"]
 ORDEN_PESTANAS = ["Inventario", "Ventas", "Esta semana", "Pedido sugerido",
                   "Costos", "Movimientos", "Historial", "Lista de libros", "Análisis técnico", "Indicadores"]
 VISIBLES = 4
-AUTOMATICAS = ["isbn", "titulo", "autor", "origen", "categoria", "precio_lista", "actualizado", "se_vende", "que_hacer"]
+AUTOMATICAS = ["isbn", "titulo", "autor", "origen", "categoria", "categoria_gestion", "precio_lista", "actualizado", "se_vende", "que_hacer"]
 
 NOTAS_INVENTARIO = {
     "bodega": "Ejemplares en la bodega. Las ventas anotadas en «Ventas» se descuentan solas cada mañana: no las restes aquí. "
@@ -50,7 +50,7 @@ NOTAS_VENTAS = {
     "cantidad": "Ejemplares de este libro en esta venta.",
     "descuento": "Solo si hubo descuento u oferta: el porcentaje, como número (10 = 10 %). Vacío = precio de lista.",
     "canal": "Por dónde se vendió. «Consignación (factura)» descuenta de «En consignación» en vez de la bodega.",
-    "estado": "Vendido (o vacío): descuenta del stock. «No había stock»: alguien lo pidió y no había; no mueve stock, "
+    "estado": "Vendido (o vacío): descuenta del stock. «No había stock»: alguien lo pidió y no había. No mueve stock, "
               "pero cuenta como demanda. «Devolución»: un cliente devolvió el libro.",
     "descontado": "Se completa sola cuando el cálculo descuenta la venta del stock. Si corriges una venta ya descontada, "
                   "corrige también «En bodega» en «Inventario».",
@@ -105,9 +105,9 @@ def datos_panel(r: Resultado, etiqueta: str = "") -> dict:
 
     t = r.titulos.copy()
     t["que_hacer"] = t["politica"].map(lenguaje.QUE_HACER)
-    t["se_vende"] = t["pronostico_mensual"].map(lenguaje.ritmo)
-    t["como_se_vende"] = t["patron"].map(lenguaje.COMO_SE_VENDE)
-    t["importancia"] = t["abc"].map(lenguaje.IMPORTANCIA)
+    t["se_vende"] = t["tasa_mensual"].map(lenguaje.ritmo)
+    t["como_se_vende"] = t["clase"].map(lenguaje.COMO_SE_VENDE)
+    t["categoria_texto"] = t["categoria_gestion"].map(lenguaje.CATEGORIA)
     titulos = [{k: limpiar(v) for k, v in fila.items()} for fila in t.to_dict("records")]
     pedido = r.pedido.copy()
     pedido["por_que"] = pedido["motivo"].map(lenguaje.motivo_simple) if len(pedido) else []
@@ -116,8 +116,11 @@ def datos_panel(r: Resultado, etiqueta: str = "") -> dict:
         "fecha_corte": r.fecha_corte.date().isoformat(),
         "etiqueta": etiqueta,
         "meses": list(r.series.columns),
-        "semana": lenguaje.esta_semana(r.titulos, r.pedido_resumen, r.pedido, r.fecha_corte, r.errores, r.perdidas),
+        "semana": lenguaje.esta_semana(r.titulos, r.pedido_resumen, r.pedido, r.fecha_corte, r.errores, r.perdidas,
+                                       conteo=r.conteo),
         "ventas": r.ventas,
+        "categorias": r.categorias.to_dict("records"),
+        "matriz": r.matriz,
         "resumen": r.resumen.to_dict("records"),
         "pedido": pedido.to_dict("records"),
         "pedido_resumen": r.pedido_resumen.to_dict("records"),
@@ -131,6 +134,7 @@ def _hoja_inventario(catalogo: pd.DataFrame, cantidades: pd.DataFrame, r: Result
     """Filas completas de «Inventario» (internas), ordenadas por título."""
     t = r.titulos.set_index("id")
     df = catalogo[["id", "isbn", "titulo", "autor", "origen", "categoria", "precio_lista", "compra_en"]].copy()
+    df["categoria_gestion"] = df["id"].map(t["categoria_gestion"])
     df["autor"] = df["autor"].replace({"Aa.Vv.": "Varios autores", "Autor no especificado": ""})
     cant = cantidades.set_index("id") if len(cantidades) else pd.DataFrame(columns=["bodega", "consignacion", "en_camino", "notas"])
     for c in ("bodega", "consignacion", "en_camino"):
@@ -138,7 +142,7 @@ def _hoja_inventario(catalogo: pd.DataFrame, cantidades: pd.DataFrame, r: Result
     df["notas"] = df["id"].map(cant["notas"]).fillna("") if "notas" in cant else ""
     df["compra_en"] = df["compra_en"].where(df["compra_en"].astype(str).str.strip() != "", df["origen"])
     df["actualizado"] = df["id"].map(actualizado)
-    df["se_vende"] = df["id"].map(t["pronostico_mensual"]).map(lenguaje.ritmo)
+    df["se_vende"] = df["id"].map(t["tasa_mensual"]).map(lenguaje.ritmo)
     df["que_hacer"] = df["id"].map(t["politica"]).map(lenguaje.QUE_HACER)
     return df[COLUMNAS_INVENTARIO].sort_values("titulo", key=lambda s: s.str.lower())
 
@@ -223,7 +227,7 @@ def ciclo_planilla(fuente: FuenteSheets, catalogo: pd.DataFrame, p, fecha_corte=
                         notas={idx[c]: texto for c, texto in NOTAS_INVENTARIO.items()},
                         listas={idx["compra_en"]: ["España", "Argentina", "España o Argentina"]},
                         anchos={idx["id"]: 80, idx["isbn"]: 115, idx["titulo"]: 320, idx["autor"]: 170, idx["origen"]: 90, idx["compra_en"]: 150,
-                                idx["categoria"]: 190, idx["precio_lista"]: 95, idx["bodega"]: 80, idx["consignacion"]: 105,
+                                idx["categoria"]: 190, idx["categoria_gestion"]: 110, idx["precio_lista"]: 95, idx["bodega"]: 80, idx["consignacion"]: 105,
                                 idx["en_camino"]: 95, idx["actualizado"]: 105, idx["se_vende"]: 125, idx["que_hacer"]: 190, idx["notas"]: 240})
     else:
         faltan = completa[~completa["id"].isin(inv["id"])]
@@ -243,13 +247,16 @@ def ciclo_planilla(fuente: FuenteSheets, catalogo: pd.DataFrame, p, fecha_corte=
         preparar_ventas(fuente)
     fuente.escribir_celdas("Ventas", lenguaje.ENCABEZADOS["Ventas"]["descontado"], marcas)
 
-    semana = lenguaje.esta_semana(r.titulos, r.pedido_resumen, r.pedido, r.fecha_corte, r.errores, r.perdidas, sin_anotar)
-    fuente.escribir("Esta semana", lenguaje.hoja_esta_semana(semana), solo_lectura=True, secciones=True, anchos={0: 380, 1: 560})
+    semana = lenguaje.esta_semana(r.titulos, r.pedido_resumen, r.pedido, r.fecha_corte, r.errores, r.perdidas, sin_anotar,
+                                  r.conteo)
+    hoja_semana = lenguaje.hoja_esta_semana(semana)
+    fuente.escribir("Esta semana", hoja_semana, solo_lectura=True, secciones=True, anchos={0: 380, 1: 560},
+                    filas_seccion=hoja_semana.attrs["secciones"])
     hp = lenguaje.hoja_pedido(r.pedido, r.pedido_resumen.attrs["combinaciones"], r.pedido_resumen.attrs["envios"],
-                              r.fecha_corte, fuente.separador)
+                              r.fecha_corte, fuente.separador, r.pedido_resumen)
     fuente.escribir("Pedido", hp["filas"], solo_lectura=True, secciones=True, celdas_editables=hp["editables"],
                     negritas=hp["negritas"], formatos_rango=hp["formatos"],
-                    anchos={0: 230, 1: 260, 2: 100, 3: 320, 4: 110, 5: 110, 6: 380})
+                    anchos={0: 230, 1: 300, 2: 120, 3: 320, 4: 110, 5: 110, 6: 380, 7: 90})
     fuente.escribir("Análisis técnico", r.titulos, oculta=True, solo_lectura=True)
     fuente.escribir("Indicadores", r.resumen, oculta=True, solo_lectura=True, anchos={0: 360, 1: 420})
     fuente.ordenar(ORDEN_PESTANAS, visibles=VISIBLES)
@@ -257,7 +264,7 @@ def ciclo_planilla(fuente: FuenteSheets, catalogo: pd.DataFrame, p, fecha_corte=
 
 
 def main(argv=None):
-    ap = argparse.ArgumentParser(prog="inventario", description="ABC, demanda, pronóstico y sugerencia de importación")
+    ap = argparse.ArgumentParser(prog="inventario", description="Categorías AA a DD, demanda, nivel objetivo y pedido por embarque")
     ap.add_argument("--fuente", choices=["ejemplo", "csv", "sheets"], default="ejemplo")
     ap.add_argument("--datos", type=Path, default=RAIZ / "datos_ejemplo", help="carpeta con los CSV de entrada")
     ap.add_argument("--salida", type=Path, default=RAIZ / "salida", help="carpeta para los CSV de resultados")
@@ -295,8 +302,10 @@ def main(argv=None):
         fuente.escribir("Resultado_Pedido", r.pedido)
         fuente.escribir("Comparacion_envios", pd.DataFrame(r.pedido_resumen.attrs["combinaciones"]))
         fuente.escribir("Resumen", r.resumen)
+        fuente.escribir("Categorias", r.categorias)
         fuente.escribir("Esta_semana", lenguaje.hoja_esta_semana(
-            lenguaje.esta_semana(r.titulos, r.pedido_resumen, r.pedido, r.fecha_corte, r.errores, r.perdidas)))
+            lenguaje.esta_semana(r.titulos, r.pedido_resumen, r.pedido, r.fecha_corte, r.errores, r.perdidas,
+                                 conteo=r.conteo)))
 
     if a.panel:
         a.panel.parent.mkdir(parents=True, exist_ok=True)

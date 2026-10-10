@@ -3,7 +3,7 @@
 Repositorio de prueba con dos partes que se publican juntas:
 
 - **El sitio** (`src/`, Eleventy): catálogo, fichas, solicitud de pedido por WhatsApp o correo. Se edita en `/admin/` con Sveltia CMS.
-- **El inventario** (`inventario/`, Python): existencias, clasificación ABC, patrón de demanda, pronóstico y pedido sugerido por origen.
+- **El inventario** (`inventario/`, Python): existencias, categorías de gestión AA, BB, CC y DD, clase de demanda, nivel objetivo y pedido por embarque y origen.
   Los datos reales viven en una Google Sheet privada; este repositorio público solo tiene código y **datos de ejemplo sintéticos**.
 
 **Contexto completo** (cómo se conectan sitio, Sveltia, planilla, GitHub y panel, y todas las fórmulas del modelo con
@@ -21,8 +21,8 @@ un ejemplo): [`docs/CONTEXTO.md`](docs/CONTEXTO.md). Configuración paso a paso:
 |---|---|
 | **Inventario** | Un libro por fila: código, ISBN, título, autor, editorial, **se compra en**, categoría, precio de venta, **en bodega**, **en consignación**, **pedido en camino**, última actualización, cómo se vende, qué hacer y **notas**. Roberto solo edita las columnas amarillas; el resto se completa solo y se puede ordenar y filtrar |
 | **Ventas** | Una fila por libro vendido: fecha, pedido o boleta, libro (lista desplegable), cantidad, **descuento (%)** si hubo, canal y estado («Vendido», «No había stock» o «Devolución»). ISBN, precio de lista y total cobrado se completan solos con fórmulas. Cada mañana las ventas nuevas se descuentan del stock de «Inventario» y se anota cuándo en «Descontado del stock» |
-| **Esta semana** | Qué pedir y dónde conviene, qué está sin stock, qué pidieron y no había, qué liquidar, qué consignaciones cobrar. Solo lectura |
-| **Pedido sugerido** | Arriba, **dónde conviene comprar**: Roberto anota el costo de cada envío (celdas amarillas) y la comparación entre «Todo a España», «Todo a Argentina», «Dividir» y «No pedir nada ahora» se recalcula al instante. Abajo, la lista de qué pedir |
+| **Esta semana** | Qué pedir y dónde conviene, qué está sin stock, qué pidieron y no había, qué contar esta semana, qué consignaciones cobrar. Solo lectura |
+| **Pedido sugerido** | Arriba, **dónde conviene comprar**: Roberto anota el costo real de cada envío (celdas amarillas) y la comparación entre «Todo a España», «Todo a Argentina» y «Dividir» se recalcula al instante. El flete no se calcula por peso. Abajo, la lista de qué pedir en el próximo embarque |
 | Ocultas | Configuración (costos por origen), Registro de movimientos, Historial de fotos, Lista de libros (para la lista desplegable de «Ventas»), Análisis técnico, Indicadores |
 
 Cada mañana el cálculo compara «Inventario» con la foto anterior y deduce qué pasó: si bajó la bodega y subió la
@@ -34,6 +34,9 @@ carga una vez desde las facturas y guías del SII, que son más exactas.
 «Ventas» es la fuente de demanda con más detalle: la venta perdida («No había stock») cuenta como demanda aunque no
 mueva stock, y el descuento y el canal quedan para analizar ofertas.
 
+La demanda que usa el modelo es la **venta neta** (venta + factura de consignación − devoluciones) más la venta perdida.
+La salida en guía no es venta: decide entre las categorías CC y DD.
+
 El catálogo y los precios salen del sitio (`src/libros`): el precio se cambia en `/admin/`, no en la planilla.
 
 ## Qué calcula
@@ -41,13 +44,13 @@ El catálogo y los precios salen del sitio (`src/libros`): el precio se cambia e
 | Paso | Método | Archivo |
 |---|---|---|
 | Existencias | Bodega, consignación y tránsito a partir de los movimientos. La factura de una consignación no vuelve a descontar la bodega; la consignación abierta más antigua se rastrea por orden de salida | `inventario/stock.py` |
-| Clasificación ABC | Valor de la venta facturada en los últimos 12 meses; cortes 80 % y 95 % | `inventario/clasificacion_abc.py` |
-| Patrón de demanda | ADI y CV² con los cortes 1,32 y 0,49 de Syntetos, Boylan y Croston (2005): suave, errática, intermitente, grumosa; puntual si hubo menos de dos meses con demanda | `inventario/demanda.py` |
-| Clase de demanda | Regular, Intermitente, Esporádica o Sin demanda según el patrón; Estacional y Coyuntural se marcan a mano en el catálogo | `inventario/demanda.py` |
-| Pronóstico mensual | SBA (Croston con corrección de sesgo) para intermitente y grumosa; suavizamiento exponencial para suave y errática | `inventario/demanda.py` |
-| Stock objetivo | Demanda del plazo de reposición más la revisión, al nivel de servicio elegido, estimada remuestreando meses observados (sin suponer una distribución normal, que no sirve con demanda intermitente) | `inventario/demanda.py` |
-| Política por título | Reponer (A y B), stock mínimo de un ejemplar (C), a pedido (esporádica), temporada, no reponer (coyuntural), liquidar o revisar (con stock y sin salidas en 18 meses). La planilla puede fijarla a mano | `inventario/politica.py` |
-| Dónde comprar y pedido por origen | Si un libro está en ambas editoriales («Se compra en»), prueba todas las combinaciones de envíos (ninguno, España, Argentina, ambos) y elige la de menor costo: cada libro va al origen con menor **costo puesto en bodega** entre los que se envían; cada envío debe alcanzar su **mínimo FOB** (US$ 700), completándolo con demanda adelantada de títulos A y B; lo que no cabe espera el próximo envío con un castigo por la espera. Cada envío suma su **costo fijo** (courier, despacho, trámites), que puede hacer que convenga traer todo de un solo país. Con dos orígenes son cuatro combinaciones: el óptimo es exacto. Como el costo fijo no cambia qué libros van en cada combinación, la planilla y el panel recalculan la recomendación al instante | `inventario/pedido.py` |
+| Categorías de gestión | AA (clase Intermitente, Regular, Estacional o Coyuntural), BB (clase Esporádica), CC (con existencias, sin venta y con salida en guía), DD (con existencias, sin venta ni salida en guía) y «Sin categoría». Adaptan a Flores y Whybark (1987) y reemplazan al ABC por valor | `inventario/clasificacion_abc.py` (nombre histórico) |
+| Clase de demanda | Por meses con demanda en la ventana de 21 meses: 0 «Sin venta neta», 1 o 2 «Esporádica», 3 o más «Intermitente» (o «Regular» si ADI < 1,32 y CV² < 0,49). Estacional y Coyuntural se marcan a mano en el catálogo. ADI y CV² (Syntetos, Boylan y Croston, 2005) quedan como indicadores | `inventario/demanda.py` |
+| Pronóstico mensual | SBA (Croston con corrección de sesgo, α = 0,15, supuesto abierto) para Intermitente y Regular | `inventario/demanda.py` |
+| Nivel objetivo S | Percentil 95 de una distribución de Poisson con media λ × (T + L), donde λ es el pronóstico SBA, T el intervalo entre embarques del origen (Argentina 12 meses, España 8,5) y L el plazo de reposición. El 95 % es un criterio y Poisson es un supuesto de simplicidad | `inventario/politica.py` |
+| Política por categoría | AA Intermitente o Regular repone hasta S, AA Estacional pide una vez al año antes de la temporada, AA Coyuntural se atiende por reacción, BB repone lo vendido desde el embarque anterior, CC y DD no se reponen, «Sin categoría» va a pedido. La planilla puede fijarla a mano | `inventario/politica.py` |
+| Conteo cíclico | «Qué contar esta semana», con la frecuencia por categoría: AA mensual, BB cada 6 meses, CC y DD una vez al año | `inventario/modelo.py` |
+| Pedido por embarque y dónde comprar | Embarques programados por origen. Si un libro está en ambas editoriales («Se compra en»), compara las combinaciones que cubren todo (España, Argentina, ambos) y elige la de menor costo: cada libro va al origen con menor **costo puesto en bodega** entre los que se envían, cada envío debe alcanzar su **mínimo FOB** (US$ 700) y suma su **costo fijo**, que anota Roberto. Si un envío no alcanza el mínimo, la hoja lo avisa y Roberto decide cómo completarlo. No hay castigos numéricos de postergar ni adelantar | `inventario/pedido.py` |
 | Ventas | Convierte cada fila de «Ventas» en un movimiento (venta, factura de consignación, devolución o venta perdida), descuenta del stock solo las nuevas y resume ventas con descuento, descuento promedio y ventas perdidas | `inventario/ventas.py` |
 
 Límites que conviene tener presentes:
@@ -55,9 +58,11 @@ Límites que conviene tener presentes:
   «Ventas» como «No había stock». Conviene anotar también las consultas de WhatsApp por libros no disponibles.
 - Las ventas con descuento se cuentan como demanda normal. Si una oferta dispara las ventas, el pronóstico sube un
   tiempo; el porcentaje queda anotado para separarlas más adelante.
-- El remuestreo supone que los próximos meses se parecen a los de la ventana. Un evento como una canonización cambia
+- El modelo supone que los próximos meses se parecen a los de la ventana. Un evento como una canonización cambia
   eso: por eso existe la clase Coyuntural.
-- Las cifras en dólares dependen de los factores de la pestaña Costos, que son una estimación por origen.
+- Las cifras en dólares dependen de los factores de la pestaña oculta Configuración, que son una estimación por origen. Los valores reales los carga Andrés en la planilla privada y no se suben al repositorio.
+- El flete no se calcula por peso, porque el catálogo no tiene el peso de cada título.
+- El nivel de servicio de 95 %, el supuesto de Poisson, α = 0,15 y las reglas de BB y de Estacional son supuestos o criterios y no mediciones. Las dos reglas están marcadas «por confirmar» en `inventario/politica.py`.
 
 ## Usarlo en tu computador
 
@@ -83,7 +88,7 @@ inventario/                 el modelo (Python); lenguaje.py tiene todos los text
 panel/                      panel de inventario: «Esta semana», «Libros» y «Análisis»
 herramientas/               generar_ejemplo.py (datos sintéticos) y crear_planilla.py (prepara la Google Sheet)
 datos_ejemplo/              datos sintéticos: los títulos y precios son públicos; clientes, cantidades y costos son inventados
-tests/                      pruebas del modelo
+tests/                      pruebas del modelo (56)
 .github/workflows/          pruebas; publicación diaria y con cada cambio (sitio + /admin + /inventario + cálculo con la planilla)
 ```
 

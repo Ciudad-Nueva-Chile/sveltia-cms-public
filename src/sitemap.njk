@@ -2,9 +2,21 @@
 permalink: /sitemap.xml
 eleventyExcludeFromCollections: true
 ---
+{#- Mapa del sitio armado desde las colecciones, no desde collections.all: Eleventy solo agrega a collections.all la
+    primera página de una plantilla paginada, y así quedaban fuera 15 de las 16 categorías.
+    Entran: inicio, catálogo, patrística, categorías, páginas de texto y fichas visibles. Quedan fuera /solicitud/ y la 404. -#}
 <?xml version="1.0" encoding="utf-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-{%- for p in collections.all %}{% if p.url and not p.url.endsWith('.xml') and p.url != '/solicitud/' %}
+  <url><loc>{{ sitio.url }}/</loc></url>
+  <url><loc>{{ sitio.url }}/catalogo/</loc></url>
+  <url><loc>{{ sitio.url }}/patristica/</loc></url>
+{%- for cat in collections.categorias %}
+  <url><loc>{{ sitio.url }}/categoria/{{ cat.slug }}/</loc></url>
+{%- endfor %}
+{%- for p in collections.paginas %}
   <url><loc>{{ sitio.url }}{{ p.url }}</loc></url>
-{%- endif %}{% endfor %}
+{%- endfor %}
+{%- for libro in collections.libros %}
+  <url><loc>{{ sitio.url }}{{ libro.url }}</loc></url>
+{%- endfor %}
 </urlset>

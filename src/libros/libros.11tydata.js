@@ -5,6 +5,14 @@ const SIGLA_FINAL = /\s*\(\s*([A-Z]{2})\.?\s*(\d+)\s*\)\s*$/;
 const COLECCION_VACIA = new Set(["", "Sin colección identificada en el título"]);
 const AUTOR_VACIO = new Set(["", "Autor no especificado"]);
 
+// Primera frase de la sinopsis (el cuerpo del .md), sin marcas de Markdown
+const primeraFrase = (texto) => {
+  const limpio = String(texto || "").replace(/[#*_>`\[\]()]/g, " ").replace(/\s+/g, " ").trim();
+  if (!limpio) return "";
+  const m = limpio.match(/^.{20,240}?[.!?](\s|$)/);
+  return (m ? m[0] : limpio.slice(0, 200)).trim();
+};
+
 export default {
   layout: "libro.njk",
   eleventyComputed: {
@@ -25,5 +33,15 @@ export default {
     },
     coleccion_visible: (data) => (COLECCION_VACIA.has(String(data.coleccion || "").trim()) ? "" : data.coleccion),
     sello: (data) => data.origen_editorial || "Ciudad Nueva",
+    // Descripción para buscadores propia de cada ficha: título, autor, colección y número, ISBN y, si hay sinopsis,
+    // su primera frase. Nunca incluye existencias, costos ni precio neto.
+    descripcion_seo: (data) => {
+      const partes = [`${data.titulo_visible}${data.autor_visible ? `, de ${data.autor_visible}` : ""}.`];
+      if (data.coleccion_visible) partes.push(`${data.coleccion_visible}${data.num_coleccion ? ` n.º ${data.num_coleccion}` : ""}.`);
+      if (data.isbn) partes.push(`ISBN ${data.isbn}.`);
+      const frase = primeraFrase(data.page?.rawInput);
+      partes.push(frase || `Editorial ${data.sello}, disponible en Chile.`);
+      return partes.join(" ");
+    },
   },
 };

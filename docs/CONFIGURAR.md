@@ -33,7 +33,7 @@ python herramientas/crear_planilla.py --planilla 1AbC…xyz --con-ejemplo
 python -m inventario --fuente sheets --planilla 1AbC…xyz
 ```
 
-La primera orden prepara **Ventas** y lo que no se ve (Registro de movimientos y Configuración, ocultas); la segunda
+La primera orden prepara **Ventas** y lo que no se ve (Registro de movimientos y Configuración, ocultas). La segunda
 crea la pestaña **Inventario** con las existencias que dan los movimientos cargados, más **Esta semana** y **Pedido sugerido**.
 
 ## 3. Cargar los datos reales
@@ -42,13 +42,15 @@ crea la pestaña **Inventario** con las existencias que dan los movimientos carg
   crédito del SII, y el conteo del 21-08-2026 como «Conteo inicial». Desde ahí crece solo con los cambios de «Inventario».
 - **Configuración** (oculta; menú Ver → Hojas ocultas): una fila por origen de compra con FOB / precio neto, costo
   puesto en bodega / precio neto y pesos por dólar. Si un origen vende libros de otra edición con otras condiciones
-  (por ejemplo, libros españoles comprados en Argentina), se agrega una fila con esa «Edición del libro»; la fila
-  con la edición vacía vale para todo lo demás.
+  (por ejemplo, libros españoles comprados en Argentina), se agrega una fila con esa «Edición del libro». La fila
+  con la edición vacía vale para todo lo demás. Los factores reales salen de la memoria (sección 4.1.5) y el tipo de
+  cambio es el vigente: se escriben solo aquí, nunca en el repositorio.
 - **Inventario**: la crea el primer cálculo. Desde entonces Roberto corrige ahí las llegadas, conteos y consignaciones.
 - **Ventas**: Roberto anota cada venta (y cada pedido que no se pudo atender, como «No había stock»). Se descuenta
   sola del stock cada mañana; no hay que restarla también en «Inventario».
-- **Pedido sugerido**: Roberto anota en las celdas amarillas cuánto cuesta cada envío. La recomendación de dónde
-  comprar se recalcula al instante, y el cálculo del día siguiente arma la lista con esa opción.
+- **Pedido sugerido**: Roberto anota en las celdas amarillas la cotización de cada envío (el flete no se calcula por peso).
+  La recomendación de dónde comprar se recalcula al instante, y el cálculo del día siguiente arma la lista con esa opción.
+  Si un embarque no alcanza el mínimo FOB, la hoja lo avisa y Roberto decide cómo completarlo.
 
 ## 4. Cálculo automático cada mañana
 

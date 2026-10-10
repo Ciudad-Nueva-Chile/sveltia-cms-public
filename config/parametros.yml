@@ -1,35 +1,32 @@
-# Parámetros del modelo de inventario. Se editan desde /admin (Sveltia CMS).
-# Aquí solo van valores que no son sensibles: los costos viven en la planilla privada (pestaña Costos).
+# Parámetros del modelo de inventario. Se editan desde /admin (Sveltia CMS → Modelo de inventario).
+# Siguen la memoria del proyecto (sección 4.2.5). Aquí solo van valores que no son sensibles: los factores de costo,
+# el tipo de cambio y el costo de cada envío viven en la planilla privada.
 
-historia_meses: 24            # meses de historia que se usan para clasificar y pronosticar
-abc_meses: 12                 # ventana para la clasificación ABC por valor
-abc_corte_a: 0.80             # los títulos que acumulan el 80 % del valor son A
-abc_corte_b: 0.95             # hasta el 95 % son B; el resto, C
+historia_meses: 21            # ventana de observación de la memoria (diciembre de 2024 a agosto de 2026)
 
-# Clasificación de patrones de demanda (Syntetos, Boylan y Croston, 2005)
+# Indicadores informativos de Syntetos, Boylan y Croston (2005). La clase de demanda se decide por meses con venta.
 corte_adi: 1.32
 corte_cv2: 0.49
 
-# Pronóstico
-alfa_suavizado: 0.15          # parámetro de suavizamiento para SBA y suavizamiento exponencial
+alfa_suavizado: 0.15          # SUPUESTO ABIERTO: parámetro de SBA, dentro del rango 0,05 a 0,20 de la literatura
+nivel_servicio: 0.95          # CRITERIO, no optimización: el costo del quiebre no puede estimarse con el registro
 
-# Reposición
-nivel_servicio: 0.90          # probabilidad de no quebrar stock durante el plazo de reposición más la revisión
-revision_semanas: 4           # cada cuánto se revisa y se decide un pedido
-simulaciones: 2000            # remuestreos para estimar la demanda del periodo de protección
-
-# Alertas
-meses_sin_movimiento: 18      # con stock y sin salidas en este plazo: revisar o liquidar
 dias_consignacion_antigua: 365
 
-# Elección de dónde comprar (cuando un libro está en más de una editorial)
-costo_postergar: 0.30         # castigo por dejar para después un ejemplar que hace falta (fracción de su precio neto)
-costo_adelantar: 0.10         # castigo por comprar antes de tiempo para completar un mínimo de embarque
+# Conteo cíclico por categoría (estructura de Flores y Whybark, 1987, con frecuencias de la memoria)
+conteos_por_anio: { AA: 12, BB: 2, CC: 1, DD: 1 }
+revision_clasificacion_meses: { AA: 6, BB: 6, CC: 12, DD: 12 }
 
+# Embarques por origen. Todo origen distinto de Argentina se trata como España.
+# intervalo_embarque_meses (T): salió del análisis de tamaño de lote por embarque de la memoria, con una tasa de costo de
+# capital de 15 % anual (rango de 10 % a 20 %). Si esa tasa cambia, T se recalcula fuera del código y se anota aquí.
+# plazo_dias (L): plazo de reposición de la casa de origen (5 a 7 días).
 origenes:
   - nombre: España
-    plazo_semanas: 1          # courier, puerta a puerta
+    intervalo_embarque_meses: 8.5
+    plazo_dias: 7
     minimo_embarque_usd: 700
   - nombre: Argentina
-    plazo_semanas: 1
+    intervalo_embarque_meses: 12
+    plazo_dias: 5.5
     minimo_embarque_usd: 700

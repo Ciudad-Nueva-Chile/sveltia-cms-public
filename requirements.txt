@@ -5,3 +5,4 @@ gspread>=6,<7
 google-auth>=2.30,<3
 pytest>=8,<9
 cryptography>=42,<51
+scipy>=1.11,<2

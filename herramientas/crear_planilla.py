@@ -27,7 +27,7 @@ from inventario import ventas as ventas_mod  # noqa: E402
 
 RAIZ = Path(__file__).resolve().parent.parent
 # Pestañas que se borran al rehacer la planilla (versiones anteriores y las que se recrean solas)
-BORRAR = ["Historial", "Ventas", "Lista de libros", "Libros", "Lista de libros", "Esta semana", "Pedido sugerido",
+BORRAR = ["Historial", "Ventas", "Lista de libros", "Escala de descuentos", "Libros", "Lista de libros", "Esta semana", "Pedido sugerido",
           "Análisis técnico", "Indicadores", "Catalogo", "Catálogo", "EnTransito", "En tránsito",
           "Resultado_Titulos", "Resultado_Pedido", "Resumen", "Hoja 1", "Sheet1"]
 
@@ -78,7 +78,9 @@ def main():
     else:
         print("  Registro de movimientos: ya tiene datos, se deja como está")
 
-    # Configuración (oculta): costos por origen, los define Andrés una vez
+    # Configuración (oculta): costos por origen. Con --con-ejemplo lleva valores inventados; sin él, vacía.
+    # Los factores reales (costo en bodega y FOB sobre el precio neto) y el tipo de cambio los carga Andrés en la
+    # planilla privada a partir de la memoria. Nunca se escriben en el repositorio.
     hoja = f.hoja("Costos")
     if hoja is None or a.reemplazar or len(hoja.get_all_values()) <= 1:
         cfg = pd.read_csv(RAIZ / "datos_ejemplo" / "Costos.csv") if a.con_ejemplo else pd.DataFrame(

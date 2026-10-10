@@ -1,20 +1,19 @@
-"""Pedido sugerido y elección de dónde comprar cada libro.
+"""Pedido por embarque programado y elección de dónde comprar cada libro (memoria, sección 4.2.5).
 
-1. Cada título con política Reponer o Stock mínimo necesita lo que le falta para llegar a su stock objetivo.
-2. Un libro puede comprarse en más de un origen (columna «Se compra en»). Para cada origen hay dos valores
-   por ejemplar (pestaña Configuración, según origen de compra y edición del libro):
-     - costo puesto en bodega: decide dónde conviene comprar (incluye flete, seguro e impuestos);
+1. Cada origen tiene un embarque cada T meses (`intervalo_embarque_meses`). El próximo es la fecha de su última
+   importación más T. Sin importaciones registradas, el embarque se considera vencido (pedir ahora).
+2. Las necesidades salen de la política (politica.py): títulos AA y BB con Sugerido > 0.
+3. Un libro puede comprarse en más de un origen (columna «Se compra en»). Para cada origen hay dos valores por
+   ejemplar (pestaña Configuración, según origen de compra y edición del libro):
+     - costo puesto en bodega: decide dónde conviene comprar;
      - valor FOB: es lo que se le paga a la editorial y lo que cuenta para el mínimo de embarque.
-3. Se prueban todas las combinaciones de envíos (ninguno, solo uno, varios). En cada una, cada libro va al origen
-   con menor costo puesto en bodega entre los que se envían; un envío solo vale si alcanza su mínimo FOB,
-   completándolo si hace falta con demanda adelantada de títulos A y B. Lo que no cabe se posterga.
-4. Se elige la combinación de menor costo total: lo que se compra ahora, más lo adelantado × costo_adelantar, más lo
-   postergado a su costo más bajo con un recargo de costo_postergar × su precio neto (el costo de esperar), más el
-   costo fijo de cada envío que se hace (courier, despacho, trámites; lo anota Roberto en «Pedido sugerido»).
-   Con dos orígenes son cuatro combinaciones: el óptimo es exacto.
-
-El costo fijo de los envíos no cambia qué libros van en cada combinación, solo cuál conviene. Por eso la planilla
-puede recalcular la recomendación al instante con fórmulas: total = costo de la combinación + sus envíos.
+4. Se comparan las combinaciones de envíos que cubren TODAS las necesidades (Todo a España, Todo a Argentina,
+   Dividir). En cada una, cada libro va al origen con menor costo puesto en bodega entre los que envían:
+       Total = Σ cantidad × costo puesto en bodega + Σ costo fijo de cada envío que se hace
+   El costo fijo de cada envío lo anota Roberto en «Pedido sugerido» (cotización real). El código no calcula el flete
+   por peso, porque el catálogo no tiene el peso de cada título. Se elige el menor Total (empate: menos envíos).
+5. Mínimo de embarque: si un envío no llega a `minimo_embarque_usd` FOB, no se completa solo: se avisa y Roberto
+   decide cómo completarlo. No hay castigos numéricos de postergar ni de adelantar.
 """
 from __future__ import annotations
 
@@ -24,12 +23,12 @@ import math
 import pandas as pd
 
 from .clasificacion_abc import IVA
-from .config import SEMANAS_POR_MES, Parametros
+from .config import Parametros
 
-DIAS_POR_MES = 30.44
 SEPARADORES = (" o ", ",", "/", " y ")
 EDICION_GENERAL = {"", "todas"}
 NAN = math.nan
+DIAS_ANTICIPACION = 30   # un embarque que vence en los próximos 30 días se pide ahora
 
 
 def opciones_compra(texto: str, editorial: str) -> list[str]:
@@ -54,7 +53,11 @@ def fila_costos(costos: pd.DataFrame, compra: str, edicion: str):
 
 
 def costos_unitarios(precio_lista: float, costos: pd.DataFrame, compra: str, edicion: str) -> tuple[float, float]:
-    """(costo puesto en bodega, valor FOB) de un ejemplar, en dólares. NaN si falta configuración."""
+    """(costo puesto en bodega, valor FOB) de un ejemplar, en dólares. NaN si falta configuración.
+
+    Precio neto = precio con IVA / 1,19. Los factores reales («Costo en bodega / precio neto», «FOB / precio neto»)
+    y el tipo de cambio viven en la planilla privada, no en el repositorio.
+    """
     f = fila_costos(costos, compra, edicion)
     if f is None:
         return NAN, NAN
@@ -73,183 +76,144 @@ def _usd(v: float) -> str:
     return f"{v:.2f}".replace(".", ",")
 
 
-def _neto_usd(precio_lista: float, costos: pd.DataFrame) -> float:
-    tc = pd.to_numeric(costos["tipo_cambio"], errors="coerce").dropna() if len(costos) else pd.Series(dtype=float)
-    return precio_lista / (1 + IVA) / (float(tc.iloc[0]) if len(tc) else 950.0)
-
-
 def nombre_combinacion(envia: list[str]) -> str:
-    if not envia:
-        return "No pedir nada ahora"
     if len(envia) == 1:
         return f"Todo a {envia[0]}"
     return "Dividir: " + " y ".join(envia) + f" ({len(envia)} envíos)"
 
 
+def proximos_embarques(mov: pd.DataFrame, catalogo: pd.DataFrame, p: Parametros, fecha_corte: pd.Timestamp) -> dict:
+    """{origen: (fecha de la última importación o None, fecha del próximo embarque)} para los orígenes configurados.
+
+    La importación se atribuye al origen (editorial) del título, porque el registro no dice desde dónde llegó.
+    Todo origen distinto de Argentina se trata como España.
+    """
+    origen_de = catalogo.drop_duplicates("id").set_index("id")["origen"]
+    imp = mov[(mov["tipo"] == "importacion") & (mov["fecha"] <= fecha_corte)].copy()
+    imp["origen"] = imp["id"].map(origen_de).map(lambda o: "Argentina" if o == "Argentina" else "España")
+    salida = {}
+    for o in p.origenes:
+        fechas = imp.loc[imp["origen"] == ("Argentina" if o.nombre == "Argentina" else "España"), "fecha"]
+        ultima = fechas.max() if len(fechas) else None
+        if ultima is None:
+            proximo = fecha_corte
+        else:
+            proximo = ultima + pd.Timedelta(days=round(p.intervalo_meses(o.nombre) * 30.44))
+        salida[o.nombre] = (ultima, pd.Timestamp(proximo).normalize())
+    return salida
+
+
 def sugerir(titulos: pd.DataFrame, costos: pd.DataFrame, p: Parametros, fecha_corte: pd.Timestamp,
-            envios: dict | None = None) -> tuple[pd.DataFrame, pd.DataFrame]:
+            envios: dict | None = None, embarques: dict | None = None) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Devuelve (líneas del pedido, resumen por origen).
 
+    titulos: una fila por título con sugerido, politica, categoria_gestion, tasa_mensual, unidades_ventana, precio_lista.
     envios: costo fijo de cada envío en dólares, por origen (vacío = 0).
-    El resumen trae en .attrs el ahorro, los postergados y la comparación de combinaciones («combinaciones»).
+    embarques: salida de proximos_embarques(); sin ella, todos los embarques se consideran vencidos.
+    El resumen trae en .attrs: combinaciones, envios y ahorro.
     """
     envios = {o: float(v or 0) for o, v in (envios or {}).items()}
+    embarques = embarques or {o.nombre: (None, fecha_corte) for o in p.origenes}
     if not len(costos):
         costos = pd.DataFrame(columns=["origen", "edicion", "fob_sobre_precio_neto", "costo_sobre_precio_neto", "tipo_cambio"])
     configurados = [o.nombre for o in p.origenes]
-    revision_meses = p.revision_semanas / SEMANAS_POR_MES
 
     def opciones(f) -> dict:
         return {o: costos_unitarios(f.precio_lista, costos, o, f.origen)
                 for o in opciones_compra(getattr(f, "compra_en", ""), f.origen)}
 
     necesidades = [(f, int(f.sugerido), opciones(f)) for f in titulos.itertuples() if f.sugerido > 0]
-    adelantables = sorted(
-        [(f, int(math.ceil(f.pronostico_mensual * revision_meses)), opciones(f)) for f in titulos.itertuples()
-         if f.politica == "Reponer" and f.abc in ("A", "B") and f.pronostico_mensual > 0],
-        key=lambda x: (x[0].abc, -x[0].valor_venta))
     origenes = sorted({o for _, _, ops in necesidades for o in ops} | set(configurados),
                       key=lambda o: (configurados.index(o) if o in configurados else 99, o))
-    opciones_de = {f.id: ops for f, _, ops in necesidades}
 
-    def mas_barato(ops: dict, permitidos=None):
-        validas = {o: v for o, v in ops.items() if not math.isnan(v[0]) and (permitidos is None or o in permitidos)}
-        return min(validas, key=lambda o: validas[o][0]) if validas else None
+    def mejor_en(ops: dict, permitidos) -> str | None:
+        en = [o for o in ops if o in permitidos]
+        if not en:
+            return None
+        con_costo = [o for o in en if not math.isnan(ops[o][0])]
+        return min(con_costo, key=lambda o: ops[o][0]) if con_costo else en[0]
 
     def evaluar(activos: tuple) -> dict:
-        lineas, postergados = [], []
-        fob = {o: 0.0 for o in activos}
-        costo = castigo = 0.0
+        lineas, libros, cubre = [], 0.0, True
         for f, cant, ops in necesidades:
-            o = mas_barato(ops, activos)
-            sin_costo = [k for k in ops if k in activos and math.isnan(ops[k][0])]
-            if o:
-                lineas.append((f, cant, o, ops, "necesidad"))
-                fob[o] += (ops[o][1] if not math.isnan(ops[o][1]) else 0) * cant
-                costo += ops[o][0] * cant
-            elif sin_costo:  # origen activo pero sin costos configurados: se pide igual, sin valorizar
-                lineas.append((f, cant, sin_costo[0], ops, "necesidad"))
-            else:
-                postergados.append((f, cant))
-        for o in activos:
-            minimo = p.origen(o).minimo_embarque_usd
-            for f, extra, ops in adelantables:
-                if fob[o] >= minimo or fob[o] == 0:
-                    break
-                bodega, valor = ops.get(o, (NAN, NAN))
-                if extra <= 0 or math.isnan(valor):
-                    continue
-                lineas.append((f, extra, o, ops, "adelanto"))
-                fob[o] += valor * extra
-                castigo += bodega * extra * p.costo_adelantar
-        valido = all(fob[o] == 0 or fob[o] >= p.origen(o).minimo_embarque_usd for o in activos)
-        # Lo postergado igual se comprará después: cuesta lo más barato posible más el castigo por la espera
-        for f, cant in postergados:
-            o = mas_barato(opciones_de[f.id])
-            costo += (opciones_de[f.id][o][0] if o else 0.0) * cant
-            castigo += _neto_usd(f.precio_lista, costos) * cant * p.costo_postergar
+            o = mejor_en(ops, activos)
+            if o is None:
+                cubre = False
+                continue
+            lineas.append((f, cant, o, ops))
+            libros += 0.0 if math.isnan(ops[o][0]) else ops[o][0] * cant
         envia = [o for o in activos if any(l[2] == o for l in lineas)]
-        return {"activos": activos, "envia": envia, "lineas": lineas, "postergados": postergados, "valido": valido,
-                "libros": costo, "castigo": castigo, "envio": sum(envios.get(o, 0.0) for o in envia),
-                "costo": costo + castigo + sum(envios.get(o, 0.0) for o in envia)}
+        envio = sum(envios.get(o, 0.0) for o in envia)
+        return {"activos": activos, "envia": envia, "lineas": lineas, "cubre": cubre,
+                "libros": libros, "envio": envio, "total": libros + envio}
 
-    escenarios = [evaluar(c) for n in range(len(origenes) + 1) for c in itertools.combinations(origenes, n)]
-    # Combinaciones que terminan enviando a los mismos orígenes son la misma opción: queda la más barata
+    evaluadas = [evaluar(c) for n in range(1, len(origenes) + 1) for c in itertools.combinations(origenes, n)]
     unicas = {}
-    for e in escenarios:
+    for e in evaluadas:
+        if not e["cubre"] or not e["envia"]:
+            continue
         k = tuple(e["envia"])
-        if k not in unicas or (round(e["costo"], 2), len(e["activos"])) < (round(unicas[k]["costo"], 2), len(unicas[k]["activos"])):
+        if k not in unicas or e["total"] < unicas[k]["total"]:
             unicas[k] = e
-    escenarios = sorted(unicas.values(), key=lambda e: (len(e["envia"]) == 0, len(e["envia"]),
-                                                         [origenes.index(o) for o in e["envia"]]))
-    mejor = min((e for e in escenarios if e["valido"]), key=lambda e: (round(e["costo"], 2), len(e["activos"])))
+    combinaciones = sorted(unicas.values(), key=lambda e: (len(e["envia"]), [origenes.index(o) for o in e["envia"]]))
+    mejor = min(combinaciones, key=lambda e: (round(e["total"], 2), len(e["envia"]))) if combinaciones else evaluar(tuple(origenes))
 
-    def linea(cuando, o, f, cant, motivo, ops):
-        valor = ops.get(o, (NAN, NAN))[1]
-        return {"cuando": cuando, "origen": o, "id": f.id, "isbn": f.isbn, "titulo": f.titulo, "abc": f.abc,
-                "cantidad": cant, "motivo": motivo, "costo_unitario_usd": "" if math.isnan(valor) else round(valor, 2),
-                "subtotal_usd": "" if math.isnan(valor) else round(valor * cant, 2)}
+    def cuando(o: str) -> str:
+        _, proximo = embarques.get(o, (None, fecha_corte))
+        if proximo <= fecha_corte + pd.Timedelta(days=DIAS_ANTICIPACION):
+            return "Ahora"
+        return "Próximo embarque " + proximo.strftime("%d-%m-%Y")
 
     filas, ahorro = [], 0.0
-    for f, cant, o, ops, tipo in mejor["lineas"]:
-        if tipo == "adelanto":
-            motivo = "Adelanto para completar el mínimo de embarque"
-        else:
-            motivo = "Mantener un ejemplar (stock mínimo)" if f.politica == "Stock mínimo" else "Bajo el stock objetivo"
-            otras = {k: v for k, v in ops.items() if k != o and not math.isnan(v[0])}
-            if otras and not math.isnan(ops[o][0]):
-                otra = min(otras, key=lambda k: otras[k][0])
-                aqui, alla = _usd(ops[o][0]), _usd(otras[otra][0])
-                if ops[o][0] <= otras[otra][0]:
-                    motivo += f"; conviene {o}: US$ {aqui} puesto en bodega contra US$ {alla} en {otra}"
-                else:
-                    motivo += (f"; en {otra} sale más barato (US$ {alla} contra {aqui} puesto en bodega), "
-                               f"pero ese envío no alcanza el mínimo y conviene sumarlo al de {o}")
-            propia = ops.get(f.origen, (NAN, NAN))[0]
-            if o != f.origen and not math.isnan(propia) and not math.isnan(ops[o][0]):
-                ahorro += (propia - ops[o][0]) * cant
-        previa = next((l for l in filas if l["origen"] == o and l["id"] == f.id), None)
-        if previa:
-            previa["cantidad"] += cant
-            previa["motivo"] += " + adelanto para completar el mínimo"
-            valor = ops.get(o, (NAN, NAN))[1]
-            previa["subtotal_usd"] = "" if math.isnan(valor) else round(valor * previa["cantidad"], 2)
-        else:
-            filas.append(linea("Ahora", o, f, cant, motivo, ops))
+    for f, cant, o, ops in mejor["lineas"]:
+        motivo = {"Reponer": "Bajo el nivel objetivo S", "Reponer lo vendido": "Reponer lo vendido desde el embarque anterior",
+                  "Temporada": "Pedido de temporada, debe llegar antes de septiembre"}.get(f.politica, f.politica)
+        otras = {k: v for k, v in ops.items() if k != o and not math.isnan(v[0])}
+        if otras and not math.isnan(ops[o][0]):
+            otra = min(otras, key=lambda k: otras[k][0])
+            aqui, alla = _usd(ops[o][0]), _usd(otras[otra][0])
+            if ops[o][0] <= otras[otra][0]:
+                motivo += f". Conviene {o}: US$ {aqui} puesto en bodega contra US$ {alla} en {otra}"
+            else:
+                motivo += f". En {otra} sale más barato (US$ {alla} contra {aqui}), pero la combinación de envíos conviene así"
+        propia = ops.get(f.origen, (NAN, NAN))[0]
+        if o != f.origen and not math.isnan(propia) and not math.isnan(ops[o][0]):
+            ahorro += (propia - ops[o][0]) * cant
+        valor = ops[o][1]
+        filas.append({"cuando": cuando(o), "origen": o, "id": f.id, "isbn": f.isbn, "titulo": f.titulo,
+                      "categoria": f.categoria_gestion, "cantidad": cant, "motivo": motivo,
+                      "costo_unitario_usd": "" if math.isnan(valor) else round(valor, 2),
+                      "subtotal_usd": "" if math.isnan(valor) else round(valor * cant, 2)})
 
-    # Lo postergado, en el origen donde sería más barato (explica por qué se espera)
-    necesario, unidades_nec = {}, {}
-    for f, cant in mejor["postergados"]:
-        ops = opciones_de[f.id]
-        o = mas_barato(ops) or f.origen
-        base = "Mantener un ejemplar (stock mínimo)" if f.politica == "Stock mínimo" else "Bajo el stock objetivo"
-        filas.append(linea("Próximo envío", o, f, cant, base + f"; esperar: el envío a {o} todavía no alcanza el mínimo", ops))
-        valor = ops.get(o, (NAN, NAN))[1]
-        necesario[o] = necesario.get(o, 0) + (0 if math.isnan(valor) else valor * cant)
-        unidades_nec[o] = unidades_nec.get(o, 0) + cant
-
+    # Resumen por origen, con aviso de mínimo
     resumen = []
     for o in origenes:
-        grupo = titulos[titulos["origen"] == o]
-        reponer = grupo[(grupo["politica"] == "Reponer") & (grupo["pronostico_mensual"] > 0)]
-        dias = ((reponer["posicion"] - reponer["punto_pedido"]) / reponer["pronostico_mensual"] * DIAS_POR_MES).clip(lower=0)
-        dias_min = float(dias.min()) if len(dias) else NAN
-        ahora = [l for l in filas if l["origen"] == o and l["cuando"] == "Ahora"]
-        if o not in configurados and not ahora and o not in unidades_nec:
+        lineas_o = [l for l in filas if l["origen"] == o]
+        if o not in configurados and not lineas_o:
             continue
-        if ahora:
-            estado, fecha = "Pedir ahora", fecha_corte
-            total, unidades = sum(l["subtotal_usd"] or 0 for l in ahora), sum(l["cantidad"] for l in ahora)
-        elif o in unidades_nec:
-            estado = "Acumular: no alcanza el mínimo"
-            fecha = fecha_corte + pd.Timedelta(weeks=p.revision_semanas)
-            total, unidades = necesario[o], unidades_nec[o]
-        elif not math.isnan(dias_min):
-            estado = f"Sin pedido: el primer título llega a su punto de pedido en {int(dias_min)} días"
-            fecha, total, unidades = fecha_corte + pd.Timedelta(days=dias_min), 0.0, 0
+        ultima, proximo = embarques.get(o, (None, fecha_corte))
+        minimo = p.origen(o).minimo_embarque_usd
+        total = round(sum(l["subtotal_usd"] or 0 for l in lineas_o), 2)
+        if not lineas_o:
+            estado = "Sin pedido"
+        elif total >= minimo:
+            estado = "Pedir en el embarque"
         else:
-            estado, fecha, total, unidades = "Sin pedido", None, 0.0, 0
-        resumen.append({"origen": o, "estado": estado, "titulos": len(ahora), "unidades": unidades,
-                        "total_usd": round(total, 2), "minimo_usd": p.origen(o).minimo_embarque_usd,
-                        "fecha_sugerida": fecha.date().isoformat() if fecha is not None else "",
+            estado = "Bajo el mínimo"
+        resumen.append({"origen": o, "estado": estado, "titulos": len(lineas_o), "unidades": sum(l["cantidad"] for l in lineas_o),
+                        "total_usd": total, "minimo_usd": minimo,
+                        "falta_usd": round(max(0.0, minimo - total), 2) if lineas_o else 0.0,
+                        "ultima_importacion": ultima.date().isoformat() if ultima is not None else "",
+                        "proximo_embarque": proximo.date().isoformat(), "intervalo_meses": p.intervalo_meses(o),
                         "costos_configurados": bool((costos["origen"] == o).any())})
     resumen = pd.DataFrame(resumen)
     resumen.attrs["ahorro_usd"] = round(ahorro, 2)
-    resumen.attrs["postergados"] = [(f.id, f.titulo, c) for f, c in mejor["postergados"]]
     resumen.attrs["envios"] = {o: envios.get(o, 0.0) for o in origenes if o in configurados or o in envios
-                               or any(o in e["envia"] for e in escenarios)}
+                               or any(o in e["envia"] for e in combinaciones)}
     resumen.attrs["combinaciones"] = [{
-        "nombre": nombre_combinacion(e["envia"]),
-        "envia": e["envia"],
-        "elegida": e is mejor,
-        "valida": e["valido"],
-        "libros_ahora": sum(l[1] for l in e["lineas"]),
-        "adelantados": sum(l[1] for l in e["lineas"] if l[4] == "adelanto"),
-        "para_despues": sum(c for _, c in e["postergados"]),
-        "libros_usd": round(e["libros"], 2),
-        "castigo_usd": round(e["castigo"], 2),
-        "envio_usd": round(e["envio"], 2),
-        "total_usd": round(e["costo"], 2),
-    } for e in escenarios]
-    columnas = ["cuando", "origen", "id", "isbn", "titulo", "abc", "cantidad", "motivo", "costo_unitario_usd", "subtotal_usd"]
+        "nombre": nombre_combinacion(e["envia"]), "envia": e["envia"], "elegida": e is mejor, "valida": True,
+        "libros_ahora": sum(l[1] for l in e["lineas"]), "libros_usd": round(e["libros"], 2),
+        "envio_usd": round(e["envio"], 2), "total_usd": round(e["total"], 2),
+    } for e in combinaciones]
+    columnas = ["cuando", "origen", "id", "isbn", "titulo", "categoria", "cantidad", "motivo", "costo_unitario_usd", "subtotal_usd"]
     return pd.DataFrame(filas, columns=columnas), resumen

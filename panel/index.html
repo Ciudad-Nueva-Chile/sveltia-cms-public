@@ -20,7 +20,7 @@
       </div>
       <div class="meta">
         <span class="etiqueta-datos" id="etiqueta-datos" hidden></span>
-        <span>Datos al <strong id="fecha-corte">—</strong></span>
+        <span>Datos al <strong id="fecha-corte">…</strong></span>
         <button type="button" class="enlace" id="salir" hidden>Salir</button>
       </div>
     </div>
@@ -72,9 +72,10 @@
           <thead>
             <tr>
               <th data-orden="titulo">Libro</th>
+              <th data-orden="categoria_gestion">Categoría</th>
               <th data-orden="bodega" class="num">En bodega</th>
               <th data-orden="consignacion" class="num">En consignación</th>
-              <th data-orden="pronostico_mensual">Se vende</th>
+              <th data-orden="tasa_mensual">Se vende</th>
               <th data-orden="que_hacer">Qué hacer</th>
               <th data-orden="sugerido" class="num">Pedir</th>
               <th>Aviso</th>
@@ -88,19 +89,23 @@
     <!-- ============ ANÁLISIS ============ -->
     <section class="vista" id="vista-analisis" data-vista="analisis" hidden>
       <h1 class="titulo-vista">Análisis</h1>
-      <p class="bajada">Cómo se llega a las recomendaciones: clasificación ABC por valor de venta, patrón de demanda (ADI y CV²), pronóstico SBA y stock objetivo al nivel de servicio configurado.</p>
+      <p class="bajada">Cómo se llega a las recomendaciones, según la memoria (sección 4.2.5): categorías de gestión AA, BB, CC y DD por recurrencia de la demanda y salida de bodega, clase por meses con venta, tasa SBA y nivel objetivo S con Poisson al 95 % para el intervalo entre embarques más el plazo.</p>
       <div class="tiles" id="tiles"></div>
+      <figure class="tarjeta" style="margin:16px 0">
+        <figcaption><strong>Títulos por categoría de gestión</strong></figcaption>
+        <div class="tabla-envoltura" id="tabla-categorias"></div>
+      </figure>
       <div class="dos">
         <figure class="tarjeta grafico">
           <figcaption>
-            <strong>Patrón de demanda por título</strong>
+            <strong>ADI y CV² por título</strong>
             <span class="leyenda" id="leyenda-abc"></span>
           </figcaption>
-          <p class="nota">Cada punto es un título con al menos dos meses de demanda. Líneas: cortes de Syntetos, Boylan y Croston (ADI 1,32 y CV² 0,49).</p>
+          <p class="nota">Cada punto es un título con al menos dos meses de venta, coloreado por categoría. ADI y CV² son informativos: la clase se decide por meses con venta. Líneas: cortes de Syntetos, Boylan y Croston (ADI 1,32 y CV² 0,49).</p>
           <div class="lienzo" id="dispersion"></div>
         </figure>
         <figure class="tarjeta">
-          <figcaption><strong>Títulos por clase ABC y clase de demanda</strong></figcaption>
+          <figcaption><strong>Títulos por clase de demanda y categoría</strong></figcaption>
           <p class="nota">Clic en una celda para ver esos libros.</p>
           <div id="matriz"></div>
         </figure>
@@ -109,7 +114,7 @@
         <summary>Tabla técnica de todos los títulos</summary>
         <div class="tabla-envoltura">
           <table class="tabla" id="tabla-tecnica">
-            <thead><tr><th>Título</th><th>ABC</th><th>Patrón</th><th class="num">ADI</th><th class="num">CV²</th><th class="num">Pronóst./mes</th><th class="num">Punto pedido</th><th class="num">Objetivo</th><th>Política</th></tr></thead>
+            <thead><tr><th>Título</th><th>Categoría</th><th>Clase</th><th class="num">k</th><th class="num">ADI</th><th class="num">CV²</th><th class="num">λ por mes</th><th class="num">S</th><th>Política</th></tr></thead>
             <tbody></tbody>
           </table>
         </div>

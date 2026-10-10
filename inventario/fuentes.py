@@ -24,7 +24,7 @@ COLUMNAS = {
     "Movimientos": ["fecha", "id", "tipo", "cantidad", "documento", "cliente"],
     "EnTransito": ["id", "cantidad", "origen", "fecha_estimada"],
     "Costos": ["origen", "edicion", "fob_sobre_precio_neto", "costo_sobre_precio_neto", "tipo_cambio"],
-    "Inventario": ["id", "isbn", "titulo", "autor", "origen", "compra_en", "categoria", "precio_lista",
+    "Inventario": ["id", "isbn", "titulo", "autor", "origen", "compra_en", "categoria", "categoria_gestion", "precio_lista",
                    "bodega", "consignacion", "en_camino", "actualizado", "se_vende", "que_hacer", "notas"],
     "Historial": ["fecha", "id", "bodega", "consignacion", "en_camino"],
     "Ventas": ventas_mod.COLUMNAS,
@@ -249,7 +249,8 @@ class FuenteSheets:
                  filtro: bool = False, congelar_columnas: int = 0, formatos: dict | None = None,
                  notas: dict | None = None, listas: dict | None = None, listas_rango: dict | None = None,
                  celdas_editables: list | None = None, negritas: list | None = None,
-                 formatos_rango: list | None = None, filas_minimas: int = 0, reglas: dict | None = None) -> None:
+                 formatos_rango: list | None = None, filas_minimas: int = 0, reglas: dict | None = None,
+                 filas_seccion: list | None = None) -> None:
         """Reemplaza el contenido de una pestaña y le da formato legible.
 
         df: una tabla, o una lista de filas (la primera es el encabezado).
@@ -258,6 +259,8 @@ class FuenteSheets:
         listas_rango: listas desplegables que toman sus valores de un rango, p. ej. {2: "='Lista de libros'!A2:A"}.
         formatos_rango: [(fila_desde, fila_hasta, col_desde, col_hasta, patrón)], índices desde 0 y finales excluidos.
         reglas: otras validaciones por columna, {col: (condición de la API, texto de ayuda)}.
+        filas_seccion: filas (desde 0, contando el encabezado) con formato de título de sección. Sin ella, se usa la
+            primera columna en mayúsculas (sirve si ningún dato va en mayúsculas).
         """
         titulo = PESTANA.get(nombre, [nombre])[0]
         hoja = self.hoja(nombre)
@@ -297,7 +300,9 @@ class FuenteSheets:
         if secciones:
             # Filas de título de sección: texto en mayúsculas en la primera columna
             for i, fila in enumerate(valores):
-                if fila and isinstance(fila[0], str) and fila[0] and fila[0] == fila[0].upper() and any(ch.isalpha() for ch in fila[0]):
+                es_seccion = (i in filas_seccion) if filas_seccion is not None else (
+                    fila and isinstance(fila[0], str) and fila[0] and fila[0] == fila[0].upper() and any(ch.isalpha() for ch in fila[0]))
+                if es_seccion:
                     pedidos.append({"repeatCell": {"range": {"sheetId": hoja.id, "startRowIndex": i, "endRowIndex": i + 1},
                                                    "cell": {"userEnteredFormat": {"textFormat": {"bold": True, "fontSize": 12 if i == 0 else 11},
                                                                                   "backgroundColor": self.COLOR_ENCABEZADO}},

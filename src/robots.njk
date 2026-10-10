@@ -1,0 +1,10 @@
+---
+permalink: /robots.txt
+eleventyExcludeFromCollections: true
+---
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /inventario/
+{% if not entorno.prueba %}Sitemap: {{ sitio.url }}/sitemap.xml
+{% endif %}

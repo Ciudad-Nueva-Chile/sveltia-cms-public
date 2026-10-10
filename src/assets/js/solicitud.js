@@ -88,11 +88,11 @@ document.addEventListener("DOMContentLoaded", function () {
     return dv === esperado;
   }
 
+  // Sin puntos: «12345678-5». Se acepta escrito con o sin puntos y con o sin guion.
   function formatearRut(rut) {
     var limpio = String(rut).replace(/[^\dkK]/g, "").toUpperCase();
     if (limpio.length < 2) return limpio;
-    var cuerpo = limpio.slice(0, -1).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-    return cuerpo + "-" + limpio.slice(-1);
+    return limpio.slice(0, -1) + "-" + limpio.slice(-1);
   }
 
   var campoRut = form.querySelector("[data-rut]");
@@ -150,21 +150,21 @@ document.addEventListener("DOMContentLoaded", function () {
     var items = S.leer();
     var total = items.reduce(function (s, i) { return s + i.precio * i.cantidad; }, 0);
     var lineas = [
-      "SOLICITUD DE PEDIDO WEB — Ciudad Nueva Chile",
+      "SOLICITUD DE PEDIDO WEB · Ciudad Nueva Chile",
       "",
       "Títulos:",
     ];
     items.forEach(function (i) {
-      lineas.push("• " + i.cantidad + " × " + i.titulo + " (ISBN " + i.isbn + ")" + (i.precio ? " — " + S.formatoCLP(i.precio) + " c/u" : ""));
+      lineas.push("• " + i.cantidad + " × " + i.titulo + " (ISBN " + i.isbn + ")" + (i.precio ? ", " + S.formatoCLP(i.precio) + " c/u" : ""));
     });
-    lineas.push("", "Total a precio de lista: " + S.formatoCLP(total) + " (" + items.reduce(function (s, i) { return s + i.cantidad; }, 0) + " ejemplares)", "");
+    lineas.push("", "Total referencial a precio de lista, IVA incluido: " + S.formatoCLP(total) + " (" + items.reduce(function (s, i) { return s + i.cantidad; }, 0) + " ejemplares). El precio final se confirma al responder la solicitud.", "");
     lineas.push("Datos de facturación:");
     lineas.push("Tipo de cliente: " + d.tipo);
     lineas.push("Razón social / nombre: " + d.razon);
     if (d.rut) lineas.push("RUT: " + formatearRut(d.rut));
     if (d.giro) lineas.push("Giro: " + d.giro);
     lineas.push("Contacto: " + d.contacto + " · " + d.telefono + " · " + d.email);
-    if (d.direccion || d.comuna) lineas.push("Entrega: " + [d.direccion, d.comuna, d.region].filter(Boolean).join(", "));
+    if (d.direccion || d.comuna) lineas.push("Dirección de entrega: " + [d.direccion, d.comuna, d.region].filter(Boolean).join(", "));
     if (d.comentarios) lineas.push("", "Comentarios: " + d.comentarios);
     lineas.push("", "Lista de precios vigente al " + window.SITIO.fechaLista + ".");
     return lineas.join("\n");
@@ -182,7 +182,7 @@ document.addEventListener("DOMContentLoaded", function () {
     try { localStorage.setItem(CLAVE_DATOS, JSON.stringify(Object.assign({}, d, { comentarios: "" }))); } catch (err) {}
     var texto = mensaje(d);
     if (canal === "email") {
-      location.href = "mailto:" + window.SITIO.email + "?subject=" + encodeURIComponent("Solicitud de pedido — " + d.razon) + "&body=" + encodeURIComponent(texto);
+      location.href = "mailto:" + window.SITIO.email + "?subject=" + encodeURIComponent("Solicitud de pedido · " + d.razon) + "&body=" + encodeURIComponent(texto);
     } else {
       window.open("https://wa.me/" + window.SITIO.whatsapp + "?text=" + encodeURIComponent(texto), "_blank", "noopener");
     }

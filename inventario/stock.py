@@ -24,12 +24,12 @@ EFECTOS = {
     "venta_perdida": (0, 0),      # lo pidieron y no había: no mueve stock, pero es demanda
 }
 
-# Salida física de bodega que refleja demanda (lo que hay que reponer)
-# La venta perdida (pedido sin stock) también cuenta: sin ella el pronóstico subestima justo los libros que faltan.
-TIPOS_DEMANDA = {"venta": +1, "consignacion_salida": +1, "consignacion_devolucion": -1, "devolucion_cliente": -1,
-                 "venta_perdida": +1}
-# Venta facturada (lo que genera ingreso; base de la clasificación ABC)
+# Venta facturada: venta directa más factura de consignación, menos devoluciones de clientes.
+# La salida en guía (consignacion_salida) NO es venta: decide entre las categorías CC y DD.
 TIPOS_VENTA = {"venta": +1, "consignacion_liquidada": +1, "devolucion_cliente": -1}
+# Demanda neta: la venta facturada más la venta perdida (pedido sin stock), que corrige la demanda censurada.
+# Sobre esta serie se cuentan los meses con venta (k), ADI, CV² y la tasa λ (memoria, Tabla 4.8 y sección 4.2.5).
+TIPOS_VENTA_NETA = {**TIPOS_VENTA, "venta_perdida": +1}
 
 
 def validar(mov: pd.DataFrame, catalogo: pd.DataFrame) -> list[str]:

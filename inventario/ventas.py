@@ -21,6 +21,7 @@ EDITABLES = ["fecha", "documento", "id", "cantidad", "descuento", "canal", "esta
 
 CANALES = ["Web / WhatsApp", "Local", "Evento o feria", "Librería", "Parroquia o institución", "Consignación (factura)"]
 CANAL_CONSIGNACION = "Consignación (factura)"
+CANAL_WEB = "Web / WhatsApp"
 VENDIDO, SIN_STOCK, DEVOLUCION = "Vendido", "No había stock", "Devolución"
 ESTADOS = [VENDIDO, SIN_STOCK, DEVOLUCION]
 HISTORICO = "Histórico (no descuenta)"
@@ -55,8 +56,10 @@ def a_movimientos(v: pd.DataFrame, solo_descontadas: bool = False) -> pd.DataFra
     v = validas(v)
     if solo_descontadas:
         v = v[v["descontado"].astype(str).str.strip() != ""]
+    # El canal queda en «cliente»: las solicitudes del canal web reclasifican CC y DD a BB (clasificacion_abc.py)
     m = pd.DataFrame({"fecha": v["fecha"], "id": v["id"], "tipo": [tipo(f) for f in v.itertuples()],
-                      "cantidad": v["cantidad"], "documento": v["documento"].astype(str), "cliente": ""})
+                      "cantidad": v["cantidad"], "documento": v["documento"].astype(str),
+                      "cliente": v["canal"].astype(str)})
     return m.reset_index(drop=True)
 
 
@@ -159,3 +162,4 @@ def perdidas_recientes(v: pd.DataFrame, catalogo: pd.DataFrame, fecha_corte: pd.
     g = g.sort_values(["unidades", "ultima"], ascending=False)
     return [{"id": i, "titulo": titulos.get(i, i), "unidades": int(r.unidades), "veces": int(r.veces),
              "ultima": r.ultima.date().isoformat()} for i, r in g.iterrows()]
+

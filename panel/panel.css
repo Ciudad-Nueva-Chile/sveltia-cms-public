@@ -16,6 +16,7 @@
   --serie-a: #2a78d6;
   --serie-b: #eb6834;
   --serie-c: #1baf7a;
+  --serie-d: #8b8485;   /* DD: sin movimiento, gris */
   --secuencial: 42, 120, 214;
   /* Estados (reservados, siempre con texto) */
   --bien: #1e7a45;
@@ -33,7 +34,7 @@
     --texto: #f3f0ee; --texto-2: #c3bdbb; --texto-3: #958e8c;
     --fondo: #141213; --superficie: #1c1a1b; --borde: #332f30; --grilla: #2a2728;
     --acento-claro: #3a1418;
-    --serie-a: #3987e5; --serie-b: #d95926; --serie-c: #199e70;
+    --serie-a: #3987e5; --serie-b: #d95926; --serie-c: #199e70; --serie-d: #958e8c;
     --secuencial: 57, 135, 229;
     --bien: #5cc98a; --atencion: #e0a93a; --grave: #ff8a80;
     --barra-llena: #c3bdbb; --tip-fondo: #f3f0ee; --tip-texto: #1f1d1e; --etiqueta-texto: #ffb3b8;
@@ -44,7 +45,7 @@
   --texto: #f3f0ee; --texto-2: #c3bdbb; --texto-3: #958e8c;
   --fondo: #141213; --superficie: #1c1a1b; --borde: #332f30; --grilla: #2a2728;
   --acento-claro: #3a1418;
-  --serie-a: #3987e5; --serie-b: #d95926; --serie-c: #199e70;
+  --serie-a: #3987e5; --serie-b: #d95926; --serie-c: #199e70; --serie-d: #958e8c;
   --secuencial: 57, 135, 229;
   --bien: #5cc98a; --atencion: #e0a93a; --grave: #ff8a80;
   --barra-llena: #c3bdbb; --tip-fondo: #f3f0ee; --tip-texto: #1f1d1e; --etiqueta-texto: #ffb3b8;
@@ -291,3 +292,7 @@ body.bloqueado .pestanas, body.bloqueado .vista, body.bloqueado .meta { display:
 .boton:hover { background: var(--acento-oscuro); }
 .boton:disabled { opacity: .6; cursor: progress; }
 .acceso-error { color: var(--grave) !important; font-weight: 600; }
+
+/* Categorías y embarques */
+.tag-cat { font-style: normal; font-size: .72rem; font-weight: 700; color: var(--texto-2); border: 1px solid var(--borde); border-radius: 4px; padding: 0 5px; margin-left: 4px; }
+.fila-total td { font-weight: 650; border-top: 2px solid var(--borde); }

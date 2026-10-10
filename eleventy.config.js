@@ -23,7 +23,13 @@ export default function (eleventyConfig) {
 
   eleventyConfig.addPassthroughCopy("src/assets");
   eleventyConfig.addPassthroughCopy({ admin: "admin" });
-  eleventyConfig.addPassthroughCopy("src/robots.txt");
+  // Tipografías servidas desde el propio sitio (Fontsource, licencia OFL), sin depender de un servicio externo
+  const FUENTES = "node_modules/@fontsource-variable/";
+  eleventyConfig.addPassthroughCopy({
+    [FUENTES + "fraunces/files/fraunces-latin-opsz-normal.woff2"]: "assets/fuentes/fraunces-latin-opsz-normal.woff2",
+    [FUENTES + "fraunces/files/fraunces-latin-opsz-italic.woff2"]: "assets/fuentes/fraunces-latin-opsz-italic.woff2",
+    [FUENTES + "inter/files/inter-latin-wght-normal.woff2"]: "assets/fuentes/inter-latin-wght-normal.woff2",
+  });
 
   // ---------- Filtros ----------
   eleventyConfig.addFilter("slug", slug);
@@ -66,6 +72,9 @@ export default function (eleventyConfig) {
 
   // ---------- Colecciones ----------
   eleventyConfig.addCollection("libros", (api) => librosVisibles(api).sort(porTitulo));
+
+  // Páginas de texto (Nosotros, Librerías e instituciones), para el mapa del sitio
+  eleventyConfig.addCollection("paginas", (api) => api.getFilteredByGlob("src/paginas/*.md"));
 
   eleventyConfig.addCollection("destacados", (api) =>
     librosVisibles(api).filter((l) => l.data.destacado).sort(porTitulo)
