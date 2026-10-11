@@ -197,7 +197,7 @@ def hoja_pedido(lineas: pd.DataFrame, combinaciones: list[dict], envios: dict, f
         filas.append(["CONVIENE", formula(f"=IFERROR(INDEX(A{primera}:A{ultima},MATCH(MIN({rango}),{rango},0)),\"\")", sep)])
         filas.append(["", formula(f'=IF(B{fila_conviene}="{elegida}","La lista de abajo corresponde a esta opción.",'
                                   f'"Con estos costos conviene otra opción. La lista de abajo se actualiza en el próximo cálculo '
-                                  f'(cada mañana, o a mano en GitHub: Actions, Publicar sitio y panel, Run workflow).")', sep)])
+                                  f'(cada hora de lunes a sábado en horario de oficina, o a mano en GitHub: Actions, Publicar sitio y panel, Run workflow).")', sep)])
         if len(combinaciones) == 1:
             filas.append(["", "Solo hay una combinación que cubre todo lo que hay que pedir: varios títulos se compran en un solo país."])
     else:
@@ -352,7 +352,7 @@ def hoja_esta_semana(s: dict) -> pd.DataFrame:
     if s["errores"]:
         filas += [("", ""), ("REVISAR EN LA PLANILLA", "")]
         filas += [("", e) for e in s["errores"]]
-    filas += [("", ""), ("CÓMO ANOTAR", "Cada venta, en «Ventas» (se descuenta sola del stock cada mañana). "
+    filas += [("", ""), ("CÓMO ANOTAR", "Cada venta, en «Ventas», y cada embarque, en «Importaciones»: se descuentan o suman solos al stock en el próximo cálculo (cada hora de lunes a sábado). "
                                         "En «Inventario», corrige las columnas amarillas para llegadas, conteos y consignaciones. "
                                         "El resto se completa solo.")]
     df = pd.DataFrame(filas, columns=["QUÉ HACER ESTA SEMANA", f"Calculado con los datos al {fecha(s['fecha'])}"])

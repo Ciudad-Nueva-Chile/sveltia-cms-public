@@ -26,7 +26,7 @@ un ejemplo): [`docs/CONTEXTO.md`](docs/CONTEXTO.md). Configuración paso a paso:
 | **Pedido sugerido** | Arriba, **dónde conviene comprar**: Roberto anota el costo real de cada envío (celdas amarillas) y la comparación entre «Todo a España», «Todo a Argentina» y «Dividir» se recalcula al instante. El flete no se calcula por peso. Abajo, la lista de qué pedir en el próximo embarque |
 | Ocultas | Configuración (costos por origen), Registro de movimientos, Historial de fotos, Lista de libros (para la lista desplegable de «Ventas»), Análisis técnico, Indicadores |
 
-Cada mañana el cálculo compara «Inventario» con la foto anterior y deduce qué pasó: si bajó la bodega y subió la
+En cada cálculo (cada hora de lunes a sábado en horario de oficina, todos los días temprano y con cada cambio publicado) se compara «Inventario» con la foto anterior y deduce qué pasó: si bajó la bodega y subió la
 consignación, fue una salida en consignación; si bajó la bodega, una venta; si subió, una llegada. Luego descuenta las
 ventas nuevas de «Ventas». Si Roberto ya había bajado la bodega a mano ese día, no se descuenta dos veces: la venta
 anotada reemplaza a la baja deducida. Las bajas sin venta anotada se avisan en «Esta semana». La historia pasada se

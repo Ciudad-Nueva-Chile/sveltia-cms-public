@@ -34,7 +34,7 @@ VISIBLES = 5
 AUTOMATICAS = ["isbn", "titulo", "autor", "origen", "categoria", "categoria_gestion", "precio_lista", "actualizado", "se_vende", "que_hacer"]
 
 NOTAS_INVENTARIO = {
-    "bodega": "Ejemplares en la bodega. Las ventas anotadas en «Ventas» se descuentan solas cada mañana: no las restes aquí. "
+    "bodega": "Ejemplares en la bodega. Las ventas anotadas en «Ventas» se descuentan solas en el próximo cálculo (cada hora de lunes a sábado): no las restes aquí. "
               "Corrígelo para llegadas, conteos u otras salidas.",
     "consignacion": "Ejemplares entregados en consignación (con guía) que el cliente aún no paga ni devuelve.",
     "en_camino": "AUTOMÁTICA si el libro tiene filas sin fecha de llegada en «Importaciones»: es la suma de lo que está en camino "

@@ -51,14 +51,14 @@ crea la pestaña **Inventario** con las existencias que dan los movimientos carg
   1. Al hacer el pedido a la editorial, agrega una fila por libro con la fecha de pedido, el país, el libro y la cantidad.
   2. Deja vacía la fecha de llegada: ese libro aparece solo en «Pedido en camino» de «Inventario».
   3. Cuando llegue, escribe la fecha de llegada en esas filas (y la factura o DIN si la tienes).
-  4. A la mañana siguiente se suma sola a «En bodega»: no la sumes también en «Inventario».
+  4. En el próximo cálculo (cada hora de lunes a sábado) se suma sola a «En bodega»: no la sumes también en «Inventario».
 - **Ventas**: Roberto anota cada venta (y cada pedido que no se pudo atender, como «No había stock»). Se descuenta
-  sola del stock cada mañana; no hay que restarla también en «Inventario».
+  sola del stock en el próximo cálculo (cada hora de lunes a sábado). No hay que restarla también en «Inventario».
 - **Pedido sugerido**: Roberto anota en las celdas amarillas la cotización de cada envío (el flete no se calcula por peso).
-  La recomendación de dónde comprar se recalcula al instante, y el cálculo del día siguiente arma la lista con esa opción.
+  La recomendación de dónde comprar se recalcula al instante, y el próximo cálculo arma la lista con esa opción.
   Si un embarque no alcanza el mínimo FOB, la hoja lo avisa y Roberto decide cómo completarlo.
 
-## 4. Cálculo automático cada mañana
+## 4. Cálculo automático cada hora
 
 En GitHub: repositorio → **Settings → Secrets and variables → Actions → New repository secret**.
 
@@ -68,7 +68,8 @@ En GitHub: repositorio → **Settings → Secrets and variables → Actions → 
 | `ID_PLANILLA` | El ID del paso 2.3 |
 | `CLAVE_PANEL` | La contraseña del panel de inventario. Larga (por ejemplo tres o cuatro palabras): el archivo cifrado es público y una contraseña corta se puede adivinar probando |
 
-Luego **Actions → Publicar sitio y panel → Run workflow** para probarlo. Cada mañana (y con cada cambio en el
+Luego **Actions → Publicar sitio y panel → Run workflow** para probarlo. Cada hora de lunes a sábado de 08:00 a 20:00
+(07:00 a 19:00 en invierno), todos los días a las 07:00 (y con cada cambio en el
 repositorio) se detectan los cambios de «Inventario», se descuentan las ventas nuevas, se actualizan los resultados
 en la planilla y se publica el panel con los datos cifrados. Los secretos no se muestran nunca y el registro no imprime datos.
 
@@ -79,7 +80,7 @@ lo recordado en los dispositivos deja de servir y se pide la nueva.
 ## 5. Publicación (GitHub Pages)
 
 1. **Settings → Pages → Source: GitHub Actions**.
-2. Con cada push y cada mañana se publica el sitio en `https://ciudad-nueva-chile.github.io/sveltia-cms-public/`, el
+2. Con cada push y cada hora en horario de oficina se publica el sitio en `https://ciudad-nueva-chile.github.io/sveltia-cms-public/`, el
    panel de administración en `/admin/` y el panel de inventario en `/inventario/` (con contraseña si están los
    secretos de la planilla y `CLAVE_PANEL`; si no, con **datos de ejemplo**).
 3. Para que Roberto entre a Sveltia con su propia cuenta hace falta un autenticador

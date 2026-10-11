@@ -1,6 +1,6 @@
 """La pestaña «Ventas»: una fila por libro vendido (o pedido que no se pudo atender).
 
-Es la fuente de la demanda con detalle: precio, descuento, canal y ventas perdidas. Cada mañana el cálculo:
+Es la fuente de la demanda con detalle: precio, descuento, canal y ventas perdidas. En cada cálculo (cada hora de lunes a sábado en horario de oficina):
 
 1. Convierte todas las filas en movimientos (se releen siempre: si se corrige una fila, se corrige la historia).
 2. Descuenta del stock de «Inventario» las filas nuevas y anota en «Descontado del stock» cuándo lo hizo:

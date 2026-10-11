@@ -3,7 +3,8 @@
 #   /admin/      Sveltia CMS: libros, páginas, ajustes y parámetros del inventario
 #   /inventario/ el panel de inventario
 #
-# Corre con cada cambio en main y todos los días a las 07:00 de Chile. En cada pasada también hace el cálculo del
+# Corre con cada cambio en main, cada hora de lunes a sábado en horario de oficina y todos los días temprano. En cada
+# pasada también hace el cálculo del
 # inventario con la planilla privada (detecta cambios, descuenta ventas, escribe los resultados en la planilla).
 #
 # El repositorio y el sitio son públicos, así que los datos reales del panel se publican CIFRADOS con la contraseña
@@ -15,7 +16,9 @@ on:
   push:
     branches: [main]
   schedule:
-    - cron: "0 10 * * *"   # 07:00 en Chile en horario de verano (06:00 en invierno)
+    # Horas en UTC. Chile está 3 horas atrás en verano y 4 en invierno.
+    - cron: "0 10 * * *"       # todos los días: 07:00 en verano (06:00 en invierno)
+    - cron: "0 11-23 * * 1-6"  # lunes a sábado, cada hora: 08:00 a 20:00 en verano (07:00 a 19:00 en invierno)
   workflow_dispatch:
 
 permissions:

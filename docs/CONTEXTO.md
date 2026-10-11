@@ -60,7 +60,7 @@ El mismo código sirve para ambos; cambian solo los secretos (planilla, contrase
  ┌───────────────────────────────┐   ┌─────────────────────────────┐   ┌──────────────────────────┐
  │ GOOGLE SHEET (privada)        │◄─►│ GITHUB ACTIONS              │──►│ PANEL      /inventario/  │
  │ Inventario  (existencias)     │   │ «Publicar sitio y panel»    │   │ con contraseña           │
- │ Ventas      (cada venta)      │   │ cada mañana 07:00 y con     │   │ (datos cifrados AES-256) │
+ │ Ventas      (cada venta)      │   │ cada hora (lun-sáb) y con   │   │ (datos cifrados AES-256) │
  │ Pedido sugerido (envíos)      │   │ cada cambio en main:        │   └──────────────────────────┘
  └───────────────────────────────┘   │ 1. compila el sitio         │
                                      │ 2. lee la planilla          │
@@ -204,7 +204,7 @@ Los parámetros del modelo ya no se editan en Sveltia: están en `config/paramet
 | Flujo | Cuándo | Qué hace |
 |---|---|---|
 | **Pruebas** (`pruebas.yml`) | Cada push y pull request | `pytest` (63 pruebas), el modelo de punta a punta con datos de ejemplo, la compilación del sitio con prefijo y una verificación de que el mapa del sitio trae todas las categorías (16), que ninguna descripción de ficha se repite y que no se cargan tipografías externas |
-| **Publicar sitio y panel** (`publicar.yml`) | Cada push a `main`, **todos los días a las 10:00 UTC** (07:00 Chile en verano) y a mano | Compila el sitio y Sveltia, copia el panel, calcula con la planilla, cifra los datos del panel y publica en GitHub Pages |
+| **Publicar sitio y panel** (`publicar.yml`) | Cada push a `main`, **cada hora de lunes a sábado de 08:00 a 20:00 de Chile** (07:00 a 19:00 en invierno), **todos los días a las 07:00** y a mano | Compila el sitio y Sveltia, copia el panel, calcula con la planilla, cifra los datos del panel y publica en GitHub Pages |
 
 Detalle del paso de cálculo de `publicar.yml`:
 
@@ -741,7 +741,7 @@ ejemplo, no los reales). Demanda de los últimos 21 meses:
 | Recalcular ya | GitHub → Actions → Publicar sitio y panel → Run workflow |
 | Cambiar diseño o lógica | Código (repositorio) |
 
-Los resultados se actualizan cada mañana y con cada cambio publicado; las fórmulas de «Ventas» y del comparador de
+Los resultados se actualizan cada hora de lunes a sábado en horario de oficina, todos los días temprano y con cada cambio publicado; las fórmulas de «Ventas» y del comparador de
 envíos responden al instante.
 
 ---
