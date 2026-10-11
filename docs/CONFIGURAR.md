@@ -44,8 +44,14 @@ crea la pestaña **Inventario** con las existencias que dan los movimientos carg
   puesto en bodega / precio neto y pesos por dólar. Si un origen vende libros de otra edición con otras condiciones
   (por ejemplo, libros españoles comprados en Argentina), se agrega una fila con esa «Edición del libro». La fila
   con la edición vacía vale para todo lo demás. Los factores reales salen de la memoria (sección 4.1.5) y el tipo de
-  cambio es el vigente: se escriben solo aquí, nunca en el repositorio.
+  cambio es el vigente: se escriben solo aquí, nunca en el repositorio. Cada fila lleva «Tipo de cambio vigente desde» y
+  «Factores vigentes desde»: con ellas «Esta semana» avisa cuando el tipo de cambio pasa de 6 meses o los factores de 12.
 - **Inventario**: la crea el primer cálculo. Desde entonces Roberto corrige ahí las llegadas, conteos y consignaciones.
+- **Importaciones** (cómo anotar un embarque, para Roberto):
+  1. Al hacer el pedido a la editorial, agrega una fila por libro con la fecha de pedido, el país, el libro y la cantidad.
+  2. Deja vacía la fecha de llegada: ese libro aparece solo en «Pedido en camino» de «Inventario».
+  3. Cuando llegue, escribe la fecha de llegada en esas filas (y la factura o DIN si la tienes).
+  4. A la mañana siguiente se suma sola a «En bodega»: no la sumes también en «Inventario».
 - **Ventas**: Roberto anota cada venta (y cada pedido que no se pudo atender, como «No había stock»). Se descuenta
   sola del stock cada mañana; no hay que restarla también en «Inventario».
 - **Pedido sugerido**: Roberto anota en las celdas amarillas la cotización de cada envío (el flete no se calcula por peso).
@@ -76,10 +82,34 @@ lo recordado en los dispositivos deja de servir y se pide la nueva.
 2. Con cada push y cada mañana se publica el sitio en `https://ciudad-nueva-chile.github.io/sveltia-cms-public/`, el
    panel de administración en `/admin/` y el panel de inventario en `/inventario/` (con contraseña si están los
    secretos de la planilla y `CLAVE_PANEL`; si no, con **datos de ejemplo**).
-3. Para que Roberto edite los parámetros en línea hace falta el mismo autenticador del sitio
+3. Para que Roberto entre a Sveltia con su propia cuenta hace falta un autenticador
    (OAuth App de GitHub + `sveltia-cms-auth` en Cloudflare Workers) y poner su dirección en `base_url`
    de `admin/config.yml`. Para probar sin eso: `npm install && npm run admin`, servir la carpeta y elegir
    **Work with Local Repository** en Chrome.
+
+## 6. Traspaso
+
+Lo que depende de quien mantiene el sistema. Si esa persona cambia, hay que traspasar o rehacer cada punto:
+
+| Qué | Dónde vive | Qué hacer al traspasar |
+|---|---|---|
+| Token personal de GitHub (para entrar a Sveltia) | Cuenta de GitHub de quien mantiene el sistema | Los tokens vencen (se elige la fecha al crearlos). La persona nueva crea el suyo con acceso de lectura y escritura a *Contents* del repositorio |
+| Llave de la cuenta de servicio de Google | Secreto `GOOGLE_CREDENCIALES` y el archivo `.json` en su computador | Crear una llave nueva en Google Cloud, pegarla en el secreto y borrar la anterior |
+| Contraseña del panel | Secreto `CLAVE_PANEL` | Cambiarla y avisar a quienes usan el panel |
+| Autenticador de Sveltia | Pendiente: OAuth App de GitHub y `sveltia-cms-auth` en Cloudflare Workers | Mientras no exista, se entra con token |
+| Versión de Sveltia | Fija en `package.json` (`@sveltia/cms`) | Se actualiza al aceptar una propuesta de Dependabot que pase las pruebas |
+| Decisiones del modelo | `config/parametros.yml` | Se editan a mano: nivel de servicio, α, T, L y mínimo por país |
+
+## 7. Revisión anual
+
+Una vez al año, quien mantiene el sistema:
+
+1. Renueva el token de GitHub antes de que venza.
+2. Revisa el tipo de cambio y los factores de costo en Configuración y actualiza sus fechas «vigente desde».
+3. Revisa T y L en `config/parametros.yml` (y la tasa de costo de capital de la que sale T).
+4. Revisa y acepta (o descarta) las propuestas de Dependabot pendientes.
+5. Comprueba en **Actions → Publicar sitio y panel** que el proceso diario corre sin errores.
+6. Actualiza la fecha de vigencia de la lista de precios en Sveltia (Ajustes del sitio) si cambió.
 
 ## Qué nunca debe llegar al repositorio
 

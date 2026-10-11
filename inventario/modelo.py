@@ -10,7 +10,9 @@ import pandas as pd
 from . import clasificacion_abc as cat_mod
 from . import demanda, pedido, politica, stock
 from . import ventas as ventas_mod
-from .config import CATEGORIAS, Parametros
+from . import importaciones as importaciones_mod
+from .config import (CATEGORIAS, CONTEOS_POR_ANIO, CORTE_ADI, CORTE_CV2, DIAS_CONSIGNACION_ANTIGUA,
+                     HISTORIA_MESES, MESES_FACTORES, MESES_LISTA_PRECIOS, MESES_TIPO_CAMBIO, Parametros)
 
 
 @dataclass
@@ -26,13 +28,45 @@ class Resultado:
     perdidas: list = field(default_factory=list)        # pedidos sin stock recientes
     categorias: pd.DataFrame = field(default_factory=pd.DataFrame)   # Tabla 4.24: por categoría
     matriz: dict = field(default_factory=dict)          # categoría × clase → títulos
-    conteo: dict = field(default_factory=dict)          # qué contar esta semana, frecuencias y revisiones
+    conteo: dict = field(default_factory=dict)          # qué contar esta semana y frecuencias
+    caducidad: list = field(default_factory=list)       # datos externos por actualizar
+    tl: dict = field(default_factory=dict)              # T y L por país: los que se usan y los medidos
 
 
 def _meses_entre(desde, hasta: pd.Timestamp) -> float:
     if desde is None or pd.isna(desde):
         return math.nan
     return (hasta - desde).days / 30.44
+
+
+def _meses_desde(fecha, hasta: pd.Timestamp) -> int:
+    """Meses de calendario cumplidos entre dos fechas (del 1 de junio al 1 de octubre son 4)."""
+    d = pd.Timestamp(fecha)
+    return (hasta.year - d.year) * 12 + (hasta.month - d.month) - (1 if hasta.day < d.day else 0)
+
+
+def avisos_caducidad(costos: pd.DataFrame, fecha_corte: pd.Timestamp, fecha_lista=None) -> list[str]:
+    """«Datos por actualizar»: tipo de cambio, factores de costo y lista de precios que envejecieron o no tienen fecha."""
+    avisos = []
+    for f in (costos.to_dict("records") if costos is not None and len(costos) else []):
+        edicion = str(f.get("edicion", "") or "").strip()
+        nombre = f["origen"] + (f" (edición {edicion})" if edicion and edicion.lower() != "todas" and edicion != f["origen"] else "")
+        for col, dato, limite, verbo in (("tc_desde", f"Tipo de cambio de {nombre}", MESES_TIPO_CAMBIO, "actualizar"),
+                                         ("factores_desde", f"Factores de costo de {nombre}", MESES_FACTORES, "revisar")):
+            desde = f.get(col)
+            if desde is None or pd.isna(desde) or desde == "":
+                aviso = f"{dato} sin fecha de vigencia"
+            elif _meses_desde(desde, fecha_corte) > limite:
+                aviso = f"{dato} sin {verbo} hace {_meses_desde(desde, fecha_corte)} meses"
+            else:
+                continue
+            if aviso not in avisos:
+                avisos.append(aviso)
+    if fecha_lista is None:
+        avisos.append("Lista de precios del sitio sin fecha de vigencia")
+    elif _meses_desde(fecha_lista, fecha_corte) > MESES_LISTA_PRECIOS:
+        avisos.append(f"Lista de precios del sitio vigente desde {pd.Timestamp(fecha_lista).strftime('%d-%m-%Y')}")
+    return avisos
 
 
 def conteo_ciclico(t: pd.DataFrame, p: Parametros, fecha_corte: pd.Timestamp) -> dict:
@@ -44,7 +78,7 @@ def conteo_ciclico(t: pd.DataFrame, p: Parametros, fecha_corte: pd.Timestamp) ->
     semana = int(fecha_corte.isocalendar().week)
     contar, frecuencias = [], []
     for c in CATEGORIAS:
-        f = float(p.conteos_por_anio.get(c, 0) or 0)
+        f = float(CONTEOS_POR_ANIO.get(c, 0) or 0)
         g = t[(t["categoria_gestion"] == c) & (t["bodega"] > 0)].sort_values("id")
         frecuencias.append({"categoria": c, "titulos": int(len(g)), "conteos_por_anio": f})
         if not f or g.empty:
@@ -54,14 +88,17 @@ def conteo_ciclico(t: pd.DataFrame, p: Parametros, fecha_corte: pd.Timestamp) ->
             if i % turnos == semana % turnos:
                 contar.append({"id": r.id, "titulo": r.titulo, "categoria": c, "bodega": int(r.bodega),
                                "registro": "Permanente" if c == "AA" else "Con cada conteo"})
-    revis = [{"categoria": c, "cada_meses": int(p.revision_clasificacion_meses.get(c, 12) or 12)} for c in CATEGORIAS]
-    return {"semana": semana, "contar": contar, "frecuencias": frecuencias, "revisiones": revis}
+    return {"semana": semana, "contar": contar, "frecuencias": frecuencias}
 
 
 def calcular(catalogo: pd.DataFrame, movimientos: pd.DataFrame, transito: pd.DataFrame, costos: pd.DataFrame,
              p: Parametros, fecha_corte: pd.Timestamp | None = None, envios: dict | None = None,
-             hoja_ventas: pd.DataFrame | None = None) -> Resultado:
-    """movimientos ya incluye los de «Ventas»; `hoja_ventas` (la pestaña) se usa para los indicadores de venta."""
+             hoja_ventas: pd.DataFrame | None = None, fecha_lista=None,
+             importaciones: pd.DataFrame | None = None) -> Resultado:
+    """movimientos ya incluye los de «Ventas»; `hoja_ventas` (la pestaña) se usa para los indicadores de venta.
+    `fecha_lista`: fecha de vigencia de la lista de precios del sitio, para el aviso de caducidad.
+    `importaciones`: la pestaña «Importaciones», para medir T y L y fechar el próximo embarque (sus llegadas ya vienen
+    como movimientos en `movimientos`)."""
     errores = stock.validar(movimientos, catalogo)
     mov = stock.limpiar(movimientos)
     if fecha_corte is None:
@@ -73,41 +110,50 @@ def calcular(catalogo: pd.DataFrame, movimientos: pd.DataFrame, transito: pd.Dat
     ex = stock.existencias(mov, transito, fecha_corte).set_index("id").reindex(ids)
     ex[["bodega", "consignacion", "transito"]] = ex[["bodega", "consignacion", "transito"]].fillna(0)
 
-    ventana = demanda.meses_ventana(fecha_corte, p.historia_meses)
+    ventana = demanda.meses_ventana(fecha_corte, HISTORIA_MESES)
     inicio_ventana = ventana[0].start_time
-    serie = demanda.venta_neta_mensual(mov, ids, fecha_corte, p.historia_meses)
+    serie = demanda.venta_neta_mensual(mov, ids, fecha_corte, HISTORIA_MESES)
+    # Pronóstico (λ con SBA): toda la serie mensual disponible, desde el mes del primer movimiento registrado hasta la fecha
+    # de cálculo, con al menos la ventana de clasificación. Con 21 meses de historia o menos es la misma serie.
+    primer_mes = mov["fecha"].min().to_period("M") if len(mov) else fecha_corte.to_period("M")
+    meses_pronostico = max(HISTORIA_MESES, (fecha_corte.to_period("M") - primer_mes).n + 1)
+    serie_pronostico = (serie if meses_pronostico == HISTORIA_MESES
+                        else demanda.venta_neta_mensual(mov, ids, fecha_corte, meses_pronostico))
 
     # Solicitudes del canal web («No había stock» con canal Web / WhatsApp): un título CC o DD que solo tiene esas
     # solicitudes no cambia solo de categoría. Queda en CC o DD con un aviso, y pasa a BB en la próxima revisión.
     pendientes = mov[(mov["tipo"] == "venta_perdida") & (mov["cliente"].astype(str) == ventas_mod.CANAL_WEB)]
-    serie_sin_pend = demanda.venta_neta_mensual(mov.drop(pendientes.index), ids, fecha_corte, p.historia_meses)
+    serie_sin_pend = demanda.venta_neta_mensual(mov.drop(pendientes.index), ids, fecha_corte, HISTORIA_MESES)
 
     en_ventana = mov[(mov["fecha"] >= inicio_ventana) & (mov["fecha"] <= fecha_corte)]
     con_guia = set(en_ventana.loc[en_ventana["tipo"] == "consignacion_salida", "id"])
     vendido = mov[mov["tipo"].isin(stock.TIPOS_VENTA) & (mov["fecha"] <= fecha_corte)].copy()
     vendido["u"] = vendido["cantidad"] * vendido["tipo"].map(stock.TIPOS_VENTA)
     ultima_imp = mov[(mov["tipo"] == "importacion") & (mov["fecha"] <= fecha_corte)].groupby("id")["fecha"].max()
+    tl = importaciones_mod.efectivos(importaciones, p)   # T y L por país: medidos con 3 o más embarques, si no los de la memoria
     temp_ini, temp_fin = politica.ultima_temporada(fecha_corte)
     mes_temporada = politica.es_mes_de_pedido_temporada(fecha_corte)
 
     filas = []
     for fila in catalogo.itertuples(index=False):
         s = serie.loc[fila.id].to_numpy(dtype=float)
-        clase, k, adi, cv2 = demanda.clasificar(s, p.corte_adi, p.corte_cv2)
+        clase, k, adi, cv2 = demanda.clasificar(s, CORTE_ADI, CORTE_CV2)
         e = ex.loc[fila.id]
         bodega, transito_i = float(e["bodega"]), float(e["transito"])
         reclasificar = False
         if clase != "Sin venta neta" and bodega > 0:
-            clase_sin, _, _, _ = demanda.clasificar(serie_sin_pend.loc[fila.id].to_numpy(dtype=float), p.corte_adi, p.corte_cv2)
+            clase_sin, _, _, _ = demanda.clasificar(serie_sin_pend.loc[fila.id].to_numpy(dtype=float), CORTE_ADI, CORTE_CV2)
             if clase_sin == "Sin venta neta":
                 clase, reclasificar = clase_sin, True
         manual = (getattr(fila, "clase_manual", "") or "").strip()
         if manual in demanda.CLASES_MANUALES:
             clase, reclasificar = manual, False
         categoria = cat_mod.categoria(clase, bodega, fila.id in con_guia)
-        tasa = demanda.pronosticar(s, clase, p.alfa_suavizado)
+        tasa = demanda.pronosticar(serie_pronostico.loc[fila.id].to_numpy(dtype=float), clase, p.alfa_suavizado)
         pol = politica.decidir(categoria, clase, getattr(fila, "politica_manual", ""))
-        T, L = p.intervalo_meses(fila.origen), p.plazo_meses(fila.origen)
+        # S usa el T y el L del país de la edición del libro (origen editorial), aunque el comparador elija el otro país
+        pais_t = importaciones_mod.pais(fila.origen)
+        T, L = tl[pais_t]["T"], tl[pais_t]["L"]
         S = demanda.nivel_objetivo(tasa, T, L, p.nivel_servicio) if pol == "Reponer" else 0
         posicion = max(bodega, 0) + transito_i   # un stock negativo es un error de datos (se avisa): no infla el pedido
 
@@ -140,7 +186,7 @@ def calcular(catalogo: pd.DataFrame, movimientos: pd.DataFrame, transito: pd.Dat
         if reclasificar:
             alertas.append("Título CC o DD con solicitud del canal: pasa a BB en la próxima revisión")
         dias_consig = (fecha_corte - e["consignacion_desde"]).days if not pd.isna(e["consignacion_desde"]) else 0
-        if dias_consig >= p.dias_consignacion_antigua:
+        if dias_consig >= DIAS_CONSIGNACION_ANTIGUA:
             alertas.append(f"Consignación abierta hace {dias_consig} días")
 
         meses_sin = _meses_entre(ultima_salida, fecha_corte)
@@ -151,9 +197,11 @@ def calcular(catalogo: pd.DataFrame, movimientos: pd.DataFrame, transito: pd.Dat
             "bodega": int(bodega), "consignacion": int(e["consignacion"]), "transito": int(transito_i), "posicion": int(posicion),
             "categoria_gestion": categoria, "clase": clase, "meses_con_venta": k,
             "adi": round(adi, 2) if not math.isnan(adi) else "", "cv2": round(cv2, 2) if not math.isnan(cv2) else "",
-            "cuadrante": demanda.cuadrante(adi, cv2, p.corte_adi, p.corte_cv2),
+            "cuadrante": demanda.cuadrante(adi, cv2, CORTE_ADI, CORTE_CV2),
             "unidades_ventana": int(s.sum()), "tasa_mensual": round(tasa, 3),
-            "intervalo_meses": T, "plazo_meses": round(L, 3), "nivel_objetivo": int(S),
+            "meses_pronostico": meses_pronostico if clase in demanda.CLASES_CON_TASA else "",
+            "intervalo_meses": round(T, 2), "plazo_meses": round(L, 3), "t_y_l": tl[pais_t]["texto_T"] + " · " + tl[pais_t]["texto_L"],
+            "nivel_objetivo": int(S),
             "politica": pol, "sugerido": int(sugerido), "vendido_desde_importacion": int(vendido_desde),
             "temporada_unidades": temporada_u, "reclasificar": reclasificar,
             "cobertura_meses": round(cobertura, 1) if math.isfinite(cobertura) else "∞",
@@ -165,8 +213,12 @@ def calcular(catalogo: pd.DataFrame, movimientos: pd.DataFrame, transito: pd.Dat
         })
 
     titulos = pd.DataFrame(filas)
-    embarques = pedido.proximos_embarques(mov, catalogo, p, fecha_corte)
+    embarques = pedido.proximos_embarques(mov, catalogo, p, fecha_corte, importaciones_mod.ultimas_llegadas(importaciones),
+                                          {o: v["T"] for o, v in tl.items()})
     lineas, por_origen = pedido.sugerir(titulos, costos, p, fecha_corte, envios, embarques)
+    if len(por_origen):
+        por_origen["intervalo_meses"] = por_origen["origen"].map(lambda o: round(tl[o]["T"], 2) if o in tl else None)
+        por_origen["t_y_l"] = por_origen["origen"].map(lambda o: tl[o]["texto_T"] + " · " + tl[o]["texto_L"] if o in tl else "")
     categorias = cat_mod.resumen_categorias(titulos)
     matriz = {f"{c}|{k}": int(n) for (c, k), n in titulos.groupby(["categoria_gestion", "clase"]).size().items()}
     conteo = conteo_ciclico(titulos, p, fecha_corte)
@@ -178,15 +230,19 @@ def calcular(catalogo: pd.DataFrame, movimientos: pd.DataFrame, transito: pd.Dat
         perdidas = ventas_mod.perdidas_recientes(hoja_ventas, catalogo, fecha_corte)
     resumen = _resumen(titulos, categorias, por_origen, conteo, errores, fecha_corte, p, ind)
     serie.columns = [str(c) for c in serie.columns]
+    caducidad = avisos_caducidad(costos, fecha_corte, fecha_lista)
+    for o, v in tl.items():
+        resumen.loc[len(resumen)] = [f"T y L de {o}", v["texto_T"] + " · " + v["texto_L"]]
     return Resultado(titulos, lineas, por_origen, resumen, serie, errores, fecha_corte, ind, perdidas,
-                     categorias, matriz, conteo)
+                     categorias, matriz, conteo, caducidad,
+                     {o: {"texto_T": v["texto_T"], "texto_L": v["texto_L"]} for o, v in tl.items()})
 
 
 def _resumen(t: pd.DataFrame, categorias: pd.DataFrame, por_origen: pd.DataFrame, conteo: dict, errores: list[str],
              fecha_corte, p: Parametros, ventas: dict | None = None) -> pd.DataFrame:
     filas = [
         ("Fecha de corte", fecha_corte.date().isoformat()),
-        ("Ventana de observación (meses)", p.historia_meses),
+        ("Ventana de observación (meses)", HISTORIA_MESES),
         ("Títulos en catálogo", len(t)),
         ("Ejemplares en bodega", int(t["bodega"].clip(lower=0).sum())),
         ("Ejemplares en consignación", int(t["consignacion"].sum())),

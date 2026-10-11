@@ -1,26 +1,21 @@
-# Parámetros del modelo de inventario. Se editan desde /admin (Sveltia CMS → Modelo de inventario).
-# Siguen la memoria del proyecto (sección 4.2.5). Aquí solo van valores que no son sensibles: los factores de costo,
-# el tipo de cambio y el costo de cada envío viven en la planilla privada.
+# Parámetros del modelo de inventario.
+# Se edita a mano, solo por quien mantiene el sistema. Roberto no necesita tocar este archivo.
+# Solo van aquí las decisiones que pueden cambiar. Los valores fijos de la memoria (ventana de 21 meses, cortes ADI y CV²,
+# frecuencias de conteo, días de consignación) son constantes en inventario/config.py. Los costos, el tipo de cambio y el
+# costo de cada envío viven en la planilla privada.
 
-historia_meses: 21            # ventana de observación de la memoria (diciembre de 2024 a agosto de 2026)
+# Nivel de servicio: CRITERIO de la memoria (sección 4.2.5), no resultado de una optimización, porque el costo del quiebre
+# no puede estimarse con el registro. Es el percentil de la distribución de Poisson con que se calcula el nivel objetivo S.
+nivel_servicio: 0.95
 
-# Indicadores informativos de Syntetos, Boylan y Croston (2005). La clase de demanda se decide por meses con venta.
-corte_adi: 1.32
-corte_cv2: 0.49
+# α de SBA: SUPUESTO ABIERTO, dentro del rango 0,05 a 0,20 evaluado por Syntetos, Boylan y Croston (2005) (memoria, 4.1.4).
+alfa_suavizado: 0.15
 
-alfa_suavizado: 0.15          # SUPUESTO ABIERTO: parámetro de SBA, dentro del rango 0,05 a 0,20 de la literatura
-nivel_servicio: 0.95          # CRITERIO, no optimización: el costo del quiebre no puede estimarse con el registro
-
-dias_consignacion_antigua: 365
-
-# Conteo cíclico por categoría (estructura de Flores y Whybark, 1987, con frecuencias de la memoria)
-conteos_por_anio: { AA: 12, BB: 2, CC: 1, DD: 1 }
-revision_clasificacion_meses: { AA: 6, BB: 6, CC: 12, DD: 12 }
-
-# Embarques por origen. Todo origen distinto de Argentina se trata como España.
-# intervalo_embarque_meses (T): salió del análisis de tamaño de lote por embarque de la memoria, con una tasa de costo de
-# capital de 15 % anual (rango de 10 % a 20 %). Si esa tasa cambia, T se recalcula fuera del código y se anota aquí.
-# plazo_dias (L): plazo de reposición de la casa de origen (5 a 7 días).
+# Embarques por origen (memoria, sección 4.2.5). Todo origen distinto de Argentina se trata como España.
+# intervalo_embarque_meses (T): del análisis de tamaño de lote por embarque, con una tasa de costo de capital de 15 % anual
+#   (rango de 10 % a 20 %). Si esa tasa cambia, T se recalcula fuera del código y se anota aquí.
+# plazo_dias (L): plazo de reposición de la casa de origen (la memoria indica 5 a 7 días).
+# minimo_embarque_usd: mínimo económico del embarque, a costo FOB.
 origenes:
   - nombre: España
     intervalo_embarque_meses: 8.5

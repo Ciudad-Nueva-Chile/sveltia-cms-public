@@ -40,8 +40,12 @@ ENCABEZADOS = {
                "descuento": "Descuento (%)", "canal": "Canal", "estado": "Estado", "notas": "Notas", "isbn": "ISBN",
                "precio_lista": "Precio de lista", "total": "Total cobrado", "descontado": "Descontado del stock"},
     "ListaLibros": {"libro": "Libro", "isbn": "ISBN", "precio_lista": "Precio de lista"},
+    "Importaciones": {"fecha_pedido": "Fecha de pedido", "fecha_llegada": "Fecha de llegada", "pais": "País de compra",
+                      "documento": "N° de factura o DIN", "id": "Libro", "cantidad": "Cantidad", "fob_usd": "FOB total US$",
+                      "notas": "Notas", "sumado": "Sumado al stock"},
     "Costos": {"origen": "Se compra en", "edicion": "Edición del libro", "fob_sobre_precio_neto": "FOB / precio neto",
-               "costo_sobre_precio_neto": "Costo en bodega / precio neto", "tipo_cambio": "Pesos por dólar"},
+               "costo_sobre_precio_neto": "Costo en bodega / precio neto", "tipo_cambio": "Pesos por dólar",
+               "tc_desde": "Tipo de cambio vigente desde", "factores_desde": "Factores vigentes desde"},
 }
 PESTANAS = {"Catalogo": "Catálogo", "Movimientos": "Movimientos", "EnTransito": "En tránsito", "Costos": "Costos"}
 
@@ -238,7 +242,8 @@ def estado_pedido(o) -> dict:
 
 
 def esta_semana(t: pd.DataFrame, por_origen: pd.DataFrame, lineas: pd.DataFrame, fecha_corte, errores: list[str],
-                perdidas: list | None = None, sin_anotar: list | None = None, conteo: dict | None = None) -> dict:
+                perdidas: list | None = None, sin_anotar: list | None = None, conteo: dict | None = None,
+                caducidad: list | None = None, tl: dict | None = None) -> dict:
     """Todo lo que hay que decidir, en listas cortas.
 
     perdidas: libros que pidieron y no había (pestaña «Ventas»).
@@ -255,7 +260,8 @@ def esta_semana(t: pd.DataFrame, por_origen: pd.DataFrame, lineas: pd.DataFrame,
         "fecha": pd.Timestamp(fecha_corte).date().isoformat(),
         "pedidos": [estado_pedido(o) | {"origen": o["origen"], "total_usd": o["total_usd"], "minimo_usd": o["minimo_usd"],
                                         "unidades": int(o["unidades"]), "proximo_embarque": o["proximo_embarque"],
-                                        "falta_usd": o["falta_usd"]} for o in por_origen.to_dict("records")],
+                                        "falta_usd": o["falta_usd"], "t_y_l": o.get("t_y_l", "")}
+                     for o in por_origen.to_dict("records")],
         "sin_stock": [{"id": r.id, "titulo": r.titulo, "se_vende": ritmo(r.tasa_mensual),
                        "en_camino": int(r.transito)} for r in quiebres.itertuples()],
         "fondo": [{"id": r.id, "titulo": r.titulo, "categoria": r.categoria_gestion, "bodega": int(r.bodega),
@@ -270,17 +276,21 @@ def esta_semana(t: pd.DataFrame, por_origen: pd.DataFrame, lineas: pd.DataFrame,
         "semana": conteo.get("semana", ""),
         "contar": conteo.get("contar", []),
         "frecuencias": conteo.get("frecuencias", []),
-        "revisiones": conteo.get("revisiones", []),
         "ahorro_usd": float(por_origen.attrs.get("ahorro_usd", 0.0)),
         "combinaciones": [c | {"incluye": que_incluye(c)} for c in por_origen.attrs.get("combinaciones", [])],
         "envios": por_origen.attrs.get("envios", {}),
+        "caducidad": caducidad or [],
+        "tl": tl or {},
         "perdidas": perdidas or [],
         "sin_anotar": sin_anotar or [],
         "errores": errores,
     }
 
 
-SECCIONES_FIJAS = ("TE LOS PIDIERON", "BAJAS DE STOCK", "PASAN A BB", "REVISAR EN LA PLANILLA", "CÓMO ANOTAR")
+# Memoria, Tabla 4.26: la clasificación se revisa cada 6 meses en AA y BB y una vez al año en CC y DD
+REVISION_CLASIFICACION = "AA y BB cada 6 meses, CC y DD cada año (memoria, Tabla 4.26)"
+
+SECCIONES_FIJAS = ("TE LOS PIDIERON", "BAJAS DE STOCK", "PASAN A BB", "DATOS POR ACTUALIZAR", "REVISAR EN LA PLANILLA", "CÓMO ANOTAR")
 
 
 def es_titulo_seccion(texto: str) -> bool:
@@ -300,6 +310,8 @@ def hoja_esta_semana(s: dict) -> pd.DataFrame:
         filas.append(("Conviene", f"{elegida['nombre']}: unos US$ {miles(elegida['total_usd'])} contando los envíos. La comparación está en «Pedido sugerido»."))
     if s.get("ahorro_usd", 0) > 0:
         filas.append(("Dónde comprar", f"Comprar cada libro en la editorial que conviene ahorra unos US$ {miles(s['ahorro_usd'])} frente a comprarlo en su propia editorial."))
+    for o, v in (s.get("tl") or {}).items():
+        filas.append((f"Embarques de {o}", f"{v['texto_T']} · {v['texto_L']}"))
     filas.append(("", "El detalle de qué pedir está en «Pedido sugerido»."))
     filas += [("", ""), (f"2. SE VENDEN Y ESTÁN SIN STOCK ({len(s['sin_stock'])})", "Títulos AA que se reponen y están en cero")]
     for r in s["sin_stock"][:25]:
@@ -318,8 +330,7 @@ def hoja_esta_semana(s: dict) -> pd.DataFrame:
         filas.append((r["titulo"], f"{r['categoria']} · {r['bodega']} en bodega · registro {r['registro'].lower()}"))
     for h in s.get("frecuencias", []):
         filas.append((f"Categoría {h['categoria']}", f"{h['titulos']} títulos con existencias, {int(h['conteos_por_anio'])} conteos al año"))
-    for r in s.get("revisiones", []):
-        filas.append((f"Revisión de la clasificación {r['categoria']}", f"cada {r['cada_meses']} meses"))
+    filas.append(("Revisión de la clasificación", REVISION_CLASIFICACION))
     if s.get("reclasificar"):
         filas += [("", ""), (f"PASAN A BB EN LA PRÓXIMA REVISIÓN ({len(s['reclasificar'])})", "Títulos CC o DD que pidieron por el canal web")]
         for r in s["reclasificar"][:25]:
@@ -335,6 +346,9 @@ def hoja_esta_semana(s: dict) -> pd.DataFrame:
         filas += [("", ""), ("6. PRODUCTOS DE TEMPORADA", "Un pedido al año que debe llegar antes de septiembre")]
         for r in s["temporada"]:
             filas.append((r["titulo"], f"vendió {r['vendio']} la última temporada" + (f" · pedir {r['pedir']}" if r["pedir"] else "")))
+    if s.get("caducidad"):
+        filas += [("", ""), (f"DATOS POR ACTUALIZAR ({len(s['caducidad'])})", "Tipo de cambio y factores en Configuración. Lista de precios en Sveltia")]
+        filas += [("", a) for a in s["caducidad"]]
     if s["errores"]:
         filas += [("", ""), ("REVISAR EN LA PLANILLA", "")]
         filas += [("", e) for e in s["errores"]]

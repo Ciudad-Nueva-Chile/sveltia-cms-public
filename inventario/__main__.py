@@ -16,9 +16,10 @@ from pathlib import Path
 import pandas as pd
 
 from . import lenguaje
-from .config import RAIZ, cargar_parametros
+from .config import RAIZ, cargar_parametros, leer_fecha_lista
 from . import stock
 from . import ventas as ventas_mod
+from . import importaciones as importaciones_mod
 from .fuentes import COLUMNAS, FuenteCSV, FuenteSheets, catalogo_desde_sitio
 from .modelo import Resultado, calcular
 from .planilla import COLUMNAS as COLUMNAS_INVENTARIO, EDITABLES, detectar_cambios, ultima_actualizacion
@@ -27,16 +28,17 @@ COLUMNAS_MOV = COLUMNAS["Movimientos"]
 
 # Orden de las pestañas en la planilla. Roberto edita las columnas amarillas de «Inventario», la pestaña «Ventas»
 # y el costo de cada envío en «Pedido sugerido». Las primeras VISIBLES quedan a la vista; el resto, ocultas.
-ORDEN_PESTANAS = ["Inventario", "Ventas", "Esta semana", "Pedido sugerido",
+ORDEN_PESTANAS = ["Inventario", "Ventas", "Importaciones", "Esta semana", "Pedido sugerido",
                   "Costos", "Movimientos", "Historial", "Lista de libros", "Análisis técnico", "Indicadores"]
-VISIBLES = 4
+VISIBLES = 5
 AUTOMATICAS = ["isbn", "titulo", "autor", "origen", "categoria", "categoria_gestion", "precio_lista", "actualizado", "se_vende", "que_hacer"]
 
 NOTAS_INVENTARIO = {
     "bodega": "Ejemplares en la bodega. Las ventas anotadas en «Ventas» se descuentan solas cada mañana: no las restes aquí. "
               "Corrígelo para llegadas, conteos u otras salidas.",
     "consignacion": "Ejemplares entregados en consignación (con guía) que el cliente aún no paga ni devuelve.",
-    "en_camino": "Ejemplares pedidos a la editorial que todavía no llegan. Cuando lleguen, bórralos de aquí y súmalos a «En bodega».",
+    "en_camino": "AUTOMÁTICA si el libro tiene filas sin fecha de llegada en «Importaciones»: es la suma de lo que está en camino "
+                 "allí. Para los demás libros, anota aquí lo pedido a la editorial que todavía no llega.",
     "notas": "Lo que quieras recordar de este libro.",
     "compra_en": "Dónde se puede comprar este libro. Si está en ambas editoriales, el cálculo elige la que conviene según el costo puesto en bodega y el mínimo de cada envío.",
     "actualizado": "Se completa sola: el día en que cambió por última vez alguna cantidad.",
@@ -89,6 +91,35 @@ def preparar_ventas(fuente: FuenteSheets, filas: list | None = None) -> None:
                             idx["precio_lista"]: 105, idx["total"]: 110, idx["descontado"]: 230})
 
 
+NOTAS_IMPORTACIONES = {
+    "fecha_pedido": "Día en que se hizo el pedido a la editorial. Con la fecha de llegada, sirve para medir el plazo L.",
+    "fecha_llegada": "Día en que llegó el embarque. Vacía = todavía en camino (cuenta como «Pedido en camino» en «Inventario»).",
+    "pais": "País desde donde se compró: España o Argentina.",
+    "documento": "Número de factura de la editorial o de la DIN. Opcional.",
+    "id": "Escribe parte del título o del código y elige el libro de la lista.",
+    "cantidad": "Ejemplares de este libro en este embarque.",
+    "fob_usd": "Opcional: valor FOB total de esta línea, en dólares.",
+    "sumado": "Se completa sola cuando el cálculo suma la llegada a «En bodega». No hay que sumarla también en «Inventario».",
+}
+
+
+def preparar_importaciones(fuente: FuenteSheets, paises: list[str], filas: list | None = None) -> None:
+    """Crea la pestaña «Importaciones» (solo si no existe, o al rehacer la planilla con filas de ejemplo)."""
+    enc = lenguaje.ENCABEZADOS["Importaciones"]
+    idx = {c: i for i, c in enumerate(importaciones_mod.COLUMNAS)}
+    fuente.escribir("Importaciones", [[enc[c] for c in importaciones_mod.COLUMNAS]] + (filas or []), solo_lectura=True,
+                    filtro=True, editables=[idx[c] for c in importaciones_mod.EDITABLES], filas_minimas=1000,
+                    formatos={idx["fecha_pedido"]: "dd-mm-yyyy", idx["fecha_llegada"]: "dd-mm-yyyy", idx["fob_usd"]: "#,##0.00"},
+                    notas={idx[c]: t for c, t in NOTAS_IMPORTACIONES.items()},
+                    listas={idx["pais"]: paises},
+                    listas_rango={idx["id"]: "='Lista de libros'!A2:A"},
+                    reglas={idx["fecha_pedido"]: ({"type": "DATE_IS_VALID"}, "Fecha, por ejemplo 05-10-2026"),
+                            idx["fecha_llegada"]: ({"type": "DATE_IS_VALID"}, "Vacía mientras el embarque no llegue"),
+                            idx["cantidad"]: ({"type": "NUMBER_GREATER", "values": [{"userEnteredValue": "0"}]}, "Ejemplares (número entero)")},
+                    anchos={idx["fecha_pedido"]: 105, idx["fecha_llegada"]: 110, idx["pais"]: 110, idx["documento"]: 140,
+                            idx["id"]: 340, idx["cantidad"]: 75, idx["fob_usd"]: 110, idx["notas"]: 200, idx["sumado"]: 230})
+
+
 def lista_libros(catalogo: pd.DataFrame) -> pd.DataFrame:
     """Pestaña oculta con «Código · Título», ISBN y precio: la usan la lista desplegable y las fórmulas de «Ventas»."""
     df = pd.DataFrame({"libro": catalogo["id"] + " · " + catalogo["titulo"], "isbn": catalogo["isbn"],
@@ -117,7 +148,7 @@ def datos_panel(r: Resultado, etiqueta: str = "") -> dict:
         "etiqueta": etiqueta,
         "meses": list(r.series.columns),
         "semana": lenguaje.esta_semana(r.titulos, r.pedido_resumen, r.pedido, r.fecha_corte, r.errores, r.perdidas,
-                                       conteo=r.conteo),
+                                       conteo=r.conteo, caducidad=r.caducidad, tl=r.tl),
         "ventas": r.ventas,
         "categorias": r.categorias.to_dict("records"),
         "matriz": r.matriz,
@@ -156,9 +187,11 @@ def ciclo_planilla(fuente: FuenteSheets, catalogo: pd.DataFrame, p, fecha_corte=
     mov = fuente.leer("Movimientos")
     mov = mov[mov["tipo"] != "pedido_en_camino"]  # lo que viene en camino se lee de la columna del inventario
     ventas = fuente.leer("Ventas")
+    imp = fuente.leer("Importaciones")
     envios = fuente.leer("Envios")
     ya_descontadas = ventas_mod.a_movimientos(ventas, solo_descontadas=True)
-    base = stock.existencias(stock.limpiar(pd.concat([mov, ya_descontadas], ignore_index=True)),
+    ya_sumadas = importaciones_mod.a_movimientos(imp, solo_sumadas=True)
+    base = stock.existencias(stock.limpiar(pd.concat([mov, ya_descontadas, ya_sumadas], ignore_index=True)),
                              pd.DataFrame(columns=["id", "cantidad"]), hoy)
 
     primera_vez = inv.empty
@@ -190,6 +223,30 @@ def ciclo_planilla(fuente: FuenteSheets, catalogo: pd.DataFrame, p, fecha_corte=
         cantidades = cantidades.copy()
         for c in ("bodega", "consignacion"):
             cantidades[c] = cantidades["id"].map(nuevas[c]).fillna(cantidades[c]).astype(int)
+    # Llegadas nuevas de «Importaciones»: se suman al stock una sola vez (salvo lo que Roberto ya subió a mano hoy)
+    llegadas = importaciones_mod.llegadas(imp)
+    pendientes_imp = llegadas[llegadas["sumado"] == ""]
+    marcas_imp = {}
+    if len(pendientes_imp):
+        nuevas, nuevos, marcas_imp, cambiados_imp = importaciones_mod.aplicar(
+            pendientes_imp, cantidades[["id", "bodega", "consignacion", "en_camino"]], nuevos, hoy)
+        cantidades = cantidades.copy()
+        cantidades["bodega"] = cantidades["id"].map(nuevas.set_index("id")["bodega"]).fillna(cantidades["bodega"]).astype(int)
+        cambiados = cambiados | cambiados_imp
+    # «Pedido en camino»: automático para los libros con filas abiertas en «Importaciones». A los libros sin filas
+    # abiertas que recibieron hoy un embarque se les resta lo que llegó.
+    viene = importaciones_mod.en_camino(imp)
+    llego = pendientes_imp[~pendientes_imp["id"].isin(viene.index)].groupby("id")["cantidad"].sum()
+    if len(viene) or len(llego):
+        cantidades = cantidades.copy()
+        antes = cantidades.set_index("id")["en_camino"].astype(int)
+        con_filas = cantidades["id"].isin(viene.index)
+        cantidades.loc[con_filas, "en_camino"] = cantidades.loc[con_filas, "id"].map(viene).astype(int)
+        recibio = cantidades["id"].isin(llego.index)
+        cantidades.loc[recibio, "en_camino"] = (cantidades.loc[recibio, "en_camino"].astype(int)
+                                                - cantidades.loc[recibio, "id"].map(llego)).clip(lower=0).astype(int)
+        ahora = cantidades.set_index("id")["en_camino"].astype(int)
+        cambiados = cambiados | {i for i in ahora.index if antes.get(i) != ahora.get(i)}
     if primera_vez:  # foto inicial de todo el catálogo
         fotos = cantidades.assign(fecha=hoy)[["fecha", "id", "bodega", "consignacion", "en_camino"]]
     elif cambiados:  # la foto de hoy queda con el stock ya descontado
@@ -203,10 +260,10 @@ def ciclo_planilla(fuente: FuenteSheets, catalogo: pd.DataFrame, p, fecha_corte=
         bajas = nuevos[nuevos["tipo"] == "venta"].groupby("id")["cantidad"].sum()
         sin_anotar = [{"id": i, "titulo": titulos.get(i, i), "unidades": int(n)} for i, n in bajas.items() if n > 0]
 
-    todos = pd.concat([mov, nuevos, ventas_mod.a_movimientos(ventas)], ignore_index=True)
+    todos = pd.concat([mov, nuevos, ventas_mod.a_movimientos(ventas), importaciones_mod.a_movimientos(imp)], ignore_index=True)
     transito = cantidades[["id", "en_camino"]].rename(columns={"en_camino": "cantidad"})
     r = calcular(catalogo, todos, transito, fuente.leer("Costos"), p, hoy,
-                 envios=dict(zip(envios["origen"], envios["costo_usd"])), hoja_ventas=ventas)
+                 envios=dict(zip(envios["origen"], envios["costo_usd"])), hoja_ventas=ventas, fecha_lista=leer_fecha_lista(), importaciones=imp)
 
     historial = pd.concat([hist, fotos], ignore_index=True)
     actualizado = ultima_actualizacion(historial)
@@ -235,20 +292,24 @@ def ciclo_planilla(fuente: FuenteSheets, catalogo: pd.DataFrame, p, fecha_corte=
             fuente.agregar_filas("Inventario", faltan.rename(columns=nombres))
         fuente.actualizar_columnas("Inventario", completa.set_index("id").rename(columns=nombres),
                                    [nombres[c] for c in AUTOMATICAS], nombres["id"])
-        # Solo las celdas que cambiaron por ventas (no se pisa lo que Roberto esté editando en otras filas)
+        # Solo las celdas que cambiaron por ventas o importaciones (no se pisa lo que Roberto esté editando en otras filas)
         nuevas = cantidades.set_index("id")
         fuente.actualizar_celdas("Inventario", nombres["id"], {i: {nombres["bodega"]: int(nuevas.at[i, "bodega"]),
-                                                                    nombres["consignacion"]: int(nuevas.at[i, "consignacion"])}
-                                                                for i in cambiados})
+                                                                    nombres["consignacion"]: int(nuevas.at[i, "consignacion"]),
+                                                                    nombres["en_camino"]: int(nuevas.at[i, "en_camino"])}
+                                                                for i in cambiados if i in nuevas.index})
         fuente.notas_encabezado("Inventario", {nombres[c]: t for c, t in NOTAS_INVENTARIO.items()})
 
     fuente.escribir("Lista de libros", lista_libros(catalogo), oculta=True, solo_lectura=True)
     if fuente.hoja("Ventas") is None:
         preparar_ventas(fuente)
     fuente.escribir_celdas("Ventas", lenguaje.ENCABEZADOS["Ventas"]["descontado"], marcas)
+    if fuente.hoja("Importaciones") is None:
+        preparar_importaciones(fuente, [o.nombre for o in p.origenes])
+    fuente.escribir_celdas("Importaciones", lenguaje.ENCABEZADOS["Importaciones"]["sumado"], marcas_imp)
 
     semana = lenguaje.esta_semana(r.titulos, r.pedido_resumen, r.pedido, r.fecha_corte, r.errores, r.perdidas, sin_anotar,
-                                  r.conteo)
+                                  r.conteo, r.caducidad, r.tl)
     hoja_semana = lenguaje.hoja_esta_semana(semana)
     fuente.escribir("Esta semana", hoja_semana, solo_lectura=True, secciones=True, anchos={0: 380, 1: 560},
                     filas_seccion=hoja_semana.attrs["secciones"])
@@ -294,10 +355,16 @@ def main(argv=None):
     else:
         ventas = fuente.leer("Ventas")
         envios = fuente.leer("Envios")
-        movimientos = pd.concat([fuente.leer("Movimientos"), ventas_mod.a_movimientos(ventas)], ignore_index=True)
-        r = calcular(catalogo, movimientos, fuente.leer("EnTransito"), fuente.leer("Costos"),
+        imp = fuente.leer("Importaciones")
+        movimientos = pd.concat([fuente.leer("Movimientos"), ventas_mod.a_movimientos(ventas),
+                                 importaciones_mod.a_movimientos(imp)], ignore_index=True)
+        viene = importaciones_mod.en_camino(imp)
+        transito = fuente.leer("EnTransito")
+        transito = pd.concat([transito[~transito["id"].isin(viene.index)][["id", "cantidad"]],
+                              viene.rename("cantidad").reset_index()], ignore_index=True)
+        r = calcular(catalogo, movimientos, transito, fuente.leer("Costos"),
                      p, pd.Timestamp(a.fecha_corte) if a.fecha_corte else None,
-                     envios=dict(zip(envios["origen"], envios["costo_usd"])), hoja_ventas=ventas)
+                     envios=dict(zip(envios["origen"], envios["costo_usd"])), hoja_ventas=ventas, fecha_lista=leer_fecha_lista(), importaciones=imp)
         fuente.escribir("Resultado_Titulos", r.titulos)
         fuente.escribir("Resultado_Pedido", r.pedido)
         fuente.escribir("Comparacion_envios", pd.DataFrame(r.pedido_resumen.attrs["combinaciones"]))
@@ -305,7 +372,7 @@ def main(argv=None):
         fuente.escribir("Categorias", r.categorias)
         fuente.escribir("Esta_semana", lenguaje.hoja_esta_semana(
             lenguaje.esta_semana(r.titulos, r.pedido_resumen, r.pedido, r.fecha_corte, r.errores, r.perdidas,
-                                 conteo=r.conteo)))
+                                 conteo=r.conteo, caducidad=r.caducidad, tl=r.tl)))
 
     if a.panel:
         a.panel.parent.mkdir(parents=True, exist_ok=True)

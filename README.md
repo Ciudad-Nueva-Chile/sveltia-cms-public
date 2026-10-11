@@ -12,15 +12,16 @@ un ejemplo): [`docs/CONTEXTO.md`](docs/CONTEXTO.md). Configuración paso a paso:
 | Dirección | Qué es |
 |---|---|
 | <https://ciudad-nueva-chile.github.io/sveltia-cms-public/> | El sitio (versión de prueba, no indexada en buscadores) |
-| <https://ciudad-nueva-chile.github.io/sveltia-cms-public/admin/> | Un solo panel para libros, páginas, ajustes y parámetros del inventario |
+| <https://ciudad-nueva-chile.github.io/sveltia-cms-public/admin/> | Sveltia: libros, páginas y ajustes del sitio |
 | <https://ciudad-nueva-chile.github.io/sveltia-cms-public/inventario/> | Panel de inventario. Con la planilla conectada pide una contraseña (los datos se publican cifrados); sin ella muestra datos de ejemplo |
 
-## La planilla: una tabla de libros, una de ventas y el pedido
+## La planilla: una tabla de libros, una de ventas, una de importaciones y el pedido
 
 | Pestaña | Para qué |
 |---|---|
 | **Inventario** | Un libro por fila: código, ISBN, título, autor, editorial, **se compra en**, categoría, precio de venta, **en bodega**, **en consignación**, **pedido en camino**, última actualización, cómo se vende, qué hacer y **notas**. Roberto solo edita las columnas amarillas; el resto se completa solo y se puede ordenar y filtrar |
 | **Ventas** | Una fila por libro vendido: fecha, pedido o boleta, libro (lista desplegable), cantidad, **descuento (%)** si hubo, canal y estado («Vendido», «No había stock» o «Devolución»). ISBN, precio de lista y total cobrado se completan solos con fórmulas. Cada mañana las ventas nuevas se descuentan del stock de «Inventario» y se anota cuándo en «Descontado del stock» |
+| **Importaciones** | Una fila por libro y embarque: fecha de pedido, fecha de llegada (vacía = en camino), país de compra, factura o DIN, libro, cantidad, FOB total y notas. La llegada se suma sola a «En bodega» (se anota en «Sumado al stock»); lo que está en camino completa «Pedido en camino». Con estas filas se miden T y L |
 | **Esta semana** | Qué pedir y dónde conviene, qué está sin stock, qué pidieron y no había, qué contar esta semana, qué consignaciones cobrar. Solo lectura |
 | **Pedido sugerido** | Arriba, **dónde conviene comprar**: Roberto anota el costo real de cada envío (celdas amarillas) y la comparación entre «Todo a España», «Todo a Argentina» y «Dividir» se recalcula al instante. El flete no se calcula por peso. Abajo, la lista de qué pedir en el próximo embarque |
 | Ocultas | Configuración (costos por origen), Registro de movimientos, Historial de fotos, Lista de libros (para la lista desplegable de «Ventas»), Análisis técnico, Indicadores |
@@ -46,11 +47,11 @@ El catálogo y los precios salen del sitio (`src/libros`): el precio se cambia e
 | Existencias | Bodega, consignación y tránsito a partir de los movimientos. La factura de una consignación no vuelve a descontar la bodega; la consignación abierta más antigua se rastrea por orden de salida | `inventario/stock.py` |
 | Categorías de gestión | AA (clase Intermitente, Regular, Estacional o Coyuntural), BB (clase Esporádica), CC (con existencias, sin venta y con salida en guía), DD (con existencias, sin venta ni salida en guía) y «Sin categoría». Adaptan a Flores y Whybark (1987) y reemplazan al ABC por valor | `inventario/clasificacion_abc.py` (nombre histórico) |
 | Clase de demanda | Por meses con demanda en la ventana de 21 meses: 0 «Sin venta neta», 1 o 2 «Esporádica», 3 o más «Intermitente» (o «Regular» si ADI < 1,32 y CV² < 0,49). Estacional y Coyuntural se marcan a mano en el catálogo. ADI y CV² (Syntetos, Boylan y Croston, 2005) quedan como indicadores | `inventario/demanda.py` |
-| Pronóstico mensual | SBA (Croston con corrección de sesgo, α = 0,15, supuesto abierto) para Intermitente y Regular | `inventario/demanda.py` |
+| Pronóstico mensual | SBA (Croston con corrección de sesgo, α = 0,15, supuesto abierto) para Intermitente y Regular, sobre toda la historia disponible (mínimo 21 meses). La clasificación usa siempre los últimos 21 meses | `inventario/demanda.py` |
 | Nivel objetivo S | Percentil 95 de una distribución de Poisson con media λ × (T + L), donde λ es el pronóstico SBA, T el intervalo entre embarques del origen (Argentina 12 meses, España 8,5) y L el plazo de reposición. El 95 % es un criterio y Poisson es un supuesto de simplicidad | `inventario/politica.py` |
 | Política por categoría | AA Intermitente o Regular repone hasta S, AA Estacional pide una vez al año antes de la temporada, AA Coyuntural se atiende por reacción, BB repone lo vendido desde el embarque anterior, CC y DD no se reponen, «Sin categoría» va a pedido. La planilla puede fijarla a mano | `inventario/politica.py` |
 | Conteo cíclico | «Qué contar esta semana», con la frecuencia por categoría: AA mensual, BB cada 6 meses, CC y DD una vez al año | `inventario/modelo.py` |
-| Pedido por embarque y dónde comprar | Embarques programados por origen. Si un libro está en ambas editoriales («Se compra en»), compara las combinaciones que cubren todo (España, Argentina, ambos) y elige la de menor costo: cada libro va al origen con menor **costo puesto en bodega** entre los que se envían, cada envío debe alcanzar su **mínimo FOB** (US$ 700) y suma su **costo fijo**, que anota Roberto. Si un envío no alcanza el mínimo, la hoja lo avisa y Roberto decide cómo completarlo. No hay castigos numéricos de postergar ni adelantar | `inventario/pedido.py` |
+| Pedido por embarque y dónde comprar | Embarques programados por origen, desde la última llegada de «Importaciones». T y L medidos (mediana de los últimos 5 embarques y de llegada − pedido) se usan con 3 o más embarques; si no, los de la memoria. Si un libro está en ambas editoriales («Se compra en»), compara las combinaciones que cubren todo (España, Argentina, ambos) y elige la de menor costo: cada libro va al origen con menor **costo puesto en bodega** entre los que se envían, cada envío debe alcanzar su **mínimo FOB** (US$ 700) y suma su **costo fijo**, que anota Roberto. Si un envío no alcanza el mínimo, la hoja lo avisa y Roberto decide cómo completarlo. No hay castigos numéricos de postergar ni adelantar | `inventario/pedido.py` |
 | Ventas | Convierte cada fila de «Ventas» en un movimiento (venta, factura de consignación, devolución o venta perdida), descuenta del stock solo las nuevas y resume ventas con descuento, descuento promedio y ventas perdidas | `inventario/ventas.py` |
 
 Límites que conviene tener presentes:
@@ -82,13 +83,13 @@ Con la planilla real: ver [docs/CONFIGURAR.md](docs/CONFIGURAR.md).
 
 ```
 src/                        el sitio (Eleventy): libros, páginas, ajustes, estilos
-admin/                      Sveltia CMS: sitio + parámetros del inventario (versión fija en package.json)
-config/parametros.yml       parámetros del modelo (se editan en /admin)
+admin/                      Sveltia CMS: libros, páginas y ajustes del sitio (versión fija en package.json)
+config/parametros.yml       decisiones del modelo (se editan a mano; las constantes de la memoria están en inventario/config.py)
 inventario/                 el modelo (Python); lenguaje.py tiene todos los textos que ve Roberto
 panel/                      panel de inventario: «Esta semana», «Libros» y «Análisis»
 herramientas/               generar_ejemplo.py (datos sintéticos) y crear_planilla.py (prepara la Google Sheet)
 datos_ejemplo/              datos sintéticos: los títulos y precios son públicos; clientes, cantidades y costos son inventados
-tests/                      pruebas del modelo (56)
+tests/                      pruebas del modelo (63)
 .github/workflows/          pruebas; publicación diaria y con cada cambio (sitio + /admin + /inventario + cálculo con la planilla)
 ```
 
@@ -101,6 +102,11 @@ credenciales, la carpeta `salida/` y `panel/datos.json`.
 
 ## Actualizaciones
 
-Dependabot propone una vez al mes las versiones nuevas de Sveltia CMS, de las librerías de Python y de las
+La lista «Datos por actualizar» de «Esta semana» y del panel avisa cuando el tipo de cambio tiene más de 6 meses, los
+factores de costo más de 12 o la lista de precios del sitio más de 12. Lo que depende de quien mantiene el sistema y la
+revisión anual están en [`docs/CONFIGURAR.md`](docs/CONFIGURAR.md) («Traspaso» y «Revisión anual»).
+
+
+Dependabot propone una vez a la semana las versiones nuevas de Sveltia CMS, de las librerías de Python y de las
 acciones de GitHub. Cada propuesta pasa por las pruebas antes de aceptarla; si nadie la acepta, todo sigue
 funcionando con la versión probada.

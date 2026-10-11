@@ -82,23 +82,32 @@ def nombre_combinacion(envia: list[str]) -> str:
     return "Dividir: " + " y ".join(envia) + f" ({len(envia)} envíos)"
 
 
-def proximos_embarques(mov: pd.DataFrame, catalogo: pd.DataFrame, p: Parametros, fecha_corte: pd.Timestamp) -> dict:
+def proximos_embarques(mov: pd.DataFrame, catalogo: pd.DataFrame, p: Parametros, fecha_corte: pd.Timestamp,
+                       ultimas_llegadas: dict | None = None, intervalos: dict | None = None) -> dict:
     """{origen: (fecha de la última importación o None, fecha del próximo embarque)} para los orígenes configurados.
 
-    La importación se atribuye al origen (editorial) del título, porque el registro no dice desde dónde llegó.
-    Todo origen distinto de Argentina se trata como España.
+    Si la pestaña «Importaciones» tiene llegadas de un país (`ultimas_llegadas`), se usa la última, con el país real de
+    compra. Si no, la importación se atribuye al origen (editorial) del título, porque el registro no dice desde dónde
+    llegó. Todo origen distinto de Argentina se trata como España. `intervalos`: T por país, si se midió.
     """
+    ultimas_llegadas = ultimas_llegadas or {}
+    intervalos = intervalos or {}
     origen_de = catalogo.drop_duplicates("id").set_index("id")["origen"]
     imp = mov[(mov["tipo"] == "importacion") & (mov["fecha"] <= fecha_corte)].copy()
     imp["origen"] = imp["id"].map(origen_de).map(lambda o: "Argentina" if o == "Argentina" else "España")
     salida = {}
     for o in p.origenes:
-        fechas = imp.loc[imp["origen"] == ("Argentina" if o.nombre == "Argentina" else "España"), "fecha"]
-        ultima = fechas.max() if len(fechas) else None
+        pais = "Argentina" if o.nombre == "Argentina" else "España"
+        if pais in ultimas_llegadas:
+            ultima = pd.Timestamp(ultimas_llegadas[pais])
+        else:
+            fechas = imp.loc[imp["origen"] == pais, "fecha"]
+            ultima = fechas.max() if len(fechas) else None
+        T = intervalos.get(o.nombre, p.intervalo_meses(o.nombre))
         if ultima is None:
             proximo = fecha_corte
         else:
-            proximo = ultima + pd.Timedelta(days=round(p.intervalo_meses(o.nombre) * 30.44))
+            proximo = ultima + pd.Timedelta(days=round(T * 30.44))
         salida[o.nombre] = (ultima, pd.Timestamp(proximo).normalize())
     return salida
 

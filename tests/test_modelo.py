@@ -64,7 +64,8 @@ def test_t_y_l_por_origen():
     assert p.intervalo_meses("Argentina") == 12 and p.plazo_meses("Argentina") == pytest.approx(5.5 / 30)
     assert p.intervalo_meses("España") == 8.5 and p.plazo_meses("España") == pytest.approx(7 / 30)
     assert p.intervalo_meses("Uruguay") == 8.5          # todo origen distinto de Argentina se trata como España
-    assert p.nivel_servicio == 0.95 and p.historia_meses == 21
+    from inventario.config import HISTORIA_MESES
+    assert p.nivel_servicio == 0.95 and HISTORIA_MESES == 21
 
 
 def test_humo_s_con_lambda_t_y_l_conocidos():
@@ -190,6 +191,40 @@ def test_calculo_completo_categorias_politica_y_s():
     cats = r.categorias.set_index("categoria")
     assert cats.loc[["AA", "BB", "CC", "DD", "Sin categoría"], "titulos"].sum() == cats.loc["Total", "titulos"] == len(catalogo)
     assert "abc" not in r.titulos.columns
+
+
+def _ventas_mensuales(desde, hasta, cada=3):
+    """Una venta de 2 ejemplares cada `cada` meses, entre dos meses (incluidos)."""
+    return [(str(m.start_time.date() + pd.Timedelta(days=9)), "x", "venta", 2)
+            for i, m in enumerate(pd.period_range(desde, hasta, freq="M")) if i % cada == 0]
+
+
+def test_con_21_meses_o_menos_el_pronostico_usa_la_misma_serie():
+    catalogo = _catalogo([{"id": "x", "titulo": "x", "origen": "España", "precio_lista": 10000}])
+    mov = _mov([("2025-04-01", "x", "inventario_inicial", 30)] + _ventas_mensuales("2025-04", "2026-08"))
+    fc = pd.Timestamp("2026-08-31")
+    r = calcular(catalogo, mov, pd.DataFrame(columns=["id", "cantidad"]), pd.DataFrame(), Parametros(), fc)
+    t = r.titulos.set_index("id")
+    ventana = demanda.venta_neta_mensual(stock.limpiar(mov), ["x"], fc, 21).loc["x"].to_numpy(dtype=float)
+    assert t.loc["x", "meses_pronostico"] == 21
+    assert t.loc["x", "tasa_mensual"] == round(demanda.sba(ventana, 0.15), 3)
+
+
+def test_con_36_meses_el_pronostico_incorpora_los_meses_anteriores():
+    catalogo = _catalogo([{"id": "x", "titulo": "x", "origen": "España", "precio_lista": 10000}])
+    # Primeros 15 meses: se vendía todos los meses. Últimos 21 (la ventana): cada 3 meses.
+    antes = [(str(m.start_time.date() + pd.Timedelta(days=9)), "x", "venta", 4) for m in pd.period_range("2023-09", "2024-11", freq="M")]
+    mov = _mov([("2023-09-01", "x", "inventario_inicial", 200)] + antes + _ventas_mensuales("2024-12", "2026-08"))
+    fc = pd.Timestamp("2026-08-31")
+    r = calcular(catalogo, mov, pd.DataFrame(columns=["id", "cantidad"]), pd.DataFrame(), Parametros(), fc)
+    t = r.titulos.set_index("id")
+    limpio = stock.limpiar(mov)
+    ventana = demanda.venta_neta_mensual(limpio, ["x"], fc, 21).loc["x"].to_numpy(dtype=float)
+    completa = demanda.venta_neta_mensual(limpio, ["x"], fc, 36).loc["x"].to_numpy(dtype=float)
+    assert t.loc["x", "meses_pronostico"] == 36
+    assert t.loc["x", "clase"] == demanda.clasificar(ventana)[0]                 # la clase sigue usando 21 meses
+    assert t.loc["x", "tasa_mensual"] == round(demanda.sba(completa, 0.15), 3)
+    assert t.loc["x", "tasa_mensual"] != round(demanda.sba(ventana, 0.15), 3)    # λ cambia con la historia anterior
 
 
 def test_solicitud_web_de_un_cc_o_dd_solo_avisa():
@@ -455,3 +490,88 @@ def test_secciones_de_esta_semana_no_confunden_titulos_de_libros():
     assert lenguaje.es_titulo_seccion("CÓMO ANOTAR")
     assert not lenguaje.es_titulo_seccion("VIDA DE MARIA (BP. 8)")
     assert not lenguaje.es_titulo_seccion("1 - 2 REYES, 1 - 2 CRONICA")
+
+
+def test_avisos_de_caducidad():
+    from datetime import date
+    from inventario.modelo import avisos_caducidad
+    hoy = pd.Timestamp("2026-10-01")
+    costos = pd.DataFrame([
+        {"origen": "España", "edicion": "", "tc_desde": pd.Timestamp("2026-02-01"), "factores_desde": pd.Timestamp("2026-01-01")},   # TC de 8 meses
+        {"origen": "Argentina", "edicion": "España", "tc_desde": pd.Timestamp("2026-09-01"), "factores_desde": pd.Timestamp("2025-06-01")},  # factores de 16
+        {"origen": "Argentina", "edicion": "Argentina", "tc_desde": pd.NaT, "factores_desde": pd.Timestamp("2026-05-01")},
+    ])
+    a = avisos_caducidad(costos, hoy, date(2025, 8, 26))
+    assert "Tipo de cambio de España sin actualizar hace 8 meses" in a
+    assert "Factores de costo de Argentina (edición España) sin revisar hace 16 meses" in a
+    assert "Tipo de cambio de Argentina sin fecha de vigencia" in a
+    assert "Lista de precios del sitio vigente desde 26-08-2025" in a
+    assert not any("Factores de costo de España" in x for x in a)               # 9 meses: bajo el umbral de 12
+    assert avisos_caducidad(pd.DataFrame(), hoy, date(2026, 8, 26)) == []
+
+
+# ---------- Pestaña «Importaciones» ----------
+def _imp(filas):
+    """filas: (fecha_pedido, fecha_llegada, país, libro, cantidad, sumado)."""
+    df = pd.DataFrame(filas, columns=["fecha_pedido", "fecha_llegada", "pais", "id", "cantidad", "sumado"])
+    for c in ("fecha_pedido", "fecha_llegada"):
+        df[c] = pd.to_datetime(df[c].replace("", None))
+    df["documento"] = df["notas"] = ""
+    df["fob_usd"] = float("nan")
+    df["fila_planilla"] = range(2, len(df) + 2)
+    return df
+
+
+def test_llegada_suma_al_stock_una_vez_con_cuadratura():
+    from inventario import importaciones
+    hoy = pd.Timestamp("2026-10-05")
+    i = _imp([("2026-09-28", "2026-10-05", "España", "a", 5, ""),
+              ("2026-09-28", "2026-10-05", "España", "b", 4, ""),                 # Roberto ya subió la bodega de «b»
+              ("2026-06-01", "2026-06-08", "España", "a", 9, "Sumado el 08-06-2026")])  # ya sumada antes
+    cant = pd.DataFrame([{"id": "a", "bodega": 1, "consignacion": 0, "en_camino": 5},
+                         {"id": "b", "bodega": 6, "consignacion": 0, "en_camino": 0}])
+    derivados = pd.DataFrame([{"fecha": hoy, "id": "b", "tipo": "importacion", "cantidad": 4, "documento": "", "cliente": ""}])
+    pend = importaciones.llegadas(i)[importaciones.llegadas(i)["sumado"] == ""]
+    nuevas, der, marcas, cambiados = importaciones.aplicar(pend, cant, derivados, hoy)
+    n = nuevas.set_index("id")
+    assert n.loc["a", "bodega"] == 6 and n.loc["b", "bodega"] == 6
+    assert der.empty and cambiados == {"a"}
+    assert marcas[2].startswith("Sumado el") and marcas[3].startswith("Ya estaba sumado") and 4 not in marcas
+    m = importaciones.a_movimientos(i)
+    assert m["tipo"].eq("importacion").all() and m["fecha"].tolist()[0] == pd.Timestamp("2026-10-05")
+
+
+def test_filas_sin_llegada_cuentan_como_pedido_en_camino():
+    from inventario import importaciones
+    i = _imp([("2026-09-20", "", "España", "a", 3, ""), ("2026-09-25", "", "Argentina", "a", 2, ""),
+              ("2026-06-01", "2026-06-08", "España", "b", 4, "Sumado")])
+    viene = importaciones.en_camino(i)
+    assert viene.to_dict() == {"a": 5}                 # «b» no tiene filas abiertas: queda lo que anote Roberto
+
+
+def _embarques(pais, llegadas, plazo=7):
+    return _imp([(str((pd.Timestamp(f) - pd.Timedelta(days=plazo)).date()), f, pais, "x", 2, "Sumado") for f in llegadas])
+
+
+def test_t_y_l_medidos_con_2_3_y_5_embarques():
+    from inventario import importaciones
+    p = Parametros()
+    dos = importaciones.efectivos(_embarques("España", ["2026-01-10", "2026-04-10"]), p)["España"]
+    assert dos["T"] == 8.5 and "de la memoria" in dos["texto_T"] and "Medido:" in dos["texto_T"] and "2 embarques" in dos["texto_T"]
+    tres = importaciones.efectivos(_embarques("España", ["2026-01-10", "2026-04-10", "2026-07-10"], plazo=9), p)["España"]
+    assert tres["T"] == pytest.approx(90.5 / 30.44, abs=0.01)                  # mediana de 90 y 91 días and "medido en 3 embarques" in tres["texto_T"]
+    assert tres["L"] == pytest.approx(9 / 30) and "L = 9 días (medido en 3 embarques)" in tres["texto_L"]
+    # Con 6 embarques, T usa solo los últimos 5 (4 intervalos de unos 60 días; el primero, de 200, queda fuera)
+    seis = _embarques("Argentina", ["2025-01-01", "2025-07-20", "2025-09-18", "2025-11-17", "2026-01-16", "2026-03-17"])
+    m = importaciones.medir(seis, "Argentina")
+    assert m["embarques_T"] == 5 and m["T_meses"] == pytest.approx(60 / 30.44, abs=0.01)
+    assert importaciones.efectivos(seis, p)["España"]["T"] == 8.5      # sin embarques de España: el de la memoria
+
+
+def test_proximo_embarque_usa_la_ultima_llegada_real():
+    from inventario import pedido
+    catalogo = _catalogo([{"id": "a", "titulo": "a", "origen": "España", "precio_lista": 1}])
+    mov = _mov([("2025-12-01", "a", "importacion", 3)])
+    e = pedido.proximos_embarques(mov, catalogo, Parametros(), pd.Timestamp("2026-10-01"),
+                                  ultimas_llegadas={"España": pd.Timestamp("2026-06-01")}, intervalos={"España": 3.0})
+    assert e["España"][0] == pd.Timestamp("2026-06-01") and e["España"][1] == pd.Timestamp("2026-08-31")

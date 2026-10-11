@@ -192,7 +192,8 @@ Estas condiciones salen de los requerimientos RF-01 a RF-08 y RNF-01 a RNF-05 de
 | **Libros del catálogo** | `src/libros/*.md` | Título, autor, ISBN, portada, precio, categoría, **Ocultar en el sitio**, **Destacar**, edición, colección, n.º, sinopsis, tipo especial y decisión manual para el inventario. Vistas: destacados, ocultos, sin portada, patrística. En la lista, los ocultos llevan «🚫 OCULTO» |
 | **Páginas del sitio** | `src/paginas/*.md` | Nosotros, Librerías e instituciones |
 | **Ajustes del sitio** | `src/_data/*.json` | Contacto, WhatsApp, portada, franja de anuncio, categorías, colecciones |
-| **Modelo de inventario** | `config/parametros.yml` | Parámetros del cálculo (sección 9.10). Cada parámetro dice de dónde sale en la memoria y cuáles son supuestos |
+
+Los parámetros del modelo ya no se editan en Sveltia: están en `config/parametros.yml`, que edita a mano solo quien mantiene el sistema (sección 9.10).
 
 ---
 
@@ -202,7 +203,7 @@ Estas condiciones salen de los requerimientos RF-01 a RF-08 y RNF-01 a RNF-05 de
 
 | Flujo | Cuándo | Qué hace |
 |---|---|---|
-| **Pruebas** (`pruebas.yml`) | Cada push y pull request | `pytest` (56 pruebas), el modelo de punta a punta con datos de ejemplo, la compilación del sitio con prefijo y una verificación de que el mapa del sitio trae todas las categorías (16), que ninguna descripción de ficha se repite y que no se cargan tipografías externas |
+| **Pruebas** (`pruebas.yml`) | Cada push y pull request | `pytest` (63 pruebas), el modelo de punta a punta con datos de ejemplo, la compilación del sitio con prefijo y una verificación de que el mapa del sitio trae todas las categorías (16), que ninguna descripción de ficha se repite y que no se cargan tipografías externas |
 | **Publicar sitio y panel** (`publicar.yml`) | Cada push a `main`, **todos los días a las 10:00 UTC** (07:00 Chile en verano) y a mano | Compila el sitio y Sveltia, copia el panel, calcula con la planilla, cifra los datos del panel y publica en GitHub Pages |
 
 Detalle del paso de cálculo de `publicar.yml`:
@@ -249,7 +250,7 @@ robot, con permiso de **Editor** solo en esa planilla). Las pestañas automátic
 | Precio de venta | `precio_lista` | Auto | Precio con IVA del sitio (se cambia en Sveltia) |
 | **En bodega** | `bodega` | Roberto | Ejemplares físicos en la bodega |
 | **En consignación** | `consignacion` | Roberto | Entregados con guía, aún no pagados ni devueltos |
-| **Pedido en camino** | `en_camino` | Roberto | Pedidos a la editorial que no han llegado |
+| **Pedido en camino** | `en_camino` | Roberto o Auto | Pedidos a la editorial que no han llegado. **Automática** para los libros con filas sin fecha de llegada en «Importaciones» (suma de esas filas). Para los demás la anota Roberto, y cuando llega un embarque de un libro sin otras filas abiertas se le resta lo que llegó |
 | Última actualización | `actualizado` | Auto | Último día en que cambió alguna cantidad |
 | Se vende | `se_vende` | Auto | Ritmo en palabras («≈1 cada 2 meses») |
 | Qué hacer | `que_hacer` | Auto | Política en palabras («Mantener en bodega») |
@@ -271,6 +272,24 @@ robot, con permiso de **Editor** solo en esa planilla). Las pestañas automátic
 | Total cobrado | `total` | Fórmula | `cantidad × precio × (1 − descuento)`; negativo en devoluciones; vacío si «No había stock» |
 | Descontado del stock | `descontado` | Auto | Cuándo el cálculo descontó la venta («Descontado el …», «Ya estaba descontado a mano …», «Anotada … (no mueve stock)», «Revisar: …») |
 
+**Importaciones** — una fila por libro y embarque, con el estilo de «Ventas».
+
+| Columna | Interna | Quién | Significado |
+|---|---|---|---|
+| **Fecha de pedido** | `fecha_pedido` | Roberto | Día del pedido a la editorial |
+| **Fecha de llegada** | `fecha_llegada` | Roberto | Día en que llegó. Vacía = todavía en camino |
+| **País de compra** | `pais` | Roberto | España o Argentina (lista desplegable) |
+| **N° de factura o DIN** | `documento` | Roberto | Opcional |
+| **Libro** | `id` | Roberto | Lista desplegable «CN-XXXX · TÍTULO» |
+| **Cantidad** | `cantidad` | Roberto | Ejemplares de ese libro en ese embarque |
+| **FOB total US$** | `fob_usd` | Roberto | Opcional |
+| **Notas** | `notas` | Roberto | Libre |
+| Sumado al stock | `sumado` | Auto | Cuándo el cálculo sumó la llegada a «En bodega» («Sumado el …», «Ya estaba sumado a mano …», «Revisar: …») |
+
+Una fila con fecha de llegada es una importación con su fecha y su país reales: se suma a «En bodega» una sola vez (con la
+misma cuadratura que «Ventas»: si ese día Roberto ya subió la bodega a mano, no se suma de nuevo). Una fila sin fecha de
+llegada cuenta como «Pedido en camino». Con estas filas se miden T y L (9.8).
+
 **Esta semana** — resumen para decidir (solo lectura): pedidos por país y cuál conviene, libros que se venden y
 están sin stock, «Te los pidieron y no había», «Bajas de stock sin venta anotada», **qué contar esta semana** (sección 9.9), los títulos DD y CC con su valor, consignaciones de
 más de un año, productos de temporada, errores de datos y cómo anotar.
@@ -290,7 +309,7 @@ más de un año, productos de temporada, errores de datos y cómo anotar.
 
 | Pestaña | Contenido |
 |---|---|
-| **Configuración** | Una fila por origen de compra y edición: «FOB / precio neto», «Costo en bodega / precio neto», «Pesos por dólar». Si un país vende libros de otra edición con otras condiciones (p. ej. españoles comprados en Argentina), va en una fila aparte con esa «Edición del libro» |
+| **Configuración** | Una fila por origen de compra y edición: «FOB / precio neto», «Costo en bodega / precio neto», «Pesos por dólar», «Tipo de cambio vigente desde» y «Factores vigentes desde» (para los avisos de caducidad, 9.9). Si un país vende libros de otra edición con otras condiciones (p. ej. españoles comprados en Argentina), va en una fila aparte con esa «Edición del libro» |
 | **Registro de movimientos** | Historia de demanda: la carga inicial (facturas, guías y notas de crédito del SII) más los movimientos deducidos de los cambios en «Inventario». Solo crece |
 | **Historial** | Fotos de existencias (fecha, código, bodega, consignación, en camino) cada vez que algo cambia. Solo crece |
 | **Lista de libros** | «Código · Título», ISBN y precio, para la lista desplegable y las fórmulas de «Ventas» |
@@ -312,6 +331,7 @@ inventario/
 ├── fuentes.py            leer/escribir Google Sheets (gspread) o CSV; formato, protección, listas, notas
 ├── planilla.py           compara «Inventario» con la última foto y deduce movimientos
 ├── ventas.py             pestaña «Ventas»: movimientos, descuento del stock, cuadratura, indicadores
+├── importaciones.py      pestaña «Importaciones»: llegadas, suma al stock, pedido en camino, T y L medidos
 ├── stock.py              efectos de cada movimiento y existencias
 ├── demanda.py            serie mensual, clase por meses con demanda, ADI y CV² informativos, pronóstico SBA
 ├── clasificacion_abc.py  categorías de gestión AA, BB, CC y DD (el nombre del archivo es histórico)
@@ -323,8 +343,8 @@ inventario/
 └── config.py             lectura de config/parametros.yml
 panel/                    index.html, panel.css, panel.js (dibuja; no calcula salvo el comparador de envíos)
 herramientas/             crear_planilla.py (prepara la planilla), generar_ejemplo.py (datos sintéticos)
-datos_ejemplo/            Catalogo, Movimientos, EnTransito, Costos, Ventas, Envios (CSV inventados)
-tests/test_modelo.py      56 pruebas
+datos_ejemplo/            Catalogo, Movimientos, EnTransito, Costos, Ventas, Importaciones, Envios (CSV inventados)
+tests/test_modelo.py      63 pruebas
 ```
 
 Comandos:
@@ -342,10 +362,11 @@ pytest -q
 
 ### 9.0 Orden del ciclo diario (`ciclo_planilla`)
 
-1. Leer Inventario, Historial, Registro de movimientos, Ventas, costo de envíos y Configuración.
+1. Leer Inventario, Historial, Registro de movimientos, Ventas, Importaciones, costo de envíos y Configuración.
 2. **Detectar cambios** en Inventario contra la última foto → movimientos deducidos (9.1).
-3. **Descontar ventas nuevas** de «Ventas» del stock de Inventario, con cuadratura (9.1).
-4. Reunir todos los movimientos: registro + deducidos + todas las filas de Ventas.
+3. **Descontar ventas nuevas** de «Ventas» y **sumar llegadas nuevas** de «Importaciones» al stock de Inventario, con
+   cuadratura (9.1 y 7.1). Completar «Pedido en camino» de los libros con filas abiertas en «Importaciones».
+4. Reunir todos los movimientos: registro + deducidos + todas las filas de Ventas + las llegadas de Importaciones.
 5. Calcular existencias (9.2), demanda (9.3), categorías AA, BB, CC y DD (9.4), clase de demanda (9.5), pronóstico (9.6),
    política y nivel objetivo (9.7), pedido por embarque y dónde comprar (9.8), avisos, indicadores y conteo (9.9).
 6. Escribir: fotos nuevas en Historial, movimientos en el registro, columnas automáticas y celdas descontadas en
@@ -406,18 +427,26 @@ En caminoᵢ     = columna «Pedido en camino» de Inventario
 Posiciónᵢ      = Bodegaᵢ + En caminoᵢ
 ```
 La consignación abierta más antigua se rastrea por **FIFO** (la primera salida es la primera que se liquida o
-vuelve); su antigüedad alimenta el aviso de consignaciones de más de `dias_consignacion_antigua` días.
+vuelve); su antigüedad alimenta el aviso de consignaciones de más de 365 días (`DIAS_CONSIGNACION_ANTIGUA`).
 
 ### 9.3 Serie de venta neta mensual (`demanda.venta_neta_mensual`)
 
-Para cada libro, los últimos `historia_meses` (21) meses calendario hasta la fecha de corte. La ventana de 21 meses es la
-que usa la memoria (diciembre de 2024 a agosto de 2026) y es un parámetro:
+Hay dos ventanas:
+
+- **Clasificación** (k, ADI, CV², clase de demanda y categoría): siempre los últimos 21 meses calendario hasta la fecha de
+  cálculo (`HISTORIA_MESES`, constante de `config.py`; la memoria observa diciembre de 2024 a agosto de 2026). La ventana avanza
+  sola cada mes.
+- **Pronóstico** (λ con SBA, 9.6): toda la serie disponible, desde el mes del primer movimiento registrado hasta la fecha de
+  cálculo, con un mínimo de 21 meses. Con 21 meses de historia o menos es la misma serie. «Análisis técnico» muestra cuántos
+  meses usó (`meses_pronostico`).
+
+En ambas, la serie mensual es:
 ```
 dₜ = máx(0,  venta + consignacion_liquidada − devolucion_cliente + venta_perdida)
 ```
 Es la **venta neta** de la memoria (Tabla 4.8, sobre facturas), más la **venta perdida** anotada en «Ventas», que corrige
 la demanda censurada. La **salida en guía no es venta**: un título que solo salió en consignación no tiene venta neta y
-queda en CC (9.4); cuenta cuando la librería lo factura. Sobre esta serie se cuentan k, ADI, CV² y la tasa λ.
+queda en CC (9.4); cuenta cuando la librería lo factura.
 
 ### 9.4 Categorías de gestión AA, BB, CC y DD (`clasificacion_abc.py`)
 
@@ -476,7 +505,7 @@ z ← z + α (dₜ − z)       tamaño típico
 p ← p + α (q − p)        intervalo típico
 λ = (1 − α/2) · z / p    ejemplares por mes
 ```
-Se inicia con el primer mes con demanda: z = d, p = meses hasta él. El factor (1 − α/2) corrige el sesgo positivo de
+La serie es la del pronóstico (toda la historia disponible, 9.3). Se inicia con el primer mes con demanda: z = d, p = meses hasta él. El factor (1 − α/2) corrige el sesgo positivo de
 Croston. Para Esporádica no se estima tasa, y su reposición no depende de un pronóstico (9.7). El suavizamiento exponencial
 simple deja de usarse en la política.
 
@@ -496,7 +525,8 @@ La política se asigna por categoría. La «decisión manual» de Sveltia manda 
 La regla de BB es la lectura del diseño de «lo vendido desde el embarque anterior» y **queda por confirmar con Andrés**. Las
 políticas «Stock mínimo» y «Liquidar o revisar» ya no se asignan automáticamente.
 
-**Nivel objetivo S** (solo AA Intermitente o Regular): el nivel hasta el que se repone en cada embarque. Es el **percentil
+**Nivel objetivo S** (solo AA Intermitente o Regular): el nivel hasta el que se repone en cada embarque. T y L son los
+del país de la **edición** del libro (origen editorial), medidos si hay 3 o más embarques de ese país (9.8). Es el **percentil
 95 de una distribución de Poisson** cuya media es la tasa mensual λ por el intervalo entre embarques del origen más el
 plazo de reposición:
 ```
@@ -521,7 +551,18 @@ Un stock negativo es un error de datos: se avisa («Stock negativo») y cuenta c
 ### 9.8 Pedido por embarque y dónde comprar (`pedido.sugerir`)
 
 Los pedidos se hacen en **embarques programados** por origen, no cada vez que un título baja de un punto. El próximo
-embarque de un origen es la fecha de su última importación más T meses.
+embarque de un origen es la fecha de su última llegada registrada en «Importaciones» (país real de compra) más T meses. Si
+ese país no tiene llegadas en «Importaciones», se usa la última importación del registro, atribuida al origen del título.
+
+**T y L medidos** (`importaciones.efectivos`), para contrastar con los de la memoria:
+```
+T por país = mediana de los días entre fechas de llegada distintas, en sus últimos 5 embarques   (÷ 30,44 → meses)
+L por país = mediana de (fecha de llegada − fecha de pedido), en las filas que tienen ambas        (÷ 30 → meses)
+```
+Se usan solo con **3 o más embarques** con datos del país. Si no, se usan los de `config/parametros.yml`. El medido se informa
+siempre: «T = 12 meses (de la memoria). Medido: 3 meses en 2 embarques» o «T = 11,4 meses (medido en 4 embarques)». Se ve
+en «Análisis técnico» (columna `t_y_l`), en «Esta semana», en «Pedido sugerido» y en el panel. El T efectivo fecha el próximo
+embarque y, junto con L, entra al nivel objetivo S (9.7).
 
 Costos por ejemplar del libro i comprado en el país o, con la fila de Configuración (o, edición):
 ```
@@ -565,7 +606,8 @@ Sin pedido) con la fecha del próximo embarque.
 | Quiebre | AA con política Reponer y Bodega ≤ 0 («ya viene en tránsito» si En camino > 0) |
 | Bajo el objetivo | Sugerido > 0 |
 | Stock negativo | Bodega < 0 (revisar movimientos) |
-| Consignación abierta | Antigüedad FIFO ≥ `dias_consignacion_antigua` (365) |
+| Consignación abierta | Antigüedad FIFO ≥ 365 días |
+| Datos por actualizar | Tipo de cambio de más de 6 meses, factores de costo de más de 12 meses, lista de precios del sitio de más de 12 meses, o cualquiera de ellos sin fecha de vigencia |
 | Te los pidieron y no había | Filas «No había stock» de los últimos 90 días |
 | Bajas sin venta anotada | Bajas de bodega deducidas hoy sin fila en «Ventas» (cuando ya se usa Ventas) |
 | Solicitud del canal | Título CC o DD con una solicitud del canal web: pasa a BB en la próxima revisión |
@@ -586,27 +628,39 @@ Whybark (1987):
 
 La clasificación se revisa cada 6 meses en AA y BB y una vez al año en CC y DD. La hoja lista los títulos que toca contar en
 la semana y la frecuencia de cada categoría: los títulos con existencias de una categoría se reparten en turnos de
-52 / conteos_por_anio semanas, de modo que cada uno se cuenta con su frecuencia.
+52 / (conteos al año) semanas, de modo que cada uno se cuenta con su frecuencia.
 
-### 9.10 Parámetros (`config/parametros.yml`, editables en Sveltia → Modelo de inventario)
+**Datos por actualizar.** «Esta semana» y el panel avisan cuando un dato externo envejece: «Tipo de cambio de [país] sin
+actualizar hace N meses» (más de 6), «Factores de costo de [país] sin revisar hace N meses» (más de 12), «Lista de precios del
+sitio vigente desde [fecha]» (más de 12, según la fecha de vigencia de `src/_data/sitio.json») y «[dato] sin fecha de
+vigencia». Las fechas salen de las columnas «vigente desde» de la pestaña Configuración. Los umbrales son constantes de
+`config.py`.
 
-| Parámetro | Valor | Usado en | Origen en la memoria |
+### 9.10 Parámetros
+
+**Decisiones** (`config/parametros.yml`). Se edita a mano, solo por quien mantiene el sistema. Roberto no necesita tocarlo:
+
+| Parámetro | Valor | Usado en | Procedencia |
 |---|---|---|---|
-| `historia_meses` | 21 | 9.3 | Ventana de observación de la memoria |
-| `corte_adi` / `corte_cv2` | 1,32 / 0,49 | 9.5 | Cortes de la literatura (Syntetos, Boylan y Croston, 2005). No conviene moverlos |
-| `alfa_suavizado` | 0,15 | 9.6 | **Supuesto abierto** |
-| `nivel_servicio` | 0,95 | 9.7 | **Criterio**, no optimización |
-| `origenes[].intervalo_embarque_meses` | Argentina 12 y España 8,5 | 9.7, 9.8 | Análisis de lote por embarque (tasa 15 %, rango 10 % a 20 %) |
-| `origenes[].plazo_dias` | Argentina 5,5 y España 7 | 9.7 | Plazo de reposición de la casa de origen |
+| `nivel_servicio` | 0,95 | 9.7 | **Criterio** de la memoria, no optimización |
+| `alfa_suavizado` | 0,15 | 9.6 | **Supuesto abierto** (rango 0,05 a 0,20) |
+| `origenes[].intervalo_embarque_meses` (T) | Argentina 12 y España 8,5 | 9.7, 9.8 | Análisis de lote por embarque (tasa 15 %, rango 10 % a 20 %) |
+| `origenes[].plazo_dias` (L) | Argentina 5,5 y España 7 | 9.7 | Plazo de reposición de la casa de origen |
 | `origenes[].minimo_embarque_usd` | 700 | 9.8 | Mínimo económico del embarque |
-| `dias_consignacion_antigua` | 365 | 9.9 | Criterio de operación |
-| `conteos_por_anio` | AA 12, BB 2, CC 1 y DD 1 | 9.9 | Frecuencias de Flores y Whybark |
-| `revision_clasificacion_meses` | AA y BB 6, CC y DD 12 | 9.4 | Criterio de la memoria |
 
-Desaparecen `abc_meses`, `abc_corte_a`, `abc_corte_b`, `simulaciones`, `revision_semanas`, `meses_sin_movimiento`,
-`costo_postergar` y `costo_adelantar`.
+**Constantes de la memoria** (`inventario/config.py`, cada una con su cita):
 
-En la planilla (no en Sveltia, porque son sensibles o cambian seguido): factores de costo y tipo de cambio (Configuración) y
+| Constante | Valor | Usado en | Procedencia |
+|---|---|---|---|
+| `HISTORIA_MESES` | 21 | 9.3 | Ventana de clasificación de la memoria |
+| `CORTE_ADI` / `CORTE_CV2` | 1,32 / 0,49 | 9.5 | Syntetos, Boylan y Croston (2005), solo informativos |
+| `CONTEOS_POR_ANIO` | AA 12, BB 2, CC 1 y DD 1 | 9.9 | Tabla 4.26 |
+| `DIAS_CONSIGNACION_ANTIGUA` | 365 | 9.9 | Criterio de operación |
+| `MESES_TIPO_CAMBIO` / `MESES_FACTORES` / `MESES_LISTA_PRECIOS` | 6 / 12 / 12 | 9.9 | Umbrales de los avisos de caducidad |
+
+La revisión de la clasificación (AA y BB cada 6 meses, CC y DD cada año, Tabla 4.26) es un texto fijo de «Esta semana».
+
+En la planilla (porque son sensibles o cambian seguido): factores de costo y tipo de cambio (Configuración) y
 costo fijo de cada envío (Pedido sugerido). **Los valores reales no se escriben en este repositorio**: los carga Andrés en la
 planilla privada a partir de las mediciones de la memoria.
 
@@ -642,7 +696,7 @@ ejemplo, no los reales). Demanda de los últimos 21 meses:
   Sin `datos.cifrado.json`, muestra `datos.json` (ejemplo).
 - **Esta semana**: «Dónde conviene comprar» (casillas de costo de envío que recalculan en vivo y no se guardan, porque el
   costo real lo anota Roberto en la planilla), una tarjeta por embarque con la fecha del próximo, la barra hacia el mínimo,
-  la lista con la categoría de cada título y, si no alcanza el mínimo, el aviso «El envío a [origen] no alcanza el mínimo FOB»
+  la lista con la categoría de cada título, el T y el L usados (medidos o de la memoria) y, si no alcanza el mínimo, el aviso «El envío a [origen] no alcanza el mínimo FOB»
   (botón «Copiar lista para la editorial»), «Qué contar esta semana» con la frecuencia por categoría, y las listas de avisos
   (sin stock, pedidos sin stock, pasan a BB en la próxima revisión, fondo CC y DD con su valor, consignaciones, temporada).
 - **Libros**: tabla con la categoría de gestión, filtrable por «Qué hacer», búsqueda, orden, solo con aviso; ficha de cada libro
@@ -677,7 +731,7 @@ ejemplo, no los reales). Demanda de los últimos 21 meses:
 | Cambiar precio, sinopsis o portada; ocultar o destacar un libro; agregar un libro | Sveltia → Libros |
 | Marcar un libro como estacional/coyuntural o fijar su política | Sveltia → Libros → campos «Inventario» |
 | Cambiar textos, WhatsApp, anuncio, categorías | Sveltia → Ajustes / Páginas |
-| Ajustar el modelo | Sveltia → Modelo de inventario |
+| Ajustar el modelo (nivel de servicio, α, T, L, mínimo) | `config/parametros.yml`, a mano, solo quien mantiene el sistema |
 | Anotar una venta, una devolución o un pedido que no se pudo atender | Planilla → Ventas |
 | Anotar una llegada, un conteo, una consignación o lo que viene en camino | Planilla → Inventario (amarillo) |
 | Indicar si un libro se compra en ambos países | Planilla → Inventario → «Se compra en» |
@@ -692,7 +746,7 @@ envíos responden al instante.
 
 ---
 
-## 13. Limitaciones conocidas
+## 13. Supuestos, límites y decisiones abiertas
 
 - Desde «Inventario» solo se ve el cambio neto del día; por eso conviene anotar las ventas en «Ventas».
 - La cuadratura «ya lo bajé a mano» solo funciona el mismo día del cálculo. Corregir una venta ya descontada exige
@@ -705,8 +759,12 @@ envíos responden al instante.
   y las reglas de reposición de BB y de Estacional. Cada uno está marcado como tal en 9.7 a 9.10.
 - El intervalo entre embarques depende de una tasa de costo de capital de 15 % que es de criterio y no medida.
 - Una sola contraseña para el panel: quitar el acceso a una persona exige cambiarla para todos.
-- El próximo embarque se estima con la última importación de los títulos de ese origen, porque el registro no dice desde
-  dónde llegó cada importación.
+- El próximo embarque usa la última llegada de «Importaciones» del país. Sin filas en esa pestaña, se estima con la
+  última importación de los títulos de ese origen, porque el registro no dice desde dónde llegó cada importación.
+- **S de un libro que se compra en ambos países** se calcula con el T y el L del país de su **edición** (origen editorial),
+  aunque el comparador elija comprarlo por el otro país. Si el embarque elegido tiene otro intervalo, S puede quedar alto o
+  bajo para ese embarque. Se dejó así para no mezclar la decisión de dónde comprar con la de cuánto tener.
+- T y L medidos con pocos embarques son poco estables: por eso se exigen 3 o más, y T usa solo los últimos 5.
 
 ## 14. Pendientes
 

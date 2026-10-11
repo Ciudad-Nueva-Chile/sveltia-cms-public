@@ -160,6 +160,32 @@ def generar(catalogo: pd.DataFrame, rng) -> tuple[pd.DataFrame, pd.DataFrame, pd
     return m, pd.DataFrame(transito, columns=["id", "cantidad", "origen", "fecha_estimada"]), v
 
 
+# Desde estas fechas los embarques se anotan en la pestaña «Importaciones» (fecha de pedido y de llegada, país real).
+# España tiene 5 embarques (se usan T y L medidos); Argentina 2 (se usan los de la memoria y se informa el medido).
+IMPORTACIONES_DESDE = {"España": pd.Timestamp("2025-07-01"), "Argentina": pd.Timestamp("2026-04-01")}
+PLAZO_EJEMPLO = {"España": 7, "Argentina": 6}   # días entre pedido y llegada, inventados
+
+
+def a_importaciones(movimientos: pd.DataFrame, catalogo: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Saca de Movimientos las importaciones recientes y las deja como filas de «Importaciones». Todos los libros de un
+    país que llegan en un mismo mes forman un embarque, con una sola fecha de llegada."""
+    origen = catalogo.set_index("id")["origen"]
+    m = movimientos.copy()
+    m["fecha_dt"] = pd.to_datetime(m["fecha"])
+    m["pais"] = m["id"].map(origen)
+    mover = (m["tipo"] == "importacion") & (m["fecha_dt"] >= m["pais"].map(IMPORTACIONES_DESDE))
+    imp = m[mover].copy()
+    imp["mes"] = imp["fecha_dt"].dt.to_period("M")
+    imp["fecha_llegada"] = imp.groupby(["pais", "mes"])["fecha_dt"].transform("min")
+    imp["fecha_pedido"] = imp["fecha_llegada"] - pd.to_timedelta(imp["pais"].map(PLAZO_EJEMPLO), unit="D")
+    imp["documento"] = "DIN-" + (imp.groupby(["pais", "mes"]).ngroup() + 501).astype(str)
+    titulo = catalogo.set_index("id")["titulo"]
+    filas = pd.DataFrame({"fecha_pedido": imp["fecha_pedido"].dt.date.astype(str), "fecha_llegada": imp["fecha_llegada"].dt.date.astype(str),
+                          "pais": imp["pais"], "documento": imp["documento"], "id": imp["id"] + " · " + imp["id"].map(titulo),
+                          "cantidad": imp["cantidad"], "fob_usd": "", "notas": "", "sumado": "Histórico (ya en existencias)"})
+    return movimientos[~mover.values].reset_index(drop=True), filas.sort_values(["fecha_llegada", "id"]).reset_index(drop=True)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--libros", type=Path, help="carpeta src/libros del sitio (solo la primera vez)")
@@ -173,18 +199,30 @@ def main():
             .to_csv(SALIDA / "Catalogo.csv", index=False)
     catalogo = pd.read_csv(SALIDA / "Catalogo.csv", dtype=str, keep_default_na=False)
     movimientos, transito, ventas = generar(catalogo, rng)
+    movimientos, importaciones = a_importaciones(movimientos, catalogo)
+    # Un pedido a España que todavía no llega (sin fecha de llegada): cuenta como «Pedido en camino»
+    abierto = catalogo[catalogo["origen"] == "España"].iloc[0]
+    importaciones.loc[len(importaciones)] = {"fecha_pedido": "2026-09-20", "fecha_llegada": "", "pais": "España",
+                                             "documento": "DIN-900", "id": f"{abierto.id} · {abierto.titulo}", "cantidad": 3,
+                                             "fob_usd": "", "notas": "Ejemplo: viene en camino", "sumado": ""}
+    importaciones.to_csv(SALIDA / "Importaciones.csv", index=False)
     movimientos.to_csv(SALIDA / "Movimientos.csv", index=False)
     transito.to_csv(SALIDA / "EnTransito.csv", index=False)
     ventas.to_csv(SALIDA / "Ventas.csv", index=False)
     # Costo fijo de cada envío (courier, despacho, trámites), inventado
     pd.DataFrame([{"origen": "España", "costo_usd": 180}, {"origen": "Argentina", "costo_usd": 120}]).to_csv(SALIDA / "Envios.csv", index=False)
-    # Costos inventados. Un libro español comprado vía Argentina: FOB más alto (menos descuento) pero flete menor
+    # Costos inventados. Un libro español comprado vía Argentina: FOB más alto (menos descuento) pero flete menor.
+    # Fechas de vigencia inventadas: el tipo de cambio de España está viejo a propósito, para mostrar el aviso.
     pd.DataFrame([
-        {"origen": "España", "edicion": "", "fob_sobre_precio_neto": 0.45, "costo_sobre_precio_neto": 0.60, "tipo_cambio": 950},
-        {"origen": "Argentina", "edicion": "Argentina", "fob_sobre_precio_neto": 0.40, "costo_sobre_precio_neto": 0.50, "tipo_cambio": 950},
-        {"origen": "Argentina", "edicion": "España", "fob_sobre_precio_neto": 0.50, "costo_sobre_precio_neto": 0.57, "tipo_cambio": 950},
+        {"origen": "España", "edicion": "", "fob_sobre_precio_neto": 0.45, "costo_sobre_precio_neto": 0.60, "tipo_cambio": 950,
+         "tc_desde": "2026-01-15", "factores_desde": "2026-03-01"},
+        {"origen": "Argentina", "edicion": "Argentina", "fob_sobre_precio_neto": 0.40, "costo_sobre_precio_neto": 0.50, "tipo_cambio": 950,
+         "tc_desde": "2026-08-01", "factores_desde": "2026-03-01"},
+        {"origen": "Argentina", "edicion": "España", "fob_sobre_precio_neto": 0.50, "costo_sobre_precio_neto": 0.57, "tipo_cambio": 950,
+         "tc_desde": "2026-08-01", "factores_desde": ""},
     ]).to_csv(SALIDA / "Costos.csv", index=False)
-    print(f"{len(catalogo)} títulos, {len(movimientos)} movimientos, {len(ventas)} filas de ventas, {len(transito)} en tránsito → {SALIDA}")
+    print(f"{len(catalogo)} títulos, {len(movimientos)} movimientos, {len(ventas)} filas de ventas, "
+          f"{len(importaciones)} filas de importaciones, {len(transito)} en tránsito → {SALIDA}")
 
 
 if __name__ == "__main__":

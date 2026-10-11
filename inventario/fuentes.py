@@ -18,16 +18,18 @@ import pandas as pd
 
 from .lenguaje import ENCABEZADOS, ETIQUETA_ENVIO, TIPO_INTERNO
 from . import ventas as ventas_mod
+from . import importaciones as importaciones_mod
 
 COLUMNAS = {
     "Catalogo": ["id", "isbn", "titulo", "origen", "categoria", "precio_lista", "clase_manual", "politica_manual", "compra_en"],
     "Movimientos": ["fecha", "id", "tipo", "cantidad", "documento", "cliente"],
     "EnTransito": ["id", "cantidad", "origen", "fecha_estimada"],
-    "Costos": ["origen", "edicion", "fob_sobre_precio_neto", "costo_sobre_precio_neto", "tipo_cambio"],
+    "Costos": ["origen", "edicion", "fob_sobre_precio_neto", "costo_sobre_precio_neto", "tipo_cambio", "tc_desde", "factores_desde"],
     "Inventario": ["id", "isbn", "titulo", "autor", "origen", "compra_en", "categoria", "categoria_gestion", "precio_lista",
                    "bodega", "consignacion", "en_camino", "actualizado", "se_vende", "que_hacer", "notas"],
     "Historial": ["fecha", "id", "bodega", "consignacion", "en_camino"],
     "Ventas": ventas_mod.COLUMNAS,
+    "Importaciones": importaciones_mod.COLUMNAS,
     "Envios": ["origen", "costo_usd"],
     "ListaLibros": ["libro", "isbn", "precio_lista"],
 }
@@ -40,6 +42,7 @@ PESTANA = {
     "EnTransito": ["En tránsito", "EnTransito"],
     "Costos": ["Configuración", "Costos"],
     "Ventas": ["Ventas"],
+    "Importaciones": ["Importaciones"],
     "ListaLibros": ["Lista de libros"],
     "Pedido": ["Pedido sugerido"],
 }
@@ -58,9 +61,9 @@ def _fechas(serie: pd.Series) -> pd.Series:
 
 def _normalizar(nombre: str, df: pd.DataFrame) -> pd.DataFrame:
     df.columns = [str(c).strip() for c in df.columns]
-    if nombre == "Ventas":
+    if nombre in ("Ventas", "Importaciones"):
         df = df.reset_index(drop=True)
-        df["fila_planilla"] = range(2, len(df) + 2)  # fila en la planilla, para anotar «Descontado del stock»
+        df["fila_planilla"] = range(2, len(df) + 2)  # fila en la planilla, para anotar «Descontado» o «Sumado al stock»
     legibles = {v.lower(): k for k, v in ENCABEZADOS.get(nombre, {}).items()}
     df = df.rename(columns=lambda c: legibles.get(c.lower(), c))
     for col in COLUMNAS.get(nombre, []):
@@ -87,6 +90,13 @@ def _normalizar(nombre: str, df: pd.DataFrame) -> pd.DataFrame:
         df["cantidad"] = pd.to_numeric(df["cantidad"], errors="coerce").fillna(0).astype(int)
         for col in ("canal", "estado", "descontado", "documento", "notas"):
             df[col] = df[col].astype(str).str.strip()
+    if nombre == "Importaciones":
+        for col in ("fecha_pedido", "fecha_llegada"):
+            df[col] = _fechas(df[col])
+        df["cantidad"] = pd.to_numeric(df["cantidad"], errors="coerce").fillna(0).astype(int)
+        df["fob_usd"] = pd.to_numeric(df["fob_usd"].astype(str).str.replace(",", "."), errors="coerce")
+        for col in ("pais", "documento", "notas", "sumado"):
+            df[col] = df[col].astype(str).str.strip()
     if nombre == "Envios":
         df["costo_usd"] = pd.to_numeric(df["costo_usd"].astype(str).str.replace(",", "."), errors="coerce").fillna(0)
     if nombre == "EnTransito":
@@ -97,6 +107,8 @@ def _normalizar(nombre: str, df: pd.DataFrame) -> pd.DataFrame:
         df["edicion"] = df["edicion"].astype(str).str.strip()
         for col in ("fob_sobre_precio_neto", "costo_sobre_precio_neto", "tipo_cambio"):
             df[col] = pd.to_numeric(df[col].astype(str).str.replace(",", "."), errors="coerce")
+        for col in ("tc_desde", "factores_desde"):   # «Vigente desde»: para avisar cuando un dato externo envejece
+            df[col] = _fechas(df[col])
         df = df[df["origen"].astype(str).str.strip() != ""]
     return df
 

@@ -1,4 +1,4 @@
-origen,edicion,fob_sobre_precio_neto,costo_sobre_precio_neto,tipo_cambio
-España,,0.45,0.6,950
-Argentina,Argentina,0.4,0.5,950
-Argentina,España,0.5,0.57,950
+origen,edicion,fob_sobre_precio_neto,costo_sobre_precio_neto,tipo_cambio,tc_desde,factores_desde
+España,,0.45,0.6,950,2026-01-15,2026-03-01
+Argentina,Argentina,0.4,0.5,950,2026-08-01,2026-03-01
+Argentina,España,0.5,0.57,950,2026-08-01,

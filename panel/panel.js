@@ -60,7 +60,7 @@
       var icono = { ok: "✓", esperar: "…", nada: "–" }[p.tono];
       return '<article class="pedido pedido-' + p.tono + '">' +
         '<div class="pedido-cabecera"><span class="pedido-icono" aria-hidden="true">' + icono + '</span><div>' +
-          "<h2>" + esc(p.titulo) + "</h2><p>" + esc(p.detalle) + "</p></div></div>" +
+          "<h2>" + esc(p.titulo) + "</h2><p>" + esc(p.detalle) + "</p>" + (p.t_y_l ? '<p class="nota">' + esc(p.t_y_l) + "</p>" : "") + "</div></div>" +
         (p.minimo_usd && lineas.length ? '<div class="barra-minimo" role="img" aria-label="US$ ' + fmt.format(Math.round(p.total_usd)) + " de un mínimo de US$ " + fmt.format(p.minimo_usd) + '">' +
           '<span style="width:' + (p.total_usd / escala * 100) + '%"></span><i style="left:' + (p.minimo_usd / escala * 100) + '%"></i></div>' +
           '<div class="barra-texto"><span>US$ ' + fmt.format(Math.round(p.total_usd)) + ' FOB</span><span>mínimo US$ ' + fmt.format(p.minimo_usd) + "</span></div>" : "") +
@@ -175,6 +175,10 @@
       tarjetaLista({ titulo: "Fondo sin venta: CC y DD", tono: "atencion", items: S.fondo || [],
         bajada: "No se reponen. CC $" + fmt.format(S.valor_cc || 0) + " y DD $" + fmt.format(S.valor_dd || 0) + " a precio de lista. Su destino se decide fuera del sistema.",
         dato: function (r) { return esc(r.categoria) + " · " + r.bodega + " en bodega · $" + fmt.format(r.valor); } }),
+      tarjetaLista({ titulo: "Datos por actualizar", tono: "atencion",
+        items: (S.caducidad || []).map(function (a, i) { return { id: "dato-" + i, titulo: a }; }),
+        bajada: "Tipo de cambio y factores de costo en la pestaña Configuración de la planilla. Lista de precios en Sveltia.",
+        dato: function () { return ""; } }),
       tarjetaLista({ titulo: "Consignaciones de más de un año", tono: "atencion", items: S.consignaciones,
         bajada: "Cobrar, pedir la devolución o renovar el acuerdo.",
         dato: function (r) { return r.unidades + " ejemplares · " + r.dias + " días"; } }),
@@ -320,6 +324,7 @@
       ["CV² (informativo)", t.cv2 === "" || t.cv2 == null ? "Sin dato" : coma(t.cv2)],
       ["λ SBA (por mes)", coma(t.tasa_mensual)], ["T + L (meses)", coma(Math.round((t.intervalo_meses + t.plazo_meses) * 100) / 100)],
       ["Nivel objetivo S", t.politica === "Reponer" ? t.nivel_objetivo : "No aplica"], ["Política", t.politica],
+      ["T y L usados", t.t_y_l || ""], ["Meses de historia del pronóstico", t.meses_pronostico || "No aplica"],
     ];
     $("#detalle-contenido").innerHTML =
       "<h3>" + esc(t.titulo) + '</h3><p class="sub">' + esc(t.id) + " · " + esc(t.origen) + " · $" + fmt.format(t.precio_lista) + "</p>" +
