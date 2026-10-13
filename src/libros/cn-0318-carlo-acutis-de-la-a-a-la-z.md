@@ -3,7 +3,7 @@ titulo: CARLO ACUTIS. De la A a la Z
 autor: Francesco Polopoli
 isbn: '9789505864089'
 portada: /assets/portadas/CN-0318.jpg
-precio_iva: 20000
+precio_iva: 10800
 categoria: Biografías, santos y testimonios
 oculto: false
 destacado: true
