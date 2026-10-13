@@ -602,3 +602,21 @@ main > .seccion:last-child, main > section:last-child { margin-bottom: 0; }
   .aviso-flotante a { grid-column: 1; grid-row: auto; justify-self: start; margin-top: 8px; }
 }
 .anuncio-prueba { background: var(--tinta); color: #fff; font-weight: 500; }
+
+/* Disponibilidad (solo estado, nunca cantidades). Aparece solo si el cálculo generó src/_data/disponibilidad.json */
+.disponibilidad { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 0 0 12px; font-size: .9rem; }
+.estado-disponibilidad { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; }
+.estado-disponibilidad::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: currentColor; }
+.disponibilidad-disponible .estado-disponibilidad { color: #1e7a45; }
+.disponibilidad-agotado .estado-disponibilidad { color: var(--acento); }
+.disponibilidad-bajo_pedido .estado-disponibilidad { color: var(--texto-suave); }
+.disponibilidad-nota { color: var(--texto-suave); }
+.aviso-disponibilidad { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.enlace-correo { font-size: .88rem; font-weight: 600; color: var(--texto-suave); }
+.boton-secundario { background: transparent; color: var(--tinta); border: 1.5px solid var(--borde); }
+.boton-secundario:hover { border-color: var(--acento); color: var(--acento); }
+.tarjeta-estado { display: inline-flex; align-items: center; gap: 5px; margin-top: 6px; font-size: .78rem; font-weight: 700; }
+.tarjeta-estado::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.tarjeta-estado.estado-disponible { color: #1e7a45; }
+.tarjeta-estado.estado-agotado { color: var(--acento); }
+.tarjeta-estado.estado-bajo_pedido { color: var(--texto-suave); }

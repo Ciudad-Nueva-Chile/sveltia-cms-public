@@ -2,7 +2,7 @@
 
 1. Cada origen tiene un embarque cada T meses (`intervalo_embarque_meses`). El próximo es la fecha de su última
    importación más T. Sin importaciones registradas, el embarque se considera vencido (pedir ahora).
-2. Las necesidades salen de la política (politica.py): títulos AA y BB con Sugerido > 0.
+2. Las necesidades salen de la política (politica.py): títulos A y B con Sugerido > 0.
 3. Un libro puede comprarse en más de un origen (columna «Se compra en»). Para cada origen hay dos valores por
    ejemplar (pestaña Configuración, según origen de compra y edición del libro):
      - costo puesto en bodega: decide dónde conviene comprar;
@@ -22,7 +22,7 @@ import math
 
 import pandas as pd
 
-from .clasificacion_abc import IVA
+from .categorias import IVA
 from .config import Parametros
 
 SEPARADORES = (" o ", ",", "/", " y ")

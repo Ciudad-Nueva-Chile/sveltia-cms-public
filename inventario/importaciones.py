@@ -13,8 +13,8 @@ cantidad, FOB total (opcional) y notas. «Sumado al stock» lo completa el cálc
 4. T y L medidos (memoria, sección 4.2.5, para contrastar los valores del análisis de lote):
        T = mediana de los días entre fechas de llegada distintas del país, en sus últimos 5 embarques
        L = mediana de (fecha de llegada − fecha de pedido), en las filas que tienen ambas
-   Se usan solo con 3 o más embarques con datos del país. Si no, se usan los de config/parametros.yml. El medido se
-   informa siempre.
+   Son solo un aviso comparativo: el nivel objetivo S y la fecha del próximo embarque usan siempre los T y L de la
+   política (config/parametros.yml). El observado se muestra cuando hay 3 o más embarques con datos del país.
 """
 from __future__ import annotations
 
@@ -127,22 +127,18 @@ def _num(v: float) -> str:
 
 
 def efectivos(i: pd.DataFrame, p) -> dict:
-    """Por país: T y L que usa el cálculo (medidos con 3 o más embarques, si no los de parametros.yml) y el texto que
-    los explica, con el medido aunque todavía no se use."""
+    """Por país: los T y L de la política (los que usa el cálculo) y el texto comparativo con lo observado en
+    «Importaciones», por ejemplo «Política: cada 12 meses. Observado: cada 3 meses (4 embarques)»."""
     salida = {}
     for o in p.origenes:
         m = medir(i, o.nombre)
-        T_param, L_param = p.intervalo_meses(o.nombre), p.plazo_meses(o.nombre)
-        usa_T = m["T_meses"] is not None and m["embarques_T"] >= MINIMO_EMBARQUES
-        usa_L = m["L_meses"] is not None and m["embarques_L"] >= MINIMO_EMBARQUES
-        T = m["T_meses"] if usa_T else T_param
-        L = m["L_meses"] if usa_L else L_param
-        texto_T = (f"T = {_num(T)} meses (medido en {m['embarques_T']} embarques)" if usa_T
-                   else f"T = {_num(T_param)} meses (de la memoria)" +
-                   (f". Medido: {_num(m['T_meses'])} meses en {m['embarques_T']} embarques" if m["T_meses"] is not None else ""))
-        dias_L = L * DIAS_POR_MES
-        texto_L = (f"L = {_num(dias_L)} días (medido en {m['embarques_L']} embarques)" if usa_L
-                   else f"L = {_num(L_param * DIAS_POR_MES)} días (de la memoria)" +
-                   (f". Medido: {_num(m['L_meses'] * DIAS_POR_MES)} días en {m['embarques_L']} embarques" if m["L_meses"] is not None else ""))
-        salida[o.nombre] = {"T": T, "L": L, "texto_T": texto_T, "texto_L": texto_L, "medido": m}
+        T, L = p.intervalo_meses(o.nombre), p.plazo_meses(o.nombre)
+        hay_T = m["T_meses"] is not None and m["embarques_T"] >= MINIMO_EMBARQUES
+        hay_L = m["L_meses"] is not None and m["embarques_L"] >= MINIMO_EMBARQUES
+        texto_T = f"Política: cada {_num(T)} meses" + (
+            f". Observado: cada {_num(m['T_meses'])} meses ({m['embarques_T']} embarques)" if hay_T else "")
+        texto_L = f"plazo {_num(L * DIAS_POR_MES)} días" + (
+            f". Observado: {_num(m['L_meses'] * DIAS_POR_MES)} días ({m['embarques_L']} embarques)" if hay_L else "")
+        salida[o.nombre] = {"T": T, "L": L, "texto_T": texto_T, "texto_L": texto_L, "medido": m,
+                            "observado_T": hay_T, "observado_L": hay_L}
     return salida

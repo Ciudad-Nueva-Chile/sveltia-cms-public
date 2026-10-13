@@ -45,33 +45,40 @@ jobs:
           cache: npm
       - run: pip install -r requirements.txt
       - run: npm ci
-      - name: Sitio y panel de administración
-        env:
-          PATH_PREFIX: /${{ github.event.repository.name }}/
-        run: npm run build
-      - name: Panel de inventario (archivos)
-        run: |
-          mkdir -p _site/inventario
-          cp -R panel/. _site/inventario/
-          rm -f _site/inventario/datos.json _site/inventario/datos.cifrado.json
-      - name: Cálculo con la planilla y datos del panel
-        # Si Google falla, el sitio se publica igual; el panel avisa que no encontró los datos
+      - name: Cálculo con la planilla, datos del panel y disponibilidad del sitio
+        # Va antes de compilar el sitio: deja src/_data/disponibilidad.json (solo el estado de cada libro, sin cantidades)
+        # para que las fichas muestren «Disponible», «Agotado» o «Bajo pedido». Si Google falla o no hay planilla, el
+        # archivo no existe y el sitio se publica sin estado; el panel avisa que no encontró los datos.
         continue-on-error: true
         env:
           GOOGLE_CREDENCIALES: ${{ secrets.GOOGLE_CREDENCIALES }}
           ID_PLANILLA: ${{ secrets.ID_PLANILLA }}
           CLAVE_PANEL: ${{ secrets.CLAVE_PANEL }}
+          PANEL: ${{ runner.temp }}/panel
         run: |
+          mkdir -p "$PANEL"
           if [ -z "$GOOGLE_CREDENCIALES" ] || [ -z "$ID_PLANILLA" ]; then
-            echo "::notice::Sin los secretos de la planilla: el panel muestra datos de ejemplo. Ver docs/CONFIGURAR.md."
-            python -m inventario --fuente ejemplo --panel _site/inventario/datos.json > /dev/null
+            echo "::notice::Sin los secretos de la planilla: el panel muestra datos de ejemplo y el sitio no muestra disponibilidad."
+            python -m inventario --fuente ejemplo --panel "$PANEL/datos.json" > /dev/null
           elif [ -z "$CLAVE_PANEL" ]; then
-            python -m inventario --fuente sheets
+            python -m inventario --fuente sheets --disponibilidad src/_data/disponibilidad.json
             echo "::notice::Falta el secreto CLAVE_PANEL: el panel muestra datos de ejemplo, no los de la planilla."
-            python -m inventario --fuente ejemplo --panel _site/inventario/datos.json > /dev/null
+            python -m inventario --fuente ejemplo --panel "$PANEL/datos.json" > /dev/null
           else
-            python -m inventario --fuente sheets --panel _site/inventario/datos.cifrado.json --cifrar
+            python -m inventario --fuente sheets --disponibilidad src/_data/disponibilidad.json --panel "$PANEL/datos.cifrado.json" --cifrar
           fi
+      - name: Sitio y panel de administración
+        env:
+          PATH_PREFIX: /${{ github.event.repository.name }}/
+        run: npm run build
+      - name: Panel de inventario (archivos y datos)
+        env:
+          PANEL: ${{ runner.temp }}/panel
+        run: |
+          mkdir -p _site/inventario
+          cp -R panel/. _site/inventario/
+          rm -f _site/inventario/datos.json _site/inventario/datos.cifrado.json
+          cp "$PANEL"/datos*.json _site/inventario/ 2>/dev/null || true
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

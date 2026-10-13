@@ -5,7 +5,7 @@ import pandas as pd
 import pytest
 from scipy.stats import poisson
 
-from inventario import clasificacion_abc, demanda, politica, stock
+from inventario import categorias, demanda, politica, stock
 from inventario.config import Parametros
 from inventario.modelo import calcular, conteo_ciclico
 
@@ -77,26 +77,26 @@ def test_humo_s_con_lambda_t_y_l_conocidos():
             int(poisson.ppf(0.95, media))
 
 
-# ---------- Categorías AA, BB, CC y DD ----------
+# ---------- Categorías A, B, C y D ----------
 @pytest.mark.parametrize("clase,bodega,guia,esperada", [
-    ("Intermitente", 0, False, "AA"), ("Regular", 3, False, "AA"), ("Estacional", 0, False, "AA"),
-    ("Coyuntural", 5, True, "AA"), ("Esporádica", 2, True, "BB"),          # la demanda manda sobre la guía
-    ("Sin venta neta", 4, True, "CC"), ("Sin venta neta", 4, False, "DD"), ("Sin venta neta", 0, True, "Sin categoría"),
+    ("Intermitente", 0, False, "A"), ("Regular", 3, False, "A"), ("Estacional", 0, False, "A"),
+    ("Coyuntural", 5, True, "A"), ("Esporádica", 2, True, "B"),          # la demanda manda sobre la guía
+    ("Sin venta neta", 4, True, "C"), ("Sin venta neta", 4, False, "D"), ("Sin venta neta", 0, True, "Sin categoría"),
 ])
 def test_categoria(clase, bodega, guia, esperada):
-    assert clasificacion_abc.categoria(clase, bodega, guia) == esperada
+    assert categorias.categoria(clase, bodega, guia) == esperada
 
 
 # ---------- Política por categoría ----------
 def test_politica_manual_manda():
-    assert politica.decidir("DD", "Sin venta neta", manual="Reponer lo vendido") == "Reponer lo vendido"
-    assert politica.decidir("AA", "Intermitente", manual="auto") == "Reponer"
+    assert politica.decidir("D", "Sin venta neta", manual="Reponer lo vendido") == "Reponer lo vendido"
+    assert politica.decidir("A", "Intermitente", manual="auto") == "Reponer"
 
 
 @pytest.mark.parametrize("categoria,clase,esperada", [
-    ("AA", "Intermitente", "Reponer"), ("AA", "Regular", "Reponer"), ("AA", "Estacional", "Temporada"),
-    ("AA", "Coyuntural", "No reponer"), ("BB", "Esporádica", "Reponer lo vendido"),
-    ("CC", "Sin venta neta", "No reponer"), ("DD", "Sin venta neta", "No reponer"), ("Sin categoría", "Sin venta neta", "A pedido"),
+    ("A", "Intermitente", "Reponer"), ("A", "Regular", "Reponer"), ("A", "Estacional", "Temporada"),
+    ("A", "Coyuntural", "No reponer"), ("B", "Esporádica", "Reponer lo vendido"),
+    ("C", "Sin venta neta", "No reponer"), ("D", "Sin venta neta", "No reponer"), ("Sin categoría", "Sin venta neta", "A pedido"),
 ])
 def test_politica_por_categoria(categoria, clase, esperada):
     assert politica.decidir(categoria, clase) == esperada
@@ -175,7 +175,7 @@ def test_calculo_completo_categorias_politica_y_s():
     transito = pd.DataFrame([{"id": "bb", "cantidad": 1}])
     r = calcular(catalogo, _mov(filas), transito, pd.DataFrame(), Parametros(), pd.Timestamp("2026-08-31"))
     t = r.titulos.set_index("id")
-    assert t["categoria_gestion"].to_dict() == {"aa": "AA", "bb": "BB", "cc": "CC", "dd": "DD", "sc": "Sin categoría", "co": "AA"}
+    assert t["categoria_gestion"].to_dict() == {"aa": "A", "bb": "B", "cc": "C", "dd": "D", "sc": "Sin categoría", "co": "A"}
     assert t.loc["aa", "clase"] == "Intermitente" and t.loc["aa", "politica"] == "Reponer"
     lam = t.loc["aa", "tasa_mensual"]
     p = Parametros()
@@ -183,13 +183,13 @@ def test_calculo_completo_categorias_politica_y_s():
     assert lam > 0 and t.loc["aa", "nivel_objetivo"] == esperado
     assert t.loc["aa", "sugerido"] == esperado              # bodega 2 − 6 ventas = −4: se avisa y cuenta como 0
     assert "Stock negativo" in t.loc["aa", "alertas"]
-    # BB: vendió 3 desde la importación de febrero y viene 1 en camino → repone 2
+    # B: vendió 3 desde la importación de febrero y viene 1 en camino → repone 2
     assert t.loc["bb", "politica"] == "Reponer lo vendido" and t.loc["bb", "sugerido"] == 2
     assert t.loc["cc", "sugerido"] == 0 and t.loc["dd", "sugerido"] == 0
     assert t.loc["co", "politica"] == "No reponer"
     # Las categorías suman el total de títulos (con «Sin categoría»)
     cats = r.categorias.set_index("categoria")
-    assert cats.loc[["AA", "BB", "CC", "DD", "Sin categoría"], "titulos"].sum() == cats.loc["Total", "titulos"] == len(catalogo)
+    assert cats.loc[["A", "B", "C", "D", "Sin categoría"], "titulos"].sum() == cats.loc["Total", "titulos"] == len(catalogo)
     assert "abc" not in r.titulos.columns
 
 
@@ -227,26 +227,33 @@ def test_con_36_meses_el_pronostico_incorpora_los_meses_anteriores():
     assert t.loc["x", "tasa_mensual"] != round(demanda.sba(ventana, 0.15), 3)    # λ cambia con la historia anterior
 
 
-def test_solicitud_web_de_un_cc_o_dd_solo_avisa():
+def test_solicitud_web_de_un_c_o_d_pasa_a_b_en_el_proximo_calculo():
     catalogo = _catalogo([{"id": "d", "titulo": "Quieto", "origen": "España", "precio_lista": 10000}])
     mov = _mov([("2025-01-01", "d", "inventario_inicial", 3, ""),
                 ("2026-03-01", "d", "venta_perdida", 1, "Web / WhatsApp")])
-    r = calcular(catalogo, mov, pd.DataFrame(columns=["id", "cantidad"]), pd.DataFrame(), Parametros(), pd.Timestamp("2026-04-30"))
+    hoja = _ventas([("2026-03-01", "d", 1, "", "Web / WhatsApp", "No había stock", "")])
+    vacio = pd.DataFrame(columns=["id", "cantidad"])
+    # Recién anotada (sin marcar en «Ventas»): sigue en D, con el aviso
+    r = calcular(catalogo, mov, vacio, pd.DataFrame(), Parametros(), pd.Timestamp("2026-04-30"), hoja_ventas=hoja)
     t = r.titulos.set_index("id")
-    assert t.loc["d", "categoria_gestion"] == "DD" and bool(t.loc["d", "reclasificar"])
-    assert "pasa a BB en la próxima revisión" in t.loc["d", "alertas"]
+    assert t.loc["d", "categoria_gestion"] == "D" and bool(t.loc["d", "reclasificar"])
+    assert "pasa a B en el próximo cálculo" in t.loc["d", "alertas"]
+    # En el cálculo siguiente la fila ya está marcada: cuenta como venta neta y el título queda en B
+    hoja["descontado"] = "Anotada el 30-04-2026 (no mueve stock)"
+    r = calcular(catalogo, mov, vacio, pd.DataFrame(), Parametros(), pd.Timestamp("2026-04-30"), hoja_ventas=hoja)
+    assert r.titulos.set_index("id").loc["d", "categoria_gestion"] == "B"
 
 
 def test_conteo_ciclico_por_categoria():
     t = pd.DataFrame({"id": [f"a{i}" for i in range(8)] + ["b0", "c0", "d0"],
                       "titulo": ["x"] * 11, "bodega": [1] * 11,
-                      "categoria_gestion": ["AA"] * 8 + ["BB", "CC", "DD"]})
+                      "categoria_gestion": ["A"] * 8 + ["B", "C", "D"]})
     c = conteo_ciclico(t, Parametros(), pd.Timestamp("2026-10-07"))
     frec = {h["categoria"]: h for h in c["frecuencias"]}
-    assert frec["AA"]["titulos"] == 8 and frec["AA"]["conteos_por_anio"] == 12 and frec["DD"]["conteos_por_anio"] == 1
-    # AA se cuenta cada 4 semanas: 8 títulos → 2 por semana
-    assert sum(1 for x in c["contar"] if x["categoria"] == "AA") == 2
-    # Repartido en el año, cada título AA se cuenta 13 veces (≈ mensual)
+    assert frec["A"]["titulos"] == 8 and frec["A"]["conteos_por_anio"] == 12 and frec["D"]["conteos_por_anio"] == 1
+    # A se cuenta cada 4 semanas: 8 títulos → 2 por semana
+    assert sum(1 for x in c["contar"] if x["categoria"] == "A") == 2
+    # Repartido en el año, cada título A se cuenta 13 veces (≈ mensual)
     veces = {}
     for semana in range(1, 53):
         fecha = pd.Timestamp.fromisocalendar(2026, semana, 3)
@@ -334,9 +341,9 @@ def test_detectar_cambios_solo_registra_lo_que_cambio():
 
 
 # ---------- Pedido por embarque y dónde comprar ----------
-def _titulo(id_, origen, sugerido, precio, compra_en="", categoria="AA", tasa=0.0, unidades=0):
+def _titulo(id_, origen, sugerido, precio, compra_en="", categoria="A", tasa=0.0, unidades=0):
     return {"id": id_, "isbn": "", "titulo": id_, "origen": origen, "compra_en": compra_en, "precio_lista": precio,
-            "sugerido": sugerido, "politica": "Reponer" if categoria == "AA" else "Reponer lo vendido",
+            "sugerido": sugerido, "politica": "Reponer" if categoria == "A" else "Reponer lo vendido",
             "categoria_gestion": categoria, "tasa_mensual": tasa, "unidades_ventana": unidades}
 
 
@@ -553,19 +560,22 @@ def _embarques(pais, llegadas, plazo=7):
     return _imp([(str((pd.Timestamp(f) - pd.Timedelta(days=plazo)).date()), f, pais, "x", 2, "Sumado") for f in llegadas])
 
 
-def test_t_y_l_medidos_con_2_3_y_5_embarques():
+def test_t_y_l_observados_con_2_3_y_5_embarques_solo_comparan():
     from inventario import importaciones
     p = Parametros()
     dos = importaciones.efectivos(_embarques("España", ["2026-01-10", "2026-04-10"]), p)["España"]
-    assert dos["T"] == 8.5 and "de la memoria" in dos["texto_T"] and "Medido:" in dos["texto_T"] and "2 embarques" in dos["texto_T"]
+    assert dos["T"] == 8.5 and dos["texto_T"] == "Política: cada 8,5 meses"            # con 2 embarques no se muestra
     tres = importaciones.efectivos(_embarques("España", ["2026-01-10", "2026-04-10", "2026-07-10"], plazo=9), p)["España"]
-    assert tres["T"] == pytest.approx(90.5 / 30.44, abs=0.01)                  # mediana de 90 y 91 días and "medido en 3 embarques" in tres["texto_T"]
-    assert tres["L"] == pytest.approx(9 / 30) and "L = 9 días (medido en 3 embarques)" in tres["texto_L"]
-    # Con 6 embarques, T usa solo los últimos 5 (4 intervalos de unos 60 días; el primero, de 200, queda fuera)
+    assert tres["T"] == 8.5 and tres["L"] == pytest.approx(7 / 30)                     # el cálculo usa la política
+    assert tres["texto_T"] == "Política: cada 8,5 meses. Observado: cada 3 meses (3 embarques)"
+    assert tres["texto_L"] == "plazo 7 días. Observado: 9 días (3 embarques)"
+    assert tres["medido"]["T_meses"] == pytest.approx(90.5 / 30.44, abs=0.01)           # mediana de 90 y 91 días
+    # Con 6 embarques, T observado usa solo los últimos 5 (4 intervalos de unos 60 días; el primero, de 200, queda fuera)
     seis = _embarques("Argentina", ["2025-01-01", "2025-07-20", "2025-09-18", "2025-11-17", "2026-01-16", "2026-03-17"])
     m = importaciones.medir(seis, "Argentina")
     assert m["embarques_T"] == 5 and m["T_meses"] == pytest.approx(60 / 30.44, abs=0.01)
-    assert importaciones.efectivos(seis, p)["España"]["T"] == 8.5      # sin embarques de España: el de la memoria
+    arg = importaciones.efectivos(seis, p)["Argentina"]
+    assert arg["T"] == 12 and "Observado: cada 2 meses (5 embarques)" in arg["texto_T"]
 
 
 def test_proximo_embarque_usa_la_ultima_llegada_real():
@@ -575,3 +585,44 @@ def test_proximo_embarque_usa_la_ultima_llegada_real():
     e = pedido.proximos_embarques(mov, catalogo, Parametros(), pd.Timestamp("2026-10-01"),
                                   ultimas_llegadas={"España": pd.Timestamp("2026-06-01")}, intervalos={"España": 3.0})
     assert e["España"][0] == pd.Timestamp("2026-06-01") and e["España"][1] == pd.Timestamp("2026-08-31")
+
+
+
+# ---------- Aviso de aceleración ----------
+def test_aceleracion_avisa_si_los_ultimos_3_meses_van_al_doble():
+    acelera = np.array([0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 2, 1, 2], dtype=float)   # 5 en 3 meses vs 5 en 18
+    assert demanda.acelera(acelera)
+    pareja = np.array([1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0], dtype=float)    # 2 en 3 meses: menos de 3
+    assert not demanda.acelera(pareja)
+    alta_pero_igual = np.array([2] * 21, dtype=float)                                                  # mismo ritmo: no acelera
+    assert not demanda.acelera(alta_pero_igual)
+
+
+def test_aviso_de_aceleracion_en_el_calculo():
+    catalogo = _catalogo([{"id": "x", "titulo": "x", "origen": "España", "precio_lista": 10000}])
+    filas = [("2024-12-01", "x", "inventario_inicial", 40)]
+    filas += [(f"{m}-10", "x", "venta", 1) for m in ("2025-01", "2025-05", "2025-09", "2026-01")]
+    filas += [(f"{m}-10", "x", "venta", 2) for m in ("2026-06", "2026-07", "2026-08")]
+    r = calcular(catalogo, _mov(filas), pd.DataFrame(columns=["id", "cantidad"]), pd.DataFrame(), Parametros(), pd.Timestamp("2026-08-31"))
+    t = r.titulos.set_index("id")
+    assert bool(t.loc["x", "acelera"]) and "Se vende más rápido que antes" in t.loc["x", "alertas"]
+    assert t.loc["x", "nivel_objetivo"] == demanda.nivel_objetivo(t.loc["x", "tasa_mensual"], 8.5, 7 / 30)   # S no cambia
+
+
+# ---------- Disponibilidad en el sitio ----------
+def test_disponibilidad_solo_estado_sin_cantidades():
+    from types import SimpleNamespace
+    from inventario.__main__ import datos_disponibilidad
+    t = pd.DataFrame([
+        {"id": "a", "bodega": 3, "transito": 0, "categoria_gestion": "A"},
+        {"id": "b", "bodega": 0, "transito": 4, "categoria_gestion": "B"},
+        {"id": "c", "bodega": 0, "transito": 0, "categoria_gestion": "A"},
+        {"id": "d", "bodega": 0, "transito": 2, "categoria_gestion": "D"},
+        {"id": "s", "bodega": 0, "transito": 0, "categoria_gestion": "Sin categoría"},
+    ])
+    d = datos_disponibilidad(SimpleNamespace(titulos=t, fecha_corte=pd.Timestamp("2026-10-13")))
+    assert d["fecha"] == "2026-10-13"
+    assert d["libros"] == {"a": {"estado": "disponible"}, "b": {"estado": "agotado", "llega": True},
+                           "c": {"estado": "agotado", "llega": False}, "d": {"estado": "bajo_pedido"}, "s": {"estado": "bajo_pedido"}}
+    for v in d["libros"].values():                       # nunca cantidades ni la categoría
+        assert set(v) <= {"estado", "llega"} and not any(isinstance(x, (int, float)) and not isinstance(x, bool) for x in v.values())

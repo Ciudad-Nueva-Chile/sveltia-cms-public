@@ -1,15 +1,16 @@
-"""Categorías de gestión AA, BB, CC y DD (el nombre del archivo es histórico: ya no hay clasificación ABC por valor).
+"""Categorías de gestión A, B, C y D de la memoria (sección 4.2.5, Tabla 4.24).
 
-Adaptan la estructura de Flores y Whybark (1987). Como la criticidad no puede evaluarse título por título con el
-registro disponible, la memoria (sección 4.2.5, Tabla 4.24) usa la recurrencia de la demanda y la salida de bodega:
+Adaptan las categorías AA, BB, CC y DD de Flores y Whybark (1987). Como la criticidad no puede evaluarse título por
+título con el registro disponible, la memoria usa la recurrencia de la demanda y la salida de bodega:
 
-    AA   clase Intermitente, Regular, Estacional o Coyuntural
-    BB   clase Esporádica (venta neta en uno o dos meses de la ventana)
-    CC   con existencias, sin venta neta y con salida en guía de despacho en la ventana
-    DD   con existencias, sin venta neta ni salida en guía
+    A   clase Intermitente, Regular, Estacional o Coyuntural
+    B   clase Esporádica (venta neta en uno o dos meses de la ventana)
+    C   con existencias, sin venta neta y con salida en guía de despacho en la ventana
+    D   con existencias, sin venta neta ni salida en guía
     Sin categoría   sin existencias y sin demanda (se exhibe igual en el sitio)
 
-Prioridad: primero la demanda (AA y BB), después CC y DD.
+Prioridad: primero la demanda (A y B), después C y D. La categoría se recalcula en cada ejecución con los últimos 21
+meses: no hay una revisión aparte.
 """
 from __future__ import annotations
 
@@ -17,23 +18,23 @@ import pandas as pd
 
 IVA = 0.19
 SIN_CATEGORIA = "Sin categoría"
-ORDEN = ("AA", "BB", "CC", "DD", SIN_CATEGORIA)
+ORDEN = ("A", "B", "C", "D", SIN_CATEGORIA)
 DESCRIPCION = {
-    "AA": "Demanda recurrente o previsible",
-    "BB": "Venta ocasional (uno o dos meses)",
-    "CC": "Sin venta, salió en guía (consignación)",
-    "DD": "Sin venta ni salida en guía",
+    "A": "Demanda recurrente o previsible",
+    "B": "Venta ocasional (uno o dos meses)",
+    "C": "Salió en guía sin facturar",
+    "D": "Sin venta ni salida en guía",
     SIN_CATEGORIA: "Sin existencias y sin demanda",
 }
 
 
 def categoria(clase: str, bodega: float, salida_guia: bool) -> str:
     if clase in ("Intermitente", "Regular", "Estacional", "Coyuntural"):
-        return "AA"
+        return "A"
     if clase == "Esporádica":
-        return "BB"
+        return "B"
     if bodega > 0:
-        return "CC" if salida_guia else "DD"
+        return "C" if salida_guia else "D"
     return SIN_CATEGORIA
 
 

@@ -55,3 +55,29 @@ jobs:
           if errores:
               sys.exit("Error: " + "; ".join(errores))
           PY
+      - name: Disponibilidad en el sitio, solo estado y nunca cantidades
+        run: |
+          # Sin datos de la planilla el sitio no muestra estado (la compilación anterior no tenía disponibilidad.json)
+          ! grep -rl --include=*.html -e 'estado-disponibilidad' -e 'tarjeta-estado' -e 'schema.org/InStock' /tmp/sitio
+          # Con datos (de ejemplo) muestra solo la etiqueta
+          python -m inventario --disponibilidad src/_data/disponibilidad.json > /dev/null
+          npx eleventy --quiet --output=/tmp/sitio-disp
+          python - <<'PY'
+          import json, pathlib, re, sys
+          datos = json.loads(pathlib.Path("src/_data/disponibilidad.json").read_text(encoding="utf-8"))
+          errores = []
+          for id_, d in datos["libros"].items():
+              if set(d) - {"estado", "llega"} or d["estado"] not in ("disponible", "agotado", "bajo_pedido") or not isinstance(d.get("llega", False), bool):
+                  errores.append(f"{id_}: el archivo de disponibilidad trae algo más que el estado: {d}")
+          etiquetas = set()
+          for f in pathlib.Path("/tmp/sitio-disp").rglob("*.html"):
+              html = f.read_text(encoding="utf-8")
+              etiquetas |= set(re.findall(r'class="estado-disponibilidad">([^<]*)<', html))
+              if re.search(r"categoria_gestion|\b(En bodega|en bodega)\b|\bbodega\b", html):
+                  errores.append(f"{f}: el HTML público menciona existencias")
+          if not etiquetas or not etiquetas <= {"Disponible", "Agotado", "Bajo pedido"}:
+              errores.append(f"Etiquetas inesperadas: {etiquetas}")
+          print("Etiquetas en el sitio:", sorted(etiquetas))
+          if errores:
+              sys.exit("Error: " + "; ".join(errores[:5]))
+          PY

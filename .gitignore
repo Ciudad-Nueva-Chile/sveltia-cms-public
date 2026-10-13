@@ -9,6 +9,7 @@ node_modules/
 salida/
 panel/datos.json
 panel/datos.cifrado.json
+src/_data/disponibilidad.json
 _site/
 
 # Credenciales de Google: jamás al repositorio

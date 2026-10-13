@@ -7,12 +7,13 @@ from dataclasses import dataclass, field
 
 import pandas as pd
 
-from . import clasificacion_abc as cat_mod
+from . import categorias as cat_mod
 from . import demanda, pedido, politica, stock
 from . import ventas as ventas_mod
 from . import importaciones as importaciones_mod
 from .config import (CATEGORIAS, CONTEOS_POR_ANIO, CORTE_ADI, CORTE_CV2, DIAS_CONSIGNACION_ANTIGUA,
-                     HISTORIA_MESES, MESES_FACTORES, MESES_LISTA_PRECIOS, MESES_TIPO_CAMBIO, Parametros)
+                     HISTORIA_MESES, MESES_FACTORES, MESES_LISTA_PRECIOS, MESES_TIPO_CAMBIO, Parametros,
+                     ACELERACION_FACTOR, ACELERACION_MESES_PREVIOS, ACELERACION_MESES_RECIENTES, ACELERACION_MINIMO_UNIDADES)
 
 
 @dataclass
@@ -31,6 +32,9 @@ class Resultado:
     conteo: dict = field(default_factory=dict)          # qué contar esta semana y frecuencias
     caducidad: list = field(default_factory=list)       # datos externos por actualizar
     tl: dict = field(default_factory=dict)              # T y L por país: los que se usan y los medidos
+
+
+AVISO_ACELERACION = "Se vende más rápido que antes: revisa si conviene pedir más que el nivel objetivo"
 
 
 def _meses_entre(desde, hasta: pd.Timestamp) -> float:
@@ -87,7 +91,7 @@ def conteo_ciclico(t: pd.DataFrame, p: Parametros, fecha_corte: pd.Timestamp) ->
         for i, r in enumerate(g.itertuples()):
             if i % turnos == semana % turnos:
                 contar.append({"id": r.id, "titulo": r.titulo, "categoria": c, "bodega": int(r.bodega),
-                               "registro": "Permanente" if c == "AA" else "Con cada conteo"})
+                               "registro": "Permanente" if c == "A" else "Con cada conteo"})
     return {"semana": semana, "contar": contar, "frecuencias": frecuencias}
 
 
@@ -120,9 +124,21 @@ def calcular(catalogo: pd.DataFrame, movimientos: pd.DataFrame, transito: pd.Dat
     serie_pronostico = (serie if meses_pronostico == HISTORIA_MESES
                         else demanda.venta_neta_mensual(mov, ids, fecha_corte, meses_pronostico))
 
-    # Solicitudes del canal web («No había stock» con canal Web / WhatsApp): un título CC o DD que solo tiene esas
-    # solicitudes no cambia solo de categoría. Queda en CC o DD con un aviso, y pasa a BB en la próxima revisión.
-    pendientes = mov[(mov["tipo"] == "venta_perdida") & (mov["cliente"].astype(str) == ventas_mod.CANAL_WEB)]
+    # Solicitudes del canal web recién anotadas («No había stock» con canal Web / WhatsApp, todavía sin marcar en «Ventas»):
+    # un título C o D que solo tiene esas solicitudes sigue en C o D en este cálculo, con el aviso «pasa a B en el próximo
+    # cálculo». Desde el cálculo siguiente la solicitud cuenta como venta neta y el título queda en B.
+    pendientes = mov.loc[[]]
+    if hoja_ventas is not None and len(hoja_ventas):
+        v = ventas_mod.validas(hoja_ventas)
+        nuevas = v[(v["descontado"] == "") & (v["estado"] == ventas_mod.SIN_STOCK) & (v["canal"] == ventas_mod.CANAL_WEB)]
+        candidatas = mov[(mov["tipo"] == "venta_perdida") & (mov["cliente"].astype(str) == ventas_mod.CANAL_WEB)]
+        usadas = []
+        for f in nuevas.itertuples():
+            igual = candidatas[(candidatas["id"] == f.id) & (candidatas["fecha"] == f.fecha) & (candidatas["cantidad"] == f.cantidad)
+                               & ~candidatas.index.isin(usadas)]
+            if len(igual):
+                usadas.append(igual.index[0])
+        pendientes = mov.loc[usadas]
     serie_sin_pend = demanda.venta_neta_mensual(mov.drop(pendientes.index), ids, fecha_corte, HISTORIA_MESES)
 
     en_ventana = mov[(mov["fecha"] >= inicio_ventana) & (mov["fecha"] <= fecha_corte)]
@@ -130,7 +146,7 @@ def calcular(catalogo: pd.DataFrame, movimientos: pd.DataFrame, transito: pd.Dat
     vendido = mov[mov["tipo"].isin(stock.TIPOS_VENTA) & (mov["fecha"] <= fecha_corte)].copy()
     vendido["u"] = vendido["cantidad"] * vendido["tipo"].map(stock.TIPOS_VENTA)
     ultima_imp = mov[(mov["tipo"] == "importacion") & (mov["fecha"] <= fecha_corte)].groupby("id")["fecha"].max()
-    tl = importaciones_mod.efectivos(importaciones, p)   # T y L por país: medidos con 3 o más embarques, si no los de la memoria
+    tl = importaciones_mod.efectivos(importaciones, p)   # T y L de la política, con lo observado en «Importaciones» como comparación
     temp_ini, temp_fin = politica.ultima_temporada(fecha_corte)
     mes_temporada = politica.es_mes_de_pedido_temporada(fecha_corte)
 
@@ -184,7 +200,11 @@ def calcular(catalogo: pd.DataFrame, movimientos: pd.DataFrame, transito: pd.Dat
         if pol == "Temporada":
             alertas.append(f"Temporada: pedir entre junio y agosto ({temporada_u} vendidos la última temporada)")
         if reclasificar:
-            alertas.append("Título CC o DD con solicitud del canal: pasa a BB en la próxima revisión")
+            alertas.append("Título C o D con solicitud del canal: pasa a B en el próximo cálculo")
+        se_acelera = clase in ("Intermitente", "Regular", "Esporádica") and demanda.acelera(
+            s, ACELERACION_MESES_RECIENTES, ACELERACION_MESES_PREVIOS, ACELERACION_FACTOR, ACELERACION_MINIMO_UNIDADES)
+        if se_acelera:
+            alertas.append(AVISO_ACELERACION)
         dias_consig = (fecha_corte - e["consignacion_desde"]).days if not pd.isna(e["consignacion_desde"]) else 0
         if dias_consig >= DIAS_CONSIGNACION_ANTIGUA:
             alertas.append(f"Consignación abierta hace {dias_consig} días")
@@ -203,7 +223,7 @@ def calcular(catalogo: pd.DataFrame, movimientos: pd.DataFrame, transito: pd.Dat
             "intervalo_meses": round(T, 2), "plazo_meses": round(L, 3), "t_y_l": tl[pais_t]["texto_T"] + " · " + tl[pais_t]["texto_L"],
             "nivel_objetivo": int(S),
             "politica": pol, "sugerido": int(sugerido), "vendido_desde_importacion": int(vendido_desde),
-            "temporada_unidades": temporada_u, "reclasificar": reclasificar,
+            "temporada_unidades": temporada_u, "reclasificar": reclasificar, "acelera": se_acelera,
             "cobertura_meses": round(cobertura, 1) if math.isfinite(cobertura) else "∞",
             "ultima_salida": ultima_salida.date().isoformat() if not pd.isna(ultima_salida) else "",
             "meses_sin_salida": round(meses_sin, 1) if not math.isnan(meses_sin) else "",
@@ -248,11 +268,11 @@ def _resumen(t: pd.DataFrame, categorias: pd.DataFrame, por_origen: pd.DataFrame
         ("Ejemplares en consignación", int(t["consignacion"].sum())),
         ("Valor en bodega a precio de lista", int((t["bodega"].clip(lower=0) * t["precio_lista"]).sum())),
         ("Títulos en cero", int((t["bodega"] <= 0).sum())),
-        ("Títulos AA / BB / CC / DD / sin categoría",
+        ("Títulos A / B / C / D / sin categoría",
          " / ".join(str(int((t["categoria_gestion"] == c).sum())) for c in cat_mod.ORDEN)),
-        ("Títulos AA sin existencias", int(((t["categoria_gestion"] == "AA") & (t["bodega"] <= 0)).sum())),
+        ("Títulos A sin existencias", int(((t["categoria_gestion"] == "A") & (t["bodega"] <= 0)).sum())),
         ("Títulos con quiebre (se reponen y están en cero)", int(t["alertas"].str.contains("Quiebre").sum())),
-        ("Nivel objetivo S, suma (AA que se reponen)", int(t.loc[t["politica"] == "Reponer", "nivel_objetivo"].sum())),
+        ("Nivel objetivo S, suma (A que se reponen)", int(t.loc[t["politica"] == "Reponer", "nivel_objetivo"].sum())),
         ("Títulos bajo su nivel objetivo", int(((t["politica"] == "Reponer") & (t["sugerido"] > 0)).sum())),
         ("Nivel de servicio (criterio)", f"{p.nivel_servicio:.0%}"),
     ]

@@ -6,6 +6,10 @@ layout: base.njk
 {% from "componentes/libro.njk" import cubierta, tarjeta, datosPedido with context %}
 {%- set cat = categoria | infoCategoria(categorias) -%}
 {%- set libro_actual = { page: page, coleccion_visible: coleccion_visible, categoria: categoria } -%}
+{#- Disponibilidad: solo existe si el cálculo con la planilla generó src/_data/disponibilidad.json. Solo una etiqueta,
+    nunca cantidades ni la categoría. Sin ese archivo no se muestra estado. -#}
+{%- set disp = (disponibilidad.libros[id_catalogo] if (disponibilidad and disponibilidad.libros) else null) -%}
+{%- set etiquetas = { disponible: "Disponible", agotado: "Agotado", bajo_pedido: "Bajo pedido" } -%}
 {%- set este = { data: { id_catalogo: id_catalogo, titulo_visible: titulo_visible, sigla: sigla, isbn: isbn, precio_iva: precio_iva, portada: portada }, url: page.url, fileSlug: page.fileSlug } -%}
 
 <div class="ficha-fondo" style="--tono: {{ cat.color }}">
@@ -32,6 +36,12 @@ layout: base.njk
         {% endif %}
 
         <div class="caja-compra">
+          {% if disp %}
+          <p class="disponibilidad disponibilidad-{{ disp.estado }}" data-disponibilidad>
+            <span class="estado-disponibilidad">{{ etiquetas[disp.estado] }}</span>
+            {% if disp.estado == "agotado" and disp.llega %}<span class="disponibilidad-nota">Llega en el próximo embarque</span>{% endif %}
+          </p>
+          {% endif %}
           <div class="caja-precio">
             {% if precio_iva %}
             <span class="precio-grande">{{ precio_iva | clp }}</span>
@@ -51,6 +61,14 @@ layout: base.njk
               Agregar a mi solicitud
             </button>
           </div>
+          {% if disp and disp.estado == "agotado" %}
+          <div class="aviso-disponibilidad">
+            <a class="boton boton-secundario" href="https://wa.me/{{ sitio.whatsapp }}?text={{ ('AVISO DE DISPONIBILIDAD · «' + titulo_visible + '» (ISBN ' + isbn + ')\nHola, avísenme cuando llegue este libro: ' + sitio.url + page.url) | urlencode }}" target="_blank" rel="noopener">Avísame cuando llegue</a>
+            <a class="enlace-correo" href="mailto:{{ sitio.email }}?subject={{ ('AVISO DE DISPONIBILIDAD · ' + titulo_visible) | urlencode }}&body={{ ('AVISO DE DISPONIBILIDAD\n«' + titulo_visible + '» (ISBN ' + isbn + ')\nHola, avísenme cuando llegue este libro: ' + sitio.url + page.url) | urlencode }}">o por correo</a>
+          </div>
+          {% elif disp and disp.estado == "bajo_pedido" %}
+          <a class="boton boton-secundario" href="https://wa.me/{{ sitio.whatsapp }}?text={{ ('SOLICITUD DE PEDIDO WEB · Ciudad Nueva Chile\n\n• 1 × «' + titulo_visible + '» (ISBN ' + isbn + ')\nHola, quiero pedir este título: ' + sitio.url + page.url) | urlencode }}" target="_blank" rel="noopener">Pedir este título</a>
+          {% endif %}
           <a class="boton boton-whatsapp" href="https://wa.me/{{ sitio.whatsapp }}?text={{ ('CONSULTA WEB · «' + titulo_visible + '» (ISBN ' + isbn + ')\nHola, quiero consultar por este libro: ' + sitio.url + page.url) | urlencode }}" target="_blank" rel="noopener">
             {% include "componentes/icono-whatsapp.njk" %}
             Consultar por WhatsApp
@@ -60,7 +78,11 @@ layout: base.njk
             Recomendar este libro por WhatsApp
           </a>
           <ul class="garantias">
+            {% if disp %}
+            <li>Disponibilidad al {{ disponibilidad.fecha | fecha }}. La confirmamos antes de facturar.</li>
+            {% else %}
             <li>Te confirmamos disponibilidad y plazo antes de facturar.</li>
+            {% endif %}
             <li>Librerías e instituciones: <a href="/instituciones/">condiciones por volumen</a>.</li>
           </ul>
         </div>
@@ -107,7 +129,7 @@ layout: base.njk
   {% if portada %}"image": "{{ sitio.url }}{{ portada }}",{% endif %}
   "publisher": { "@type": "Organization", "name": {{ sello | dump | safe }} },
   "url": "{{ sitio.url }}{{ page.url }}"{% if precio_iva %},
-  "offers": { "@type": "Offer", "price": {{ precio_iva }}, "priceCurrency": "CLP" }{% endif %}
+  "offers": { "@type": "Offer", "price": {{ precio_iva }}, "priceCurrency": "CLP"{% if disp and disp.estado == "disponible" %}, "availability": "https://schema.org/InStock"{% elif disp and disp.estado == "agotado" %}, "availability": "https://schema.org/OutOfStock"{% endif %} }{% endif %}
 }
 </script>
 {% endif %}

@@ -66,10 +66,10 @@ COMO_SE_VENDE = {
     "Sin venta neta": "Sin venta en la ventana",
 }
 CATEGORIA = {
-    "AA": "AA, demanda recurrente",
-    "BB": "BB, venta ocasional",
-    "CC": "CC, sin venta y salió en guía",
-    "DD": "DD, sin venta ni salida",
+    "A": "A, demanda recurrente",
+    "B": "B, venta ocasional",
+    "C": "C, salió en guía sin facturar",
+    "D": "D, sin venta ni salida",
     "Sin categoría": "Sin categoría",
 }
 
@@ -254,7 +254,8 @@ def esta_semana(t: pd.DataFrame, por_origen: pd.DataFrame, lineas: pd.DataFrame,
     consig = t[t["alertas"].str.contains("Consignación abierta", na=False)].sort_values("dias_consignacion", ascending=False)
     temporada = t[t["politica"] == "Temporada"]
     reclasificar = t[t["reclasificar"].astype(bool)]
-    fondo = t[t["categoria_gestion"].isin(["CC", "DD"])].sort_values("valor_bodega", ascending=False)
+    acelera = t[t["acelera"].astype(bool)] if "acelera" in t else t.iloc[0:0]
+    fondo = t[t["categoria_gestion"].isin(["C", "D"])].sort_values("valor_bodega", ascending=False)
     conteo = conteo or {}
     return {
         "fecha": pd.Timestamp(fecha_corte).date().isoformat(),
@@ -266,13 +267,14 @@ def esta_semana(t: pd.DataFrame, por_origen: pd.DataFrame, lineas: pd.DataFrame,
                        "en_camino": int(r.transito)} for r in quiebres.itertuples()],
         "fondo": [{"id": r.id, "titulo": r.titulo, "categoria": r.categoria_gestion, "bodega": int(r.bodega),
                    "valor": int(r.valor_bodega)} for r in fondo.itertuples()],
-        "valor_cc": int(fondo.loc[fondo["categoria_gestion"] == "CC", "valor_bodega"].sum()),
-        "valor_dd": int(fondo.loc[fondo["categoria_gestion"] == "DD", "valor_bodega"].sum()),
+        "valor_cc": int(fondo.loc[fondo["categoria_gestion"] == "C", "valor_bodega"].sum()),
+        "valor_dd": int(fondo.loc[fondo["categoria_gestion"] == "D", "valor_bodega"].sum()),
         "consignaciones": [{"id": r.id, "titulo": r.titulo, "unidades": int(r.consignacion),
                             "dias": int(r.dias_consignacion)} for r in consig.itertuples()],
         "temporada": [{"id": r.id, "titulo": r.titulo, "vendio": int(r.temporada_unidades), "pedir": int(r.sugerido)}
                       for r in temporada.itertuples()],
         "reclasificar": [{"id": r.id, "titulo": r.titulo, "categoria": r.categoria_gestion} for r in reclasificar.itertuples()],
+        "acelera": [{"id": r.id, "titulo": r.titulo, "categoria": r.categoria_gestion, "clase": r.clase} for r in acelera.itertuples()],
         "semana": conteo.get("semana", ""),
         "contar": conteo.get("contar", []),
         "frecuencias": conteo.get("frecuencias", []),
@@ -287,10 +289,7 @@ def esta_semana(t: pd.DataFrame, por_origen: pd.DataFrame, lineas: pd.DataFrame,
     }
 
 
-# Memoria, Tabla 4.26: la clasificación se revisa cada 6 meses en AA y BB y una vez al año en CC y DD
-REVISION_CLASIFICACION = "AA y BB cada 6 meses, CC y DD cada año (memoria, Tabla 4.26)"
-
-SECCIONES_FIJAS = ("TE LOS PIDIERON", "BAJAS DE STOCK", "PASAN A BB", "DATOS POR ACTUALIZAR", "REVISAR EN LA PLANILLA", "CÓMO ANOTAR")
+SECCIONES_FIJAS = ("TE LOS PIDIERON", "BAJAS DE STOCK", "SE VENDEN MÁS RÁPIDO", "PASAN A B", "DATOS POR ACTUALIZAR", "REVISAR EN LA PLANILLA", "CÓMO ANOTAR")
 
 
 def es_titulo_seccion(texto: str) -> bool:
@@ -313,30 +312,34 @@ def hoja_esta_semana(s: dict) -> pd.DataFrame:
     for o, v in (s.get("tl") or {}).items():
         filas.append((f"Embarques de {o}", f"{v['texto_T']} · {v['texto_L']}"))
     filas.append(("", "El detalle de qué pedir está en «Pedido sugerido»."))
-    filas += [("", ""), (f"2. SE VENDEN Y ESTÁN SIN STOCK ({len(s['sin_stock'])})", "Títulos AA que se reponen y están en cero")]
+    filas += [("", ""), (f"2. SE VENDEN Y ESTÁN SIN STOCK ({len(s['sin_stock'])})", "Títulos A que se reponen y están en cero")]
     for r in s["sin_stock"][:25]:
         filas.append((r["titulo"], f"Se vende {r['se_vende']}" + (f" · vienen {r['en_camino']} en camino" if r["en_camino"] else "")))
     if s.get("perdidas"):
         filas += [("", ""), (f"TE LOS PIDIERON Y NO HABÍA ({len(s['perdidas'])})", "Anotados en «Ventas» como «No había stock», últimos 90 días")]
         for r in s["perdidas"][:25]:
             filas.append((r["titulo"], f"{r['unidades']} ejemplares en {r['veces']} pedidos · último el {fecha(r['ultima'])}"))
+    if s.get("acelera"):
+        filas += [("", ""), (f"SE VENDEN MÁS RÁPIDO QUE ANTES ({len(s['acelera'])})",
+                             "Revisa si conviene pedir más que el nivel objetivo (el cálculo no lo cambia)")]
+        for r in s["acelera"][:25]:
+            filas.append((r["titulo"], f"{r['categoria']} · {r['clase'].lower()}: los últimos 3 meses van al doble o más del ritmo anterior"))
     if s.get("sin_anotar"):
         filas += [("", ""), (f"BAJAS DE STOCK SIN VENTA ANOTADA ({len(s['sin_anotar'])})", "Si fue una venta, anótala en «Ventas» con su precio y canal")]
         for r in s["sin_anotar"][:25]:
             filas.append((r["titulo"], f"bajó {r['unidades']} en bodega"))
     filas += [("", ""), (f"3. QUÉ CONTAR ESTA SEMANA ({len(s.get('contar', []))})",
-                         f"Semana {s.get('semana', '')} del año. AA cada mes, BB cada 6 meses, CC y DD una vez al año")]
+                         f"Semana {s.get('semana', '')} del año. A cada mes, B cada 6 meses, C y D una vez al año")]
     for r in s.get("contar", [])[:60]:
         filas.append((r["titulo"], f"{r['categoria']} · {r['bodega']} en bodega · registro {r['registro'].lower()}"))
     for h in s.get("frecuencias", []):
         filas.append((f"Categoría {h['categoria']}", f"{h['titulos']} títulos con existencias, {int(h['conteos_por_anio'])} conteos al año"))
-    filas.append(("Revisión de la clasificación", REVISION_CLASIFICACION))
     if s.get("reclasificar"):
-        filas += [("", ""), (f"PASAN A BB EN LA PRÓXIMA REVISIÓN ({len(s['reclasificar'])})", "Títulos CC o DD que pidieron por el canal web")]
+        filas += [("", ""), (f"PASAN A B EN EL PRÓXIMO CÁLCULO ({len(s['reclasificar'])})", "Títulos C o D que pidieron por el canal web")]
         for r in s["reclasificar"][:25]:
             filas.append((r["titulo"], f"hoy {r['categoria']}"))
-    filas += [("", ""), (f"4. FONDO SIN VENTA: CC Y DD ({len(s['fondo'])})",
-                         f"No se reponen. CC ${miles(s['valor_cc'])} y DD ${miles(s['valor_dd'])} a precio de lista. Su destino se decide fuera del sistema")]
+    filas += [("", ""), (f"4. FONDO SIN VENTA: C Y D ({len(s['fondo'])})",
+                         f"No se reponen. C ${miles(s['valor_cc'])} y D ${miles(s['valor_dd'])} a precio de lista. Su destino se decide fuera del sistema")]
     for r in s["fondo"][:25]:
         filas.append((r["titulo"], f"{r['categoria']} · {r['bodega']} en bodega (${miles(r['valor'])})"))
     filas += [("", ""), (f"5. CONSIGNACIONES DE MÁS DE UN AÑO ({len(s['consignaciones'])})", "Cobrar, pedir devolución o renovar")]

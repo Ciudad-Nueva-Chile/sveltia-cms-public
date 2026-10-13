@@ -14,21 +14,30 @@ import yaml
 
 RAIZ = Path(__file__).resolve().parent.parent
 DIAS_POR_MES = 30  # la memoria expresa el plazo de reposición como días / 30
-CATEGORIAS = ("AA", "BB", "CC", "DD")
+CATEGORIAS = ("A", "B", "C", "D")
 
 # ---------- Constantes de la memoria ----------
 # Ventana de clasificación: los últimos 21 meses hasta la fecha de cálculo (la memoria observa diciembre de 2024 a agosto
-# de 2026). Sobre ella se cuentan k, ADI y CV², y se asignan la clase de demanda y la categoría AA, BB, CC o DD.
+# de 2026). Sobre ella se cuentan k, ADI y CV², y se asignan la clase de demanda y la categoría A, B, C o D.
 HISTORIA_MESES = 21
 # Cortes de Syntetos, Boylan y Croston (2005), memoria sección 2.4.3. Solo informativos: separan Regular de Intermitente
 # y ubican cada libro en el gráfico ADI–CV².
 CORTE_ADI = 1.32
 CORTE_CV2 = 0.49
 # Frecuencia de conteo físico por categoría, memoria Tabla 4.26 (estructura de Flores y Whybark, 1987):
-# AA mensual, BB cada 6 meses, CC y DD una vez al año.
-CONTEOS_POR_ANIO = {"AA": 12, "BB": 2, "CC": 1, "DD": 1}
+# A mensual, B cada 6 meses, C y D una vez al año.
+CONTEOS_POR_ANIO = {"A": 12, "B": 2, "C": 1, "D": 1}
 # Una consignación abierta más de un año se avisa para cobrarla, pedir la devolución o renovarla (memoria, sección 4.1.3).
 DIAS_CONSIGNACION_ANTIGUA = 365
+
+# ---------- Aviso de aceleración (no cambia S) ----------
+# La memoria (sección 4.2.5) supone que los próximos meses se parecen a la ventana observada; un título que se acelera
+# (por ejemplo, por un acontecimiento) rompe ese supuesto antes de que SBA lo refleje. Se avisa si el ritmo de los últimos
+# 3 meses es al menos 2 veces el de los 18 meses anteriores, con 3 o más unidades netas en esos 3 meses.
+ACELERACION_MESES_RECIENTES = 3
+ACELERACION_MESES_PREVIOS = 18
+ACELERACION_FACTOR = 2
+ACELERACION_MINIMO_UNIDADES = 3
 
 # ---------- Avisos de caducidad de datos externos ----------
 MESES_TIPO_CAMBIO = 6       # el tipo de cambio de la pestaña Configuración se revisa al menos cada 6 meses

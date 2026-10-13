@@ -3,7 +3,7 @@
 Sigue la memoria del proyecto (Tabla 4.8 y sección 4.2.5).
 
 Serie: venta neta por mes (venta + factura de consignación − devoluciones) más la venta perdida anotada en «Ventas».
-La salida en guía no es venta: decide entre CC y DD (clasificacion_abc.py).
+La salida en guía no es venta: decide entre C y D (categorias.py).
 
 Clase, por k = meses de la ventana con venta neta positiva:
     k = 0       Sin venta neta
@@ -105,6 +105,17 @@ def sba(serie: np.ndarray, alfa: float = 0.15) -> float:
 def pronosticar(serie: np.ndarray, clase: str, alfa: float) -> float:
     """λ, ejemplares por mes. Solo Intermitente y Regular tienen tasa; las demás clases no se estiman."""
     return sba(serie, alfa) if clase in CLASES_CON_TASA else 0.0
+
+
+def acelera(serie: np.ndarray, recientes: int = 3, previos: int = 18, factor: float = 2, minimo: float = 3) -> bool:
+    """¿El ritmo de los últimos `recientes` meses es al menos `factor` veces el de los `previos` meses anteriores, con
+    `minimo` unidades o más en los recientes? (aviso de aceleración; no cambia S)."""
+    if len(serie) < recientes:
+        return False
+    ultimos = float(serie[-recientes:].sum())
+    antes = serie[-(recientes + previos):-recientes]
+    ritmo_antes = float(antes.sum()) / previos
+    return ultimos >= minimo and ultimos / recientes >= factor * ritmo_antes
 
 
 def nivel_objetivo(tasa_mensual: float, intervalo_meses: float, plazo_meses: float, nivel: float = 0.95) -> int:

@@ -2,8 +2,8 @@
 
 Repositorio de prueba con dos partes que se publican juntas:
 
-- **El sitio** (`src/`, Eleventy): catálogo, fichas, solicitud de pedido por WhatsApp o correo. Se edita en `/admin/` con Sveltia CMS.
-- **El inventario** (`inventario/`, Python): existencias, categorías de gestión AA, BB, CC y DD, clase de demanda, nivel objetivo y pedido por embarque y origen.
+- **El sitio** (`src/`, Eleventy): catálogo, fichas, solicitud de pedido por WhatsApp o correo y, con la planilla conectada, el estado de cada libro («Disponible», «Agotado» o «Bajo pedido», nunca cantidades). Se edita en `/admin/` con Sveltia CMS.
+- **El inventario** (`inventario/`, Python): existencias, categorías de gestión A, B, C y D, clase de demanda, nivel objetivo y pedido por embarque y origen.
   Los datos reales viven en una Google Sheet privada; este repositorio público solo tiene código y **datos de ejemplo sintéticos**.
 
 **Contexto completo** (cómo se conectan sitio, Sveltia, planilla, GitHub y panel, y todas las fórmulas del modelo con
@@ -36,7 +36,7 @@ carga una vez desde las facturas y guías del SII, que son más exactas.
 mueva stock, y el descuento y el canal quedan para analizar ofertas.
 
 La demanda que usa el modelo es la **venta neta** (venta + factura de consignación − devoluciones) más la venta perdida.
-La salida en guía no es venta: decide entre las categorías CC y DD.
+La salida en guía no es venta: decide entre las categorías C y D.
 
 El catálogo y los precios salen del sitio (`src/libros`): el precio se cambia en `/admin/`, no en la planilla.
 
@@ -45,13 +45,13 @@ El catálogo y los precios salen del sitio (`src/libros`): el precio se cambia e
 | Paso | Método | Archivo |
 |---|---|---|
 | Existencias | Bodega, consignación y tránsito a partir de los movimientos. La factura de una consignación no vuelve a descontar la bodega; la consignación abierta más antigua se rastrea por orden de salida | `inventario/stock.py` |
-| Categorías de gestión | AA (clase Intermitente, Regular, Estacional o Coyuntural), BB (clase Esporádica), CC (con existencias, sin venta y con salida en guía), DD (con existencias, sin venta ni salida en guía) y «Sin categoría». Adaptan a Flores y Whybark (1987) y reemplazan al ABC por valor | `inventario/clasificacion_abc.py` (nombre histórico) |
+| Categorías de gestión | Se recalculan en cada ejecución con los últimos 21 meses. A (clase Intermitente, Regular, Estacional o Coyuntural), B (clase Esporádica), C (con existencias, sin venta y con salida en guía), D (con existencias, sin venta ni salida en guía) y «Sin categoría». Adaptan a Flores y Whybark (1987) y reemplazan al ABC por valor | `inventario/clasificacion_abc.py` (nombre histórico) |
 | Clase de demanda | Por meses con demanda en la ventana de 21 meses: 0 «Sin venta neta», 1 o 2 «Esporádica», 3 o más «Intermitente» (o «Regular» si ADI < 1,32 y CV² < 0,49). Estacional y Coyuntural se marcan a mano en el catálogo. ADI y CV² (Syntetos, Boylan y Croston, 2005) quedan como indicadores | `inventario/demanda.py` |
 | Pronóstico mensual | SBA (Croston con corrección de sesgo, α = 0,15, supuesto abierto) para Intermitente y Regular, sobre toda la historia disponible (mínimo 21 meses). La clasificación usa siempre los últimos 21 meses | `inventario/demanda.py` |
 | Nivel objetivo S | Percentil 95 de una distribución de Poisson con media λ × (T + L), donde λ es el pronóstico SBA, T el intervalo entre embarques del origen (Argentina 12 meses, España 8,5) y L el plazo de reposición. El 95 % es un criterio y Poisson es un supuesto de simplicidad | `inventario/politica.py` |
-| Política por categoría | AA Intermitente o Regular repone hasta S, AA Estacional pide una vez al año antes de la temporada, AA Coyuntural se atiende por reacción, BB repone lo vendido desde el embarque anterior, CC y DD no se reponen, «Sin categoría» va a pedido. La planilla puede fijarla a mano | `inventario/politica.py` |
-| Conteo cíclico | «Qué contar esta semana», con la frecuencia por categoría: AA mensual, BB cada 6 meses, CC y DD una vez al año | `inventario/modelo.py` |
-| Pedido por embarque y dónde comprar | Embarques programados por origen, desde la última llegada de «Importaciones». T y L medidos (mediana de los últimos 5 embarques y de llegada − pedido) se usan con 3 o más embarques; si no, los de la memoria. Si un libro está en ambas editoriales («Se compra en»), compara las combinaciones que cubren todo (España, Argentina, ambos) y elige la de menor costo: cada libro va al origen con menor **costo puesto en bodega** entre los que se envían, cada envío debe alcanzar su **mínimo FOB** (US$ 700) y suma su **costo fijo**, que anota Roberto. Si un envío no alcanza el mínimo, la hoja lo avisa y Roberto decide cómo completarlo. No hay castigos numéricos de postergar ni adelantar | `inventario/pedido.py` |
+| Política por categoría | A Intermitente o Regular repone hasta S, A Estacional pide una vez al año antes de la temporada, A Coyuntural se atiende por reacción, B repone lo vendido desde el embarque anterior, C y D no se reponen, «Sin categoría» va a pedido. La planilla puede fijarla a mano | `inventario/politica.py` |
+| Conteo cíclico | «Qué contar esta semana», con la frecuencia por categoría: A mensual, B cada 6 meses, C y D una vez al año | `inventario/modelo.py` |
+| Pedido por embarque y dónde comprar | Embarques programados por origen, desde la última llegada de «Importaciones». S y el próximo embarque usan siempre los T y L de la política (`config/parametros.yml`); los observados en «Importaciones» (con 3 o más embarques) solo se muestran como comparación. Si un libro está en ambas editoriales («Se compra en»), compara las combinaciones que cubren todo (España, Argentina, ambos) y elige la de menor costo: cada libro va al origen con menor **costo puesto en bodega** entre los que se envían, cada envío debe alcanzar su **mínimo FOB** (US$ 700) y suma su **costo fijo**, que anota Roberto. Si un envío no alcanza el mínimo, la hoja lo avisa y Roberto decide cómo completarlo. No hay castigos numéricos de postergar ni adelantar | `inventario/pedido.py` |
 | Ventas | Convierte cada fila de «Ventas» en un movimiento (venta, factura de consignación, devolución o venta perdida), descuenta del stock solo las nuevas y resume ventas con descuento, descuento promedio y ventas perdidas | `inventario/ventas.py` |
 
 Límites que conviene tener presentes:
@@ -63,7 +63,7 @@ Límites que conviene tener presentes:
   eso: por eso existe la clase Coyuntural.
 - Las cifras en dólares dependen de los factores de la pestaña oculta Configuración, que son una estimación por origen. Los valores reales los carga Andrés en la planilla privada y no se suben al repositorio.
 - El flete no se calcula por peso, porque el catálogo no tiene el peso de cada título.
-- El nivel de servicio de 95 %, el supuesto de Poisson, α = 0,15 y las reglas de BB y de Estacional son supuestos o criterios y no mediciones. Las dos reglas están marcadas «por confirmar» en `inventario/politica.py`.
+- El nivel de servicio de 95 %, el supuesto de Poisson, α = 0,15 y las reglas de B y de Estacional son supuestos o criterios y no mediciones. Las dos reglas están marcadas «por confirmar» en `inventario/politica.py`.
 
 ## Usarlo en tu computador
 
@@ -71,6 +71,7 @@ Límites que conviene tener presentes:
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 python -m inventario --panel panel/datos.json     # calcula con datos_ejemplo/ y escribe salida/
+python -m inventario --disponibilidad src/_data/disponibilidad.json   # para ver en local el estado de cada libro en el sitio (no se sube)
 python -m http.server -d panel 8000               # abre http://localhost:8000
 pytest -q                                         # pruebas
 ```

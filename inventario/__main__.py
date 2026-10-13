@@ -127,6 +127,24 @@ def lista_libros(catalogo: pd.DataFrame) -> pd.DataFrame:
     return df.sort_values("_orden").drop(columns="_orden").rename(columns=lenguaje.ENCABEZADOS["ListaLibros"])
 
 
+def datos_disponibilidad(r: Resultado) -> dict:
+    """Estado de cada libro para el sitio público: solo una etiqueta, nunca cantidades ni la categoría.
+
+        disponible   En bodega > 0
+        agotado      En bodega = 0 y categoría A o B (con «llega» si hay pedido en camino)
+        bajo_pedido  En bodega = 0 y categoría C, D o sin categoría
+    """
+    libros = {}
+    for f in r.titulos.itertuples():
+        if f.bodega > 0:
+            libros[f.id] = {"estado": "disponible"}
+        elif f.categoria_gestion in ("A", "B"):
+            libros[f.id] = {"estado": "agotado", "llega": bool(f.transito > 0)}
+        else:
+            libros[f.id] = {"estado": "bajo_pedido"}
+    return {"fecha": r.fecha_corte.date().isoformat(), "libros": libros}
+
+
 def datos_panel(r: Resultado, etiqueta: str = "") -> dict:
     """Solo lo que el panel necesita. Los datos de ejemplo se pueden publicar; los reales, no."""
     def limpiar(v):
@@ -325,7 +343,7 @@ def ciclo_planilla(fuente: FuenteSheets, catalogo: pd.DataFrame, p, fecha_corte=
 
 
 def main(argv=None):
-    ap = argparse.ArgumentParser(prog="inventario", description="Categorías AA a DD, demanda, nivel objetivo y pedido por embarque")
+    ap = argparse.ArgumentParser(prog="inventario", description="Categorías A a D, demanda, nivel objetivo y pedido por embarque")
     ap.add_argument("--fuente", choices=["ejemplo", "csv", "sheets"], default="ejemplo")
     ap.add_argument("--datos", type=Path, default=RAIZ / "datos_ejemplo", help="carpeta con los CSV de entrada")
     ap.add_argument("--salida", type=Path, default=RAIZ / "salida", help="carpeta para los CSV de resultados")
@@ -336,6 +354,8 @@ def main(argv=None):
     ap.add_argument("--fecha-corte", help="AAAA-MM-DD; por omisión, la del último movimiento")
     ap.add_argument("--panel", type=Path, help="escribe también los datos del panel en este JSON")
     ap.add_argument("--etiqueta", default=None, help="texto de la etiqueta del panel (por omisión, según la fuente)")
+    ap.add_argument("--disponibilidad", type=Path,
+                    help="escribe el estado de cada libro para el sitio (src/_data/disponibilidad.json), sin cantidades")
     ap.add_argument("--cifrar", action="store_true", help="cifra los datos del panel con la contraseña de la variable CLAVE_PANEL")
     a = ap.parse_args(argv)
 
@@ -373,6 +393,10 @@ def main(argv=None):
         fuente.escribir("Esta_semana", lenguaje.hoja_esta_semana(
             lenguaje.esta_semana(r.titulos, r.pedido_resumen, r.pedido, r.fecha_corte, r.errores, r.perdidas,
                                  conteo=r.conteo, caducidad=r.caducidad, tl=r.tl)))
+
+    if a.disponibilidad:
+        a.disponibilidad.parent.mkdir(parents=True, exist_ok=True)
+        a.disponibilidad.write_text(json.dumps(datos_disponibilidad(r), ensure_ascii=False), encoding="utf-8")
 
     if a.panel:
         a.panel.parent.mkdir(parents=True, exist_ok=True)

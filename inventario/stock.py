@@ -25,7 +25,7 @@ EFECTOS = {
 }
 
 # Venta facturada: venta directa más factura de consignación, menos devoluciones de clientes.
-# La salida en guía (consignacion_salida) NO es venta: decide entre las categorías CC y DD.
+# La salida en guía (consignacion_salida) NO es venta: decide entre las categorías C y D.
 TIPOS_VENTA = {"venta": +1, "consignacion_liquidada": +1, "devolucion_cliente": -1}
 # Demanda neta: la venta facturada más la venta perdida (pedido sin stock), que corrige la demanda censurada.
 # Sobre esta serie se cuentan los meses con venta (k), ADI, CV² y la tasa λ (memoria, Tabla 4.8 y sección 4.2.5).

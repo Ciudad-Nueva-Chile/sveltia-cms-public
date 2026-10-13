@@ -33,6 +33,8 @@ data-pedido-id="{{ libro.data.id_catalogo or libro.fileSlug }}" data-pedido-titu
     <h3 class="tarjeta-titulo">{{ d.titulo_visible }}</h3>
     {% if d.autor_visible %}<p class="tarjeta-autor">{{ d.autor_visible }}</p>{% endif %}
   </a>
+  {%- set disp = (disponibilidad.libros[d.id_catalogo] if (disponibilidad and disponibilidad.libros) else null) -%}
+  {% if disp %}<span class="tarjeta-estado estado-{{ disp.estado }}">{{ {"disponible": "Disponible", "agotado": "Agotado", "bajo_pedido": "Bajo pedido"}[disp.estado] }}</span>{% endif %}
   <div class="tarjeta-pie">
     <span class="precio">{{ (d.precio_iva | clp) or "Consultar" }}</span>
     <button class="boton-agregar" type="button" {{ datosPedido(libro) }} aria-label="Agregar «{{ d.titulo_visible }}» a mi solicitud">

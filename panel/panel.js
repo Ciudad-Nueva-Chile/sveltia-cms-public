@@ -8,8 +8,8 @@
   var estado = { orden: "sugerido", dir: -1, queHacer: "" };
   var $ = function (s) { return document.querySelector(s); };
   var fmt = new Intl.NumberFormat("es-CL");
-  var COLOR_CAT = { AA: "var(--serie-a)", BB: "var(--serie-b)", CC: "var(--serie-c)", DD: "var(--serie-d)" };
-  var CATEGORIAS = ["AA", "BB", "CC", "DD"];
+  var COLOR_CAT = { A: "var(--serie-a)", B: "var(--serie-b)", C: "var(--serie-c)", D: "var(--serie-d)" };
+  var CATEGORIAS = ["A", "B", "C", "D"];
   var CLASES = ["Regular", "Intermitente", "Esporádica", "Estacional", "Coyuntural", "Sin venta neta"];
   var ORDEN_QUE_HACER = ["Reponer hasta el nivel objetivo", "Reponer lo vendido en cada embarque", "Un pedido al año antes de septiembre",
     "No reponer", "Pedir solo si lo encargan"];
@@ -158,22 +158,25 @@
     var S = D.semana;
     $("#listas").innerHTML = [
       tarjetaLista({ titulo: "Se venden y están sin stock", tono: "urgente", items: S.sin_stock,
-        bajada: "Títulos AA que se reponen. Van en el próximo embarque, salvo los que vienen en camino.",
+        bajada: "Títulos A que se reponen. Van en el próximo embarque, salvo los que vienen en camino.",
         dato: function (r) { return "se vende " + esc(r.se_vende) + (r.en_camino ? ' · <b class="ok">vienen ' + r.en_camino + "</b>" : ""); } }),
       tarjetaLista({ titulo: "Te los pidieron y no había", tono: "urgente", items: S.perdidas || [],
         bajada: "Anotados en «Ventas» como «No había stock» en los últimos 90 días. Ya cuentan como demanda.",
         dato: function (r) { return r.unidades + " ejemplares · " + r.veces + (r.veces === 1 ? " pedido" : " pedidos") + " · último el " + fechaCl(r.ultima); } }),
+      tarjetaLista({ titulo: "Se venden más rápido que antes", tono: "atencion", items: S.acelera || [],
+        bajada: "Los últimos 3 meses van al doble o más del ritmo de los 18 anteriores. Revisa si conviene pedir más que el nivel objetivo (el cálculo no lo cambia).",
+        dato: function (r) { return esc(r.categoria) + " · " + esc(r.clase.toLowerCase()); } }),
       tarjetaLista({ titulo: "Qué contar esta semana", tono: "info", items: S.contar || [],
-        bajada: "AA cada mes (registro permanente), BB cada 6 meses, CC y DD una vez al año.",
+        bajada: "A cada mes (registro permanente), B cada 6 meses, C y D una vez al año.",
         dato: function (r) { return esc(r.categoria) + " · " + r.bodega + " en bodega"; } }),
       tarjetaLista({ titulo: "Bajas de stock sin venta anotada", tono: "info", items: S.sin_anotar || [],
         bajada: "Bajó «En bodega» pero no hay una venta en «Ventas». Si fue una venta, anótala con su precio y canal.",
         dato: function (r) { return "bajó " + r.unidades + " en bodega"; } }),
-      tarjetaLista({ titulo: "Pasan a BB en la próxima revisión", tono: "info", items: S.reclasificar || [],
-        bajada: "Títulos CC o DD que pidieron por el canal web.",
+      tarjetaLista({ titulo: "Pasan a B en el próximo cálculo", tono: "info", items: S.reclasificar || [],
+        bajada: "Títulos C o D que pidieron por el canal web.",
         dato: function (r) { return "hoy " + esc(r.categoria); } }),
-      tarjetaLista({ titulo: "Fondo sin venta: CC y DD", tono: "atencion", items: S.fondo || [],
-        bajada: "No se reponen. CC $" + fmt.format(S.valor_cc || 0) + " y DD $" + fmt.format(S.valor_dd || 0) + " a precio de lista. Su destino se decide fuera del sistema.",
+      tarjetaLista({ titulo: "Fondo sin venta: C y D", tono: "atencion", items: S.fondo || [],
+        bajada: "No se reponen. C $" + fmt.format(S.valor_cc || 0) + " y D $" + fmt.format(S.valor_dd || 0) + " a precio de lista. Su destino se decide fuera del sistema.",
         dato: function (r) { return esc(r.categoria) + " · " + r.bodega + " en bodega · $" + fmt.format(r.valor); } }),
       tarjetaLista({ titulo: "Datos por actualizar", tono: "atencion",
         items: (S.caducidad || []).map(function (a, i) { return { id: "dato-" + i, titulo: a }; }),
@@ -369,9 +372,9 @@
       ["Valor en bodega a precio de lista", "$" + fmt.format(valor("Valor en bodega a precio de lista"))],
       ["Ejemplares en consignación", fmt.format(valor("Ejemplares en consignación"))],
       ["Títulos en cero", fmt.format(valor("Títulos en cero")) + " de " + fmt.format(valor("Títulos en catálogo"))],
-      ["Títulos AA / BB / CC / DD / sin categoría", valor("Títulos AA / BB / CC / DD / sin categoría")],
-      ["Títulos AA sin existencias", fmt.format(valor("Títulos AA sin existencias"))],
-      ["Nivel objetivo S, suma", fmt.format(valor("Nivel objetivo S, suma (AA que se reponen)"))],
+      ["Títulos A / B / C / D / sin categoría", valor("Títulos A / B / C / D / sin categoría")],
+      ["Títulos A sin existencias", fmt.format(valor("Títulos A sin existencias"))],
+      ["Nivel objetivo S, suma", fmt.format(valor("Nivel objetivo S, suma (A que se reponen)"))],
       ["Nivel de servicio (criterio)", valor("Nivel de servicio (criterio)")],
     ];
     var V = D.ventas || {};
@@ -465,7 +468,7 @@
   }
 
   function pintarTecnica() {
-    var orden = { AA: 0, BB: 1, CC: 2, DD: 3 };
+    var orden = { A: 0, B: 1, C: 2, D: 3 };
     $("#tabla-tecnica tbody").innerHTML = D.titulos.slice().sort(function (a, b) {
       return ((orden[a.categoria_gestion] == null ? 9 : orden[a.categoria_gestion]) - (orden[b.categoria_gestion] == null ? 9 : orden[b.categoria_gestion])) || b.tasa_mensual - a.tasa_mensual;
     }).map(function (t) {

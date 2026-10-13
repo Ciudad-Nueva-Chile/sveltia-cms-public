@@ -56,7 +56,7 @@ def a_movimientos(v: pd.DataFrame, solo_descontadas: bool = False) -> pd.DataFra
     v = validas(v)
     if solo_descontadas:
         v = v[v["descontado"].astype(str).str.strip() != ""]
-    # El canal queda en «cliente»: las solicitudes del canal web reclasifican CC y DD a BB (clasificacion_abc.py)
+    # El canal queda en «cliente»: las solicitudes del canal web reclasifican C y D a B (categorias.py)
     m = pd.DataFrame({"fecha": v["fecha"], "id": v["id"], "tipo": [tipo(f) for f in v.itertuples()],
                       "cantidad": v["cantidad"], "documento": v["documento"].astype(str),
                       "cliente": v["canal"].astype(str)})

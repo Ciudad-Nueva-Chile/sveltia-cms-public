@@ -2,15 +2,15 @@
 
 La «decisión manual» del catálogo (Sveltia) siempre manda sobre estas reglas:
 
-    AA Intermitente o Regular   Reponer             hasta el nivel objetivo S (Poisson al 95 %)
-    AA Estacional               Temporada           un pedido anual que debe llegar antes de septiembre
-    AA Coyuntural               No reponer          se atiende por reacción (aviso de cobertura baja)
-    BB                          Reponer lo vendido  lo vendido desde el embarque anterior, sin stock de seguridad
-    CC y DD                     No reponer          solo se muestran con su valor (destino: secciones 5.2 y 5.3)
+    A Intermitente o Regular    Reponer             hasta el nivel objetivo S (Poisson al 95 %)
+    A Estacional                Temporada           un pedido anual que debe llegar antes de septiembre
+    A Coyuntural                No reponer          se atiende por reacción
+    B                           Reponer lo vendido  lo vendido desde el embarque anterior, sin stock de seguridad
+    C y D                       No reponer          solo se muestran con su valor (destino: secciones 5.2 y 5.3)
     Sin categoría               A pedido            no se mantiene stock
 
 POR CONFIRMAR CON ANDRÉS:
-- BB: cantidad = unidades vendidas desde la última importación del título (o desde el inicio de la ventana si no hay
+- B: cantidad = unidades vendidas desde la última importación del título (o desde el inicio de la ventana si no hay
   ninguna registrada), menos lo que ya viene en camino.
 - Estacional: se pide entre junio y agosto, hasta la venta neta de la última temporada completa (septiembre a marzo).
 """
@@ -29,21 +29,21 @@ def decidir(categoria: str, clase: str, manual: str = "") -> str:
         for p in POLITICAS:
             if p.lower() == manual.lower():
                 return p
-    if categoria == "AA":
+    if categoria == "A":
         if clase == "Estacional":
             return "Temporada"
         if clase == "Coyuntural":
             return "No reponer"
         return "Reponer"
-    if categoria == "BB":
+    if categoria == "B":
         return "Reponer lo vendido"
-    if categoria in ("CC", "DD"):
+    if categoria in ("C", "D"):
         return "No reponer"
     return "A pedido"
 
 
 def reponer_lo_vendido(vendido_desde_importacion: float, en_camino: float) -> int:
-    """BB: lo vendido desde el embarque anterior, menos lo que ya viene en camino."""
+    """B: lo vendido desde el embarque anterior, menos lo que ya viene en camino."""
     return int(max(0, round(vendido_desde_importacion - en_camino)))
 
 

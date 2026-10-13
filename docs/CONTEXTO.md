@@ -7,12 +7,7 @@ se anota en la planilla y las fórmulas del código.
 > Este repositorio es **público**. Este documento no contiene contraseñas, claves, IDs de planilla ni datos reales.
 > Los secretos viven en GitHub (Settings → Secrets) y en la Google Sheet privada.
 
-> **Estado de este documento (10-10-2026).** Describe el diseño objetivo que debe implementar el código, alineado con
-> la memoria del proyecto de título (secciones 4.2.2, 4.2.5, 4.2.6 y 4.3.1 a 4.3.4). Hasta que se complete la
-> adaptación, el código puede conservar partes del diseño anterior (clasificación ABC, remuestreo con nivel de
-> servicio de 0,90, castigos de postergar y adelantar). **Si el código difiere de este documento, se corrige el
-> código.** Si al implementar aparece un choque real con este diseño, se avisa a Andrés antes de reescribir el
-> documento. Al terminar, se borra este aviso.
+> **Última revisión de este documento: 13-10-2026.**
 
 ---
 
@@ -24,7 +19,7 @@ Argentina): patrística, espiritualidad, vidas de santos y pensamiento social cr
 1. **Vender mejor**: un sitio web con el catálogo completo (unos 720 títulos), fichas con portada, precio y sinopsis,
    búsqueda y una «solicitud de pedido» que el cliente envía por WhatsApp o correo.
 2. **Comprar mejor**: un modelo de inventario que, a partir de lo que Roberto anota en una planilla, clasifica los
-   libros en las categorías AA, BB, CC y DD de la memoria, estima la demanda de los que se reponen y sugiere cuánto
+   libros en las categorías A, B, C y D de la memoria, estima la demanda de los que se reponen y sugiere cuánto
    importar en cada embarque y desde qué país.
 
 Personas:
@@ -161,7 +156,7 @@ Estas condiciones salen de los requerimientos RF-01 a RF-08 y RNF-01 a RNF-05 de
 
 | Condición | Detalle | Estado |
 |---|---|---|
-| Sin existencias en pantalla | Ni la ficha, ni el catálogo, ni los datos estructurados `Book` declaran disponibilidad. Ningún dato de inventario, costo ni precio neto se escribe en el HTML público | Cumple |
+| Estado de disponibilidad sin cantidades | Con la planilla conectada, cada ficha y cada tarjeta del catálogo muestran solo una etiqueta: «Disponible» (En bodega > 0), «Agotado» (En bodega = 0, categoría A o B, con «Avísame cuando llegue» y, si hay pedido en camino, «Llega en el próximo embarque») o «Bajo pedido» (En bodega = 0, categoría C, D o sin categoría, con «Pedir este título»). Al pie: «Disponibilidad al {fecha del cálculo}. La confirmamos antes de facturar». Los datos `Book` llevan `InStock` u `OutOfStock` (se omite en «Bajo pedido»). Nunca se publican cantidades, la categoría, costos ni precio neto. Sin planilla, o si el cálculo falla, no se muestra estado y queda el texto anterior | Cumple (prueba en `pruebas.yml`) |
 | Precio de lista con fecha | Se ve en el catálogo, en cada categoría, en la ficha y en el pie de página. Un título sin precio muestra «Precio a consultar» | Cumple (verificado) |
 | Solicitud sin pago en línea | Sin carro de compras, sin precio por cliente y sin documentos tributarios. Pide RUT con dígito verificador (módulo 11, obligatorio salvo para particulares), razón social, giro, contacto, teléfono y correo (obligatorios), y dirección de entrega y comuna (opcionales: la línea de entrega solo sale en el mensaje si el cliente escribió alguna). El mensaje empieza con «SOLICITUD DE PEDIDO WEB», que es la marca de origen, trae el total referencial a precio de lista con IVA y la fecha de la lista | Cumple |
 | Demanda no atendida | La búsqueda sin resultados ofrece un mensaje que empieza con «LIBRO NO ENCONTRADO» | Cumple |
@@ -210,11 +205,14 @@ Detalle del paso de cálculo de `publicar.yml`:
 
 | Secretos presentes | Resultado |
 |---|---|
-| Faltan `GOOGLE_CREDENCIALES` o `ID_PLANILLA` | El panel muestra datos de ejemplo (`datos.json`) |
-| Están los de la planilla, falta `CLAVE_PANEL` | Calcula y escribe en la planilla; el panel muestra datos de ejemplo |
-| Están los tres | Calcula, escribe en la planilla y publica `datos.cifrado.json` |
+| Faltan `GOOGLE_CREDENCIALES` o `ID_PLANILLA` | El panel muestra datos de ejemplo (`datos.json`) y el sitio no muestra disponibilidad |
+| Están los de la planilla, falta `CLAVE_PANEL` | Calcula, escribe en la planilla y genera la disponibilidad del sitio; el panel muestra datos de ejemplo |
+| Están los tres | Calcula, escribe en la planilla, genera la disponibilidad del sitio y publica `datos.cifrado.json` |
 
-El paso tiene `continue-on-error`: si Google falla, el sitio se publica igual y el panel avisa que no encontró datos.
+El cálculo corre **antes** de compilar el sitio: deja `src/_data/disponibilidad.json` (solo el estado de cada libro, sin
+cantidades; no se guarda en el repositorio) para que las fichas muestren su disponibilidad. El paso tiene
+`continue-on-error`: si Google falla, el sitio se publica igual, sin estado de disponibilidad, y el panel avisa que no
+encontró datos.
 Para recalcular en el momento: **Actions → Publicar sitio y panel → Run workflow**.
 
 ### 6.2 Secretos (Settings → Secrets and variables → Actions)
@@ -245,7 +243,7 @@ robot, con permiso de **Editor** solo en esa planilla). Las pestañas automátic
 |---|---|---|---|
 | Código | `id` | Auto | `CN-XXXX`, el mismo del sitio |
 | ISBN, Título, Autor, Editorial, Categoría | `isbn`, `titulo`, `autor`, `origen`, `categoria` | Auto | Del sitio |
-| Categoría de gestión | `categoria_gestion` | Auto | AA, BB, CC, DD o «Sin categoría» (sección 9.4) |
+| Categoría de gestión | `categoria_gestion` | Auto | A, B, C, D o «Sin categoría» (sección 9.4) |
 | **Se compra en** | `compra_en` | Roberto | España, Argentina o «España o Argentina» (si está en ambas, el modelo elige) |
 | Precio de venta | `precio_lista` | Auto | Precio con IVA del sitio (se cambia en Sveltia) |
 | **En bodega** | `bodega` | Roberto | Ejemplares físicos en la bodega |
@@ -291,8 +289,10 @@ misma cuadratura que «Ventas»: si ese día Roberto ya subió la bodega a mano,
 llegada cuenta como «Pedido en camino». Con estas filas se miden T y L (9.8).
 
 **Esta semana** — resumen para decidir (solo lectura): pedidos por país y cuál conviene, libros que se venden y
-están sin stock, «Te los pidieron y no había», «Bajas de stock sin venta anotada», **qué contar esta semana** (sección 9.9), los títulos DD y CC con su valor, consignaciones de
-más de un año, productos de temporada, errores de datos y cómo anotar.
+están sin stock, «Te los pidieron y no había», «Se venden más rápido que antes», «Bajas de stock sin venta anotada»,
+**qué contar esta semana** (sección 9.9), los que pasan a B en el próximo cálculo, los títulos C y D con su valor, datos por
+actualizar, consignaciones de más de un año, productos de temporada, errores de datos y cómo anotar. Para cada país muestra la
+política de embarques con lo observado en «Importaciones» como comparación.
 
 **Pedido sugerido** — dos bloques:
 
@@ -314,7 +314,7 @@ más de un año, productos de temporada, errores de datos y cómo anotar.
 | **Historial** | Fotos de existencias (fecha, código, bodega, consignación, en camino) cada vez que algo cambia. Solo crece |
 | **Lista de libros** | «Código · Título», ISBN y precio, para la lista desplegable y las fórmulas de «Ventas» |
 | **Análisis técnico** | Todas las variables del modelo por libro |
-| **Indicadores** | Resumen general (existencias, categorías AA, BB, CC y DD, clases de demanda, políticas, pedidos, ventas, conteo) |
+| **Indicadores** | Resumen general (existencias, categorías A, B, C y D, clases de demanda, políticas, pedidos, ventas, conteo) |
 
 ### 7.3 Fórmulas de la planilla y el idioma
 
@@ -331,10 +331,10 @@ inventario/
 ├── fuentes.py            leer/escribir Google Sheets (gspread) o CSV; formato, protección, listas, notas
 ├── planilla.py           compara «Inventario» con la última foto y deduce movimientos
 ├── ventas.py             pestaña «Ventas»: movimientos, descuento del stock, cuadratura, indicadores
-├── importaciones.py      pestaña «Importaciones»: llegadas, suma al stock, pedido en camino, T y L medidos
+├── importaciones.py      pestaña «Importaciones»: llegadas, suma al stock, pedido en camino, T y L observados
 ├── stock.py              efectos de cada movimiento y existencias
 ├── demanda.py            serie mensual, clase por meses con demanda, ADI y CV² informativos, pronóstico SBA
-├── clasificacion_abc.py  categorías de gestión AA, BB, CC y DD (el nombre del archivo es histórico)
+├── categorias.py         categorías de gestión A, B, C y D
 ├── politica.py           política por categoría y nivel objetivo S (Poisson al 95 %)
 ├── pedido.py             pedido por embarque programado y dónde comprar: combinaciones de envíos con costo fijo
 ├── modelo.py             une todo: calcular() → Resultado
@@ -367,7 +367,7 @@ pytest -q
 3. **Descontar ventas nuevas** de «Ventas» y **sumar llegadas nuevas** de «Importaciones» al stock de Inventario, con
    cuadratura (9.1 y 7.1). Completar «Pedido en camino» de los libros con filas abiertas en «Importaciones».
 4. Reunir todos los movimientos: registro + deducidos + todas las filas de Ventas + las llegadas de Importaciones.
-5. Calcular existencias (9.2), demanda (9.3), categorías AA, BB, CC y DD (9.4), clase de demanda (9.5), pronóstico (9.6),
+5. Calcular existencias (9.2), demanda (9.3), categorías A, B, C y D (9.4), clase de demanda (9.5), pronóstico (9.6),
    política y nivel objetivo (9.7), pedido por embarque y dónde comprar (9.8), avisos, indicadores y conteo (9.9).
 6. Escribir: fotos nuevas en Historial, movimientos en el registro, columnas automáticas y celdas descontadas en
    Inventario, «Descontado del stock» en Ventas, Lista de libros, Esta semana, Pedido sugerido, Análisis técnico,
@@ -446,32 +446,33 @@ dₜ = máx(0,  venta + consignacion_liquidada − devolucion_cliente + venta_pe
 ```
 Es la **venta neta** de la memoria (Tabla 4.8, sobre facturas), más la **venta perdida** anotada en «Ventas», que corrige
 la demanda censurada. La **salida en guía no es venta**: un título que solo salió en consignación no tiene venta neta y
-queda en CC (9.4); cuenta cuando la librería lo factura.
+queda en C (9.4); cuenta cuando la librería lo factura.
 
-### 9.4 Categorías de gestión AA, BB, CC y DD (`clasificacion_abc.py`)
+### 9.4 Categorías de gestión A, B, C y D (`categorias.py`)
 
-Adaptan la estructura de política de Flores y Whybark (1987), con una diferencia que la memoria justifica en su sección
-4.2.5: en lugar de combinar valor de uso con criticidad, usan la **recurrencia de la demanda** y la **salida de bodega**,
+Las categorías A, B, C y D de la memoria adaptan las categorías AA, BB, CC y DD de Flores y Whybark (1987), con una
+diferencia que la memoria justifica en su sección 4.2.5: en lugar de combinar valor de uso con criticidad, usan la **recurrencia de la demanda** y la **salida de bodega**,
 porque la criticidad no puede evaluarse título por título con el registro disponible. **Reemplazan a la clasificación ABC
 por valor**, que deja de usarse en la política, la planilla y el panel.
 
 | Categoría | Criterio de asignación | Se repone |
 |---|---|---|
-| **AA** | Clase Intermitente, Regular, Estacional o Coyuntural (9.5) | Sí, según su clase (9.7) |
-| **BB** | Clase Esporádica: venta neta en uno o dos meses de la ventana | Sí, lo vendido desde el embarque anterior |
-| **CC** | Con existencias, sin venta neta en la ventana y con salida en guía de despacho (`consignacion_salida`) en la ventana | No |
-| **DD** | Con existencias, sin venta neta ni salida en guía | No |
+| **A** | Clase Intermitente, Regular, Estacional o Coyuntural (9.5) | Sí, según su clase (9.7) |
+| **B** | Clase Esporádica: venta neta en uno o dos meses de la ventana | Sí, lo vendido desde el embarque anterior |
+| **C** | Con existencias, sin venta neta en la ventana y con salida en guía de despacho (`consignacion_salida`) en la ventana | No |
+| **D** | Con existencias, sin venta neta ni salida en guía | No |
 | Sin categoría | Sin existencias y sin demanda. Se exhibe igual en el sitio | A pedido |
 
-- **Prioridad:** primero la demanda (AA y BB), después CC y DD.
-- **Qué no es CC ni DD:** un título con venta, aunque sea en un solo mes, es BB. DD queda para lo que no tuvo venta ni salida.
-- **Solicitudes del canal:** si un título CC o DD recibe una solicitud del canal web (fila de «Ventas» con canal Web / WhatsApp
-  y estado «No había stock»), el sistema no cambia su categoría: queda en CC o DD con el aviso «Título CC o DD con solicitud
-  del canal: pasa a BB en la próxima revisión». El cambio lo hace la revisión de la clasificación. Una venta concretada por el
-  canal web sí es venta neta y lo deja en BB de inmediato, porque BB es justamente «venta neta en uno o dos meses».
+- **Prioridad:** primero la demanda (A y B), después C y D.
+- **Qué no es C ni D:** un título con venta, aunque sea en un solo mes, es B. D queda para lo que no tuvo venta ni salida.
+- **Se recalcula en cada ejecución** con los últimos 21 meses: no hay una revisión aparte de la clasificación.
+- **Solicitudes del canal:** si un título C o D recibe una solicitud del canal web (fila de «Ventas» con canal Web / WhatsApp
+  y estado «No había stock»), en el cálculo en que se anota sigue en C o D con el aviso «Título C o D con solicitud del canal:
+  pasa a B en el próximo cálculo». Desde el cálculo siguiente esa solicitud cuenta como venta neta y el título queda en B.
+  Una venta concretada por el canal web es venta neta y lo deja en B de inmediato.
 - **Indicadores por categoría:** títulos, títulos con existencias, ejemplares, valor a precio de venta y porcentaje del valor.
-- **Qué hace con CC y DD el sistema:** solo los muestra con su valor. Su destino (consignación sin liquidar en CC, fondo sin
-  movimiento en DD) se decide en la memoria, no en el código.
+- **Qué hace con C y D el sistema:** solo los muestra con su valor. Su destino (consignación sin liquidar en C, fondo sin
+  movimiento en D) se decide en la memoria, no en el código.
 
 ### 9.5 Clase de demanda (`demanda.clasificar`)
 
@@ -480,7 +481,7 @@ Se cuenta k, el número de meses de la ventana con demanda neta positiva:
 | k | Clase | Detalle |
 |---|---|---|
 | 0 | Sin venta neta | |
-| 1 o 2 | **Esporádica** | No hay serie suficiente para estimar: se decide, no se estima (categoría BB) |
+| 1 o 2 | **Esporádica** | No hay serie suficiente para estimar: se decide, no se estima (categoría B) |
 | 3 o más | **Intermitente** | Si además ADI < 1,32 y CV² < 0,49, **Regular**, con el mismo trato |
 
 **Estacional** (calendarios y agendas) y **Coyuntural** (línea Carlo Acutis) se marcan a mano en Sveltia («Inventario: tipo
@@ -515,18 +516,19 @@ La política se asigna por categoría. La «decisión manual» de Sveltia manda 
 
 | Categoría y clase | Política | Cuánto |
 |---|---|---|
-| AA Intermitente o Regular | **Reponer** | Hasta el nivel objetivo S |
-| AA Estacional | **Temporada** | Un pedido anual que debe llegar antes de septiembre. Cantidad de la última temporada completa |
-| AA Coyuntural | **No reponer** | Se atiende por reacción |
-| BB | **Reponer lo vendido** | Unidades netas vendidas desde el último movimiento de importación del título, menos lo que ya viene en camino. Sin stock de seguridad |
-| CC y DD | **No reponer** | El sistema solo los muestra con su valor |
+| A Intermitente o Regular | **Reponer** | Hasta el nivel objetivo S |
+| A Estacional | **Temporada** | Un pedido anual que debe llegar antes de septiembre. Cantidad de la última temporada completa |
+| A Coyuntural | **No reponer** | Se atiende por reacción |
+| B | **Reponer lo vendido** | Unidades netas vendidas desde el último movimiento de importación del título, menos lo que ya viene en camino. Sin stock de seguridad |
+| C y D | **No reponer** | El sistema solo los muestra con su valor |
 | Sin categoría | **A pedido** | No se mantiene stock |
 
-La regla de BB es la lectura del diseño de «lo vendido desde el embarque anterior» y **queda por confirmar con Andrés**. Las
+La regla de B es la lectura del diseño de «lo vendido desde el embarque anterior» y **queda por confirmar con Andrés**. Las
 políticas «Stock mínimo» y «Liquidar o revisar» ya no se asignan automáticamente.
 
-**Nivel objetivo S** (solo AA Intermitente o Regular): el nivel hasta el que se repone en cada embarque. T y L son los
-del país de la **edición** del libro (origen editorial), medidos si hay 3 o más embarques de ese país (9.8). Es el **percentil
+**Nivel objetivo S** (solo A Intermitente o Regular): el nivel hasta el que se repone en cada embarque. T y L son
+siempre los de la política (`config/parametros.yml`) del país de la **edición** del libro (origen editorial). Los observados en
+«Importaciones» solo se muestran como comparación (9.8). Es el **percentil
 95 de una distribución de Poisson** cuya media es la tasa mensual λ por el intervalo entre embarques del origen más el
 plazo de reposición:
 ```
@@ -536,7 +538,7 @@ Sugeridoᵢ = máx(0, S − Posiciónᵢ)                                Posici�
 Un stock negativo es un error de datos: se avisa («Stock negativo») y cuenta como 0, para no inflar el pedido.
 
 **Reglas por confirmar con Andrés** (marcadas así en `politica.py`):
-- BB sin ninguna importación registrada: cuenta lo vendido desde el inicio de la ventana.
+- B sin ninguna importación registrada: cuenta lo vendido desde el inicio de la ventana.
 - Estacional: «Pedir» entre junio y agosto, hasta la venta neta de la última temporada completa (septiembre a marzo), menos
   la posición. El resto del año solo se avisa.
 - **T** es el intervalo entre embarques del origen, en meses (`intervalo_embarque_meses`): Argentina 12 y España 8,5. Todo origen
@@ -554,15 +556,16 @@ Los pedidos se hacen en **embarques programados** por origen, no cada vez que un
 embarque de un origen es la fecha de su última llegada registrada en «Importaciones» (país real de compra) más T meses. Si
 ese país no tiene llegadas en «Importaciones», se usa la última importación del registro, atribuida al origen del título.
 
-**T y L medidos** (`importaciones.efectivos`), para contrastar con los de la memoria:
+**T y L observados** (`importaciones.efectivos`), solo como aviso comparativo:
 ```
-T por país = mediana de los días entre fechas de llegada distintas, en sus últimos 5 embarques   (÷ 30,44 → meses)
-L por país = mediana de (fecha de llegada − fecha de pedido), en las filas que tienen ambas        (÷ 30 → meses)
+T observado = mediana de los días entre fechas de llegada distintas del país, en sus últimos 5 embarques   (÷ 30,44 → meses)
+L observado = mediana de (fecha de llegada − fecha de pedido), en las filas que tienen ambas                (÷ 30 → meses)
 ```
-Se usan solo con **3 o más embarques** con datos del país. Si no, se usan los de `config/parametros.yml`. El medido se informa
-siempre: «T = 12 meses (de la memoria). Medido: 3 meses en 2 embarques» o «T = 11,4 meses (medido en 4 embarques)». Se ve
-en «Análisis técnico» (columna `t_y_l`), en «Esta semana», en «Pedido sugerido» y en el panel. El T efectivo fecha el próximo
-embarque y, junto con L, entra al nivel objetivo S (9.7).
+S y la fecha del próximo embarque usan **siempre** los T y L de la política de la memoria (`config/parametros.yml`: Argentina
+12 meses y 5,5 días, España 8,5 meses y 7 días). Lo observado se muestra cuando hay **3 o más embarques** con datos del país,
+por ejemplo «Política: cada 12 meses. Observado: cada 3 meses (4 embarques) · plazo 5,5 días. Observado: 6 días (3
+embarques)». Se ve en «Análisis técnico» (columna `t_y_l`), en «Esta semana», en «Pedido sugerido» y en el panel. Si lo
+observado se aleja de la política, quien mantiene el sistema decide si actualiza `parametros.yml`.
 
 Costos por ejemplar del libro i comprado en el país o, con la fila de Configuración (o, edición):
 ```
@@ -578,7 +581,7 @@ La importación se atribuye al origen del título (su editorial), porque el regi
 distinto de Argentina se cuenta como España. Sin importaciones registradas, el embarque se considera vencido. Un embarque
 que vence en los próximos 30 días se pide «Ahora».
 
-**Necesidades de un embarque:** las líneas de la política (9.7) con Sugerido > 0, en AA y BB.
+**Necesidades de un embarque:** las líneas de la política (9.7) con Sugerido > 0, en A y B.
 
 **Dónde comprar.** Cada título que se vende en ambos orígenes va al origen con menor Costoᵢ,o entre los que envían. Se
 comparan las combinaciones de envíos que **cubren todas las necesidades** (Todo a España, Todo a Argentina, Dividir):
@@ -603,14 +606,15 @@ Sin pedido) con la fecha del próximo embarque.
 
 | Aviso | Condición |
 |---|---|
-| Quiebre | AA con política Reponer y Bodega ≤ 0 («ya viene en tránsito» si En camino > 0) |
+| Quiebre | A con política Reponer y Bodega ≤ 0 («ya viene en tránsito» si En camino > 0) |
 | Bajo el objetivo | Sugerido > 0 |
 | Stock negativo | Bodega < 0 (revisar movimientos) |
 | Consignación abierta | Antigüedad FIFO ≥ 365 días |
 | Datos por actualizar | Tipo de cambio de más de 6 meses, factores de costo de más de 12 meses, lista de precios del sitio de más de 12 meses, o cualquiera de ellos sin fecha de vigencia |
 | Te los pidieron y no había | Filas «No había stock» de los últimos 90 días |
 | Bajas sin venta anotada | Bajas de bodega deducidas hoy sin fila en «Ventas» (cuando ya se usa Ventas) |
-| Solicitud del canal | Título CC o DD con una solicitud del canal web: pasa a BB en la próxima revisión |
+| Solicitud del canal | Título C o D con una solicitud del canal web recién anotada: pasa a B en el próximo cálculo |
+| Se vende más rápido | Clase Intermitente, Regular o Esporádica cuyo ritmo de los últimos 3 meses es al menos 2 veces el de los 18 anteriores, con 3 o más unidades netas en esos 3 meses: «Se vende más rápido que antes: revisa si conviene pedir más que el nivel objetivo». No cambia S |
 | Mínimo de embarque | Un origen con Σ FOB bajo el mínimo en el próximo embarque |
 
 Otros indicadores: `cobertura = Bodega / ritmo mensual` (meses), `valor_bodega = Bodega × precio_lista`, y por categoría los
@@ -622,11 +626,11 @@ Whybark (1987):
 
 | Categoría (con existencias) | Conteo | Registro de existencias |
 |---|---|---|
-| AA | Mensual | Permanente, con cada embarque, guía y factura |
-| BB | Cada 6 meses | Con cada conteo |
-| CC y DD | Una vez al año | Con cada conteo |
+| A | Mensual | Permanente, con cada embarque, guía y factura |
+| B | Cada 6 meses | Con cada conteo |
+| C y D | Una vez al año | Con cada conteo |
 
-La clasificación se revisa cada 6 meses en AA y BB y una vez al año en CC y DD. La hoja lista los títulos que toca contar en
+La clasificación se revisa cada 6 meses en A y B y una vez al año en C y D. La hoja lista los títulos que toca contar en
 la semana y la frecuencia de cada categoría: los títulos con existencias de una categoría se reparten en turnos de
 52 / (conteos al año) semanas, de modo que cada uno se cuenta con su frecuencia.
 
@@ -654,11 +658,11 @@ vigencia». Las fechas salen de las columnas «vigente desde» de la pestaña Co
 |---|---|---|---|
 | `HISTORIA_MESES` | 21 | 9.3 | Ventana de clasificación de la memoria |
 | `CORTE_ADI` / `CORTE_CV2` | 1,32 / 0,49 | 9.5 | Syntetos, Boylan y Croston (2005), solo informativos |
-| `CONTEOS_POR_ANIO` | AA 12, BB 2, CC 1 y DD 1 | 9.9 | Tabla 4.26 |
+| `CONTEOS_POR_ANIO` | A 12, B 2, C 1 y D 1 | 9.9 | Tabla 4.26 |
 | `DIAS_CONSIGNACION_ANTIGUA` | 365 | 9.9 | Criterio de operación |
 | `MESES_TIPO_CAMBIO` / `MESES_FACTORES` / `MESES_LISTA_PRECIOS` | 6 / 12 / 12 | 9.9 | Umbrales de los avisos de caducidad |
+| `ACELERACION_MESES_RECIENTES` / `ACELERACION_MESES_PREVIOS` / `ACELERACION_FACTOR` / `ACELERACION_MINIMO_UNIDADES` | 3 / 18 / 2 / 3 | 9.9 | Aviso de aceleración (memoria, sección 4.2.5: el modelo supone que el futuro se parece a la ventana) |
 
-La revisión de la clasificación (AA y BB cada 6 meses, CC y DD cada año, Tabla 4.26) es un texto fijo de «Esta semana».
 
 En la planilla (porque son sensibles o cambian seguido): factores de costo y tipo de cambio (Configuración) y
 costo fijo de cada envío (Pedido sugerido). **Los valores reales no se escriben en este repositorio**: los carga Andrés en la
@@ -666,14 +670,14 @@ planilla privada a partir de las mediciones de la memoria.
 
 ### 9.11 Ejemplo completo con un libro (datos sintéticos)
 
-Un libro español, AA, que también se consigue vía Argentina. Precio de lista $23.800 y tipo de cambio 950 (valores de
+Un libro español, A, que también se consigue vía Argentina. Precio de lista $23.800 y tipo de cambio 950 (valores de
 ejemplo, no los reales). Demanda de los últimos 21 meses:
 `0 1 0 3 0 0 2 0 1 0 0 2 0 1 0 0 3 0 1 0 2` (16 ejemplares en 9 meses).
 
 | Paso | Cálculo | Resultado |
 |---|---|---|
 | Clase | k = 9 meses con demanda, que son 3 o más | **Intermitente** (ADI = 21/9 = 2,33 y CV² = 0,195 solo informativos) |
-| Categoría | Clase Intermitente | **AA** |
+| Categoría | Clase Intermitente | **A** |
 | Pronóstico | SBA con α = 0,15 | **λ = 0,66 ejemplares/mes** |
 | Horizonte | T = 8,5 meses (España) más L = 7/30 de mes | 8,73 meses |
 | Media de Poisson | 0,66 × 8,73 | 5,75 |
@@ -696,9 +700,10 @@ ejemplo, no los reales). Demanda de los últimos 21 meses:
   Sin `datos.cifrado.json`, muestra `datos.json` (ejemplo).
 - **Esta semana**: «Dónde conviene comprar» (casillas de costo de envío que recalculan en vivo y no se guardan, porque el
   costo real lo anota Roberto en la planilla), una tarjeta por embarque con la fecha del próximo, la barra hacia el mínimo,
-  la lista con la categoría de cada título, el T y el L usados (medidos o de la memoria) y, si no alcanza el mínimo, el aviso «El envío a [origen] no alcanza el mínimo FOB»
+  la lista con la categoría de cada título, el T y el L de la política con lo observado como comparación y, si no alcanza el mínimo, el aviso «El envío a [origen] no alcanza el mínimo FOB»
   (botón «Copiar lista para la editorial»), «Qué contar esta semana» con la frecuencia por categoría, y las listas de avisos
-  (sin stock, pedidos sin stock, pasan a BB en la próxima revisión, fondo CC y DD con su valor, consignaciones, temporada).
+  (sin stock, pedidos sin stock, se venden más rápido que antes, pasan a B en el próximo cálculo, fondo C y D con su valor,
+  datos por actualizar, consignaciones, temporada).
 - **Libros**: tabla con la categoría de gestión, filtrable por «Qué hacer», búsqueda, orden, solo con aviso; ficha de cada libro
   con gráfico de venta neta por mes, la política en palabras (S y T + L cuando corresponde) y datos técnicos (k, ADI, CV², λ).
 - **Análisis**: indicadores (incluidos los de ventas), la tabla por categoría con la estructura de la
@@ -756,7 +761,7 @@ envíos responden al instante.
 - Los dólares dependen de factores de costo estimados por origen.
 - El flete no se calcula por peso: el catálogo no tiene el peso de cada título, así que el costo de cada envío lo anota Roberto.
 - Varios valores son supuestos o criterios y no mediciones: el nivel de servicio de 95 %, el supuesto de Poisson, α = 0,15,
-  y las reglas de reposición de BB y de Estacional. Cada uno está marcado como tal en 9.7 a 9.10.
+  y las reglas de reposición de B y de Estacional. Cada uno está marcado como tal en 9.7 a 9.10.
 - El intervalo entre embarques depende de una tasa de costo de capital de 15 % que es de criterio y no medida.
 - Una sola contraseña para el panel: quitar el acceso a una persona exige cambiarla para todos.
 - El próximo embarque usa la última llegada de «Importaciones» del país. Sin filas en esa pestaña, se estima con la
@@ -764,7 +769,10 @@ envíos responden al instante.
 - **S de un libro que se compra en ambos países** se calcula con el T y el L del país de su **edición** (origen editorial),
   aunque el comparador elija comprarlo por el otro país. Si el embarque elegido tiene otro intervalo, S puede quedar alto o
   bajo para ese embarque. Se dejó así para no mezclar la decisión de dónde comprar con la de cuánto tener.
-- T y L medidos con pocos embarques son poco estables: por eso se exigen 3 o más, y T usa solo los últimos 5.
+- T y L observados con pocos embarques son poco estables: solo se muestran con 3 o más, T usa los últimos 5, y nunca
+  reemplazan a los de la política.
+- La disponibilidad del sitio es la del último cálculo (cada hora en horario de oficina). Por eso la ficha dice «La
+  confirmamos antes de facturar».
 
 ## 14. Pendientes
 
@@ -773,7 +781,7 @@ envíos responden al instante.
 - Contraseña larga y planilla de la Fundación al pasar al oficial; migrar a la cuenta de la Fundación y a `ciudadnueva.cl`.
 - Fotos de los 125 libros con portada tipográfica.
 - Reescribir el historial de git para eliminar las portadas antiguas de Amazon.
-- Confirmar con Andrés las reglas de BB y de Estacional (9.7).
+- Confirmar con Andrés las reglas de B y de Estacional (9.7).
 - Cargar en la planilla privada los factores de costo y el tipo de cambio.
 - Validar con la contraparte el párrafo «Forma de pago».
 - Más adelante: WhatsApp Business (catálogo, respuestas), separar ventas en oferta en el pronóstico, medir el error
@@ -783,7 +791,8 @@ envíos responden al instante.
 
 | Término | Significado |
 |---|---|
-| AA, BB, CC, DD | Categorías de gestión de la memoria: recurrencia de la demanda y salida de bodega (sección 9.4). Reemplazan al ABC por valor |
+| A, B, C, D | Categorías de gestión de la memoria (adaptan AA a DD de Flores y Whybark): recurrencia de la demanda y salida de bodega (sección 9.4). Se recalculan en cada ejecución |
+| Disponible, Agotado, Bajo pedido | Únicas etiquetas de disponibilidad que muestra el sitio (sección 4.4). Nunca cantidades |
 | ADI | Average Demand Interval: meses promedio entre meses con venta |
 | CV² | Coeficiente de variación al cuadrado del tamaño de la demanda |
 | SBA | Syntetos–Boylan Approximation: Croston corregido para demanda intermitente |
