@@ -88,6 +88,16 @@ lo recordado en los dispositivos deja de servir y se pide la nueva.
    de `admin/config.yml`. Para probar sin eso: `npm install && npm run admin`, servir la carpeta y elegir
    **Work with Local Repository** en Chrome.
 
+## 5b. Agregar un libro en Sveltia
+
+1. **Libros del catálogo → Nuevo libro.** Escribe primero el **ISBN**.
+2. Deja vacíos el título y el autor si no los tienes a mano: al guardar se buscan solos por ISBN. Revisa el resultado; si no
+   se encontró, el título queda como «SIN TÍTULO (ISBN …)» y hay que escribirlo.
+3. Escribe el **precio de lista** o el **neto**: al guardar se calcula el otro (IVA de 19 %).
+
+Las búsquedas usan Google Books y Open Library. Google Books sin clave propia comparte una cuota diaria con todos los sitios
+y a veces no responde; Open Library tiene parte del catálogo de Ciudad Nueva, no todo.
+
 ## 6. Traspaso
 
 Lo que depende de quien mantiene el sistema. Si esa persona cambia, hay que traspasar o rehacer cada punto:

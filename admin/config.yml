@@ -46,11 +46,14 @@ collections:
       - { label: Categoría, field: categoria }
       - { label: Colección, field: coleccion }
     fields:
-      - { name: titulo, label: "Título", widget: string, hint: "Tal como aparece en la lista de precios. Si termina en una sigla como (BP. 46), el sitio la muestra como insignia." }
-      - { name: autor, label: "Autor", widget: string, hint: "Para obras colectivas escribe «Aa.Vv.»; el sitio muestra «Varios autores»." }
-      - { name: isbn, label: "ISBN", widget: string, pattern: ['^\d{10,13}$', "Debe tener 10 a 13 dígitos, sin guiones"] }
+      - { name: isbn, label: "ISBN", widget: string, pattern: ['^\d{9}[\dXx]$|^\d{13}$', "Debe tener 10 o 13 dígitos, sin guiones"], hint: "Escríbelo primero. Si dejas vacíos el título o el autor, al guardar se buscan solos por ISBN (Google Books y Open Library). Revisa el resultado." }
+      - { name: titulo, label: "Título", widget: string, required: false, hint: "Tal como aparece en la lista de precios. Vacío: se completa por ISBN al guardar. Si termina en una sigla como (BP. 46), el sitio la muestra como insignia." }
+      - { name: autor, label: "Autor", widget: string, required: false, hint: "Vacío: se completa por ISBN al guardar. Para obras colectivas escribe «Aa.Vv.»; el sitio muestra «Varios autores»." }
       - { name: portada, label: "Portada", widget: image, required: false, hint: "Foto o imagen de la tapa, vertical. Si no hay, el sitio genera una portada con el título." }
-      - { name: precio_iva, label: "Precio de lista (CLP, con IVA)", widget: number, value_type: int, min: 0, hint: "Si lo dejas en 0 el sitio muestra «Precio a consultar»." }
+      - { name: precio_iva, label: "Precio de lista (CLP, con IVA)", widget: number, value_type: int, min: 0, required: false, hint: "Escribe este o el neto: al guardar, el otro se calcula solo (IVA de 19 %). Si lo dejas en 0 el sitio muestra «Precio a consultar»." }
+      - { name: precio_neto, label: "Precio neto (CLP, sin IVA)", widget: number, value_type: int, min: 0, required: false, hint: "Escribe este o el de lista: al guardar, el otro se calcula solo. Si cambias los dos, manda el de lista." }
+      - { name: precio_iva_guardado, widget: hidden, required: false }
+      - { name: precio_neto_guardado, widget: hidden, required: false }
       - name: categoria
         label: "Categoría"
         widget: relation
@@ -78,7 +81,6 @@ collections:
         required: false
         options: ["", "Reponer", "Reponer lo vendido", "Temporada", "No reponer", "A pedido"]
         hint: "Solo si quieres pasar por encima de la política que asigna la categoría (AA repone hasta S, BB repone lo vendido, CC y DD no se reponen). Vacío: la decide el cálculo."
-      - { name: precio_neto, label: "Precio neto (CLP, sin IVA) — uso interno", widget: number, value_type: int, required: false }
       - { name: estado_comercial, label: "Estado comercial — uso interno", widget: string, required: false }
       - { name: id_catalogo, label: "ID interno del catálogo", widget: string, required: false }
 

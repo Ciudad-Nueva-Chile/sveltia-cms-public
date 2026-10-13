@@ -26,6 +26,8 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Ayudas de Sveltia (precio de lista ↔ neto, título y autor por ISBN)
+        run: node --test tests/ayudas_admin.test.mjs
       - name: El sitio se compila igual que en la publicación (con prefijo de GitHub Pages)
         env:
           PATH_PREFIX: /${{ github.event.repository.name }}/
