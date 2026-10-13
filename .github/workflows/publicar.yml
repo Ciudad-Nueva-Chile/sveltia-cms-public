@@ -30,6 +30,11 @@ concurrency:
   group: pages
   cancel-in-progress: false
 
+# Disponibilidad en el sitio («Disponible», «Agotado», «Bajo pedido»): DESACTIVADA. Con "no", el sitio no muestra estado y
+# cada ficha ofrece consultar la disponibilidad (texto preliminar). Para activarla, cambiar a "si".
+env:
+  MOSTRAR_DISPONIBILIDAD: "no"
+
 jobs:
   construir:
     runs-on: ubuntu-latest
@@ -57,15 +62,17 @@ jobs:
           PANEL: ${{ runner.temp }}/panel
         run: |
           mkdir -p "$PANEL"
+          DISP=""
+          if [ "$MOSTRAR_DISPONIBILIDAD" = "si" ]; then DISP="--disponibilidad src/_data/disponibilidad.json"; fi
           if [ -z "$GOOGLE_CREDENCIALES" ] || [ -z "$ID_PLANILLA" ]; then
             echo "::notice::Sin los secretos de la planilla: el panel muestra datos de ejemplo y el sitio no muestra disponibilidad."
             python -m inventario --fuente ejemplo --panel "$PANEL/datos.json" > /dev/null
           elif [ -z "$CLAVE_PANEL" ]; then
-            python -m inventario --fuente sheets --disponibilidad src/_data/disponibilidad.json
+            python -m inventario --fuente sheets $DISP
             echo "::notice::Falta el secreto CLAVE_PANEL: el panel muestra datos de ejemplo, no los de la planilla."
             python -m inventario --fuente ejemplo --panel "$PANEL/datos.json" > /dev/null
           else
-            python -m inventario --fuente sheets --disponibilidad src/_data/disponibilidad.json --panel "$PANEL/datos.cifrado.json" --cifrar
+            python -m inventario --fuente sheets $DISP --panel "$PANEL/datos.cifrado.json" --cifrar
           fi
       - name: Sitio y panel de administración
         env:

@@ -2,7 +2,7 @@
 
 Repositorio de prueba con dos partes que se publican juntas:
 
-- **El sitio** (`src/`, Eleventy): catálogo, fichas, solicitud de pedido por WhatsApp o correo y, con la planilla conectada, el estado de cada libro («Disponible», «Agotado» o «Bajo pedido», nunca cantidades). Se edita en `/admin/` con Sveltia CMS.
+- **El sitio** (`src/`, Eleventy): catálogo, fichas, solicitud de pedido por WhatsApp o correo y una consulta de disponibilidad por libro. El estado de cada libro («Disponible», «Agotado» o «Bajo pedido», nunca cantidades) está programado pero desactivado (`MOSTRAR_DISPONIBILIDAD` en `publicar.yml`). Se edita en `/admin/` con Sveltia CMS.
 - **El inventario** (`inventario/`, Python): existencias, categorías de gestión A, B, C y D, clase de demanda, nivel objetivo y pedido por embarque y origen.
   Los datos reales viven en una Google Sheet privada; este repositorio público solo tiene código y **datos de ejemplo sintéticos**.
 
