@@ -22,7 +22,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write   # para guardar los libros completados por ISBN (paso «Completar por ISBN»)
   pages: write
   id-token: write
 
@@ -50,6 +50,20 @@ jobs:
           cache: npm
       - run: pip install -r requirements.txt
       - run: npm ci
+      - name: Completar por ISBN los libros nuevos (título, autor, portada y edición)
+        # Solo libros agregados en Sveltia que no se buscaron antes (herramientas/completar_libros.py). Busca en los sitios
+        # de Ciudad Nueva España y Argentina y en Open Library, y guarda lo encontrado en el repositorio: sale publicado
+        # en esta misma pasada. Un guardado hecho por Actions no vuelve a disparar la publicación.
+        continue-on-error: true
+        run: |
+          python herramientas/completar_libros.py
+          if [ -n "$(git status --porcelain src/libros src/assets/portadas herramientas/indice_ciudadnueva.json)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add src/libros src/assets/portadas herramientas/indice_ciudadnueva.json
+            git commit -q -m "Completa por ISBN libros nuevos"
+            git pull -q --rebase && git push -q
+          fi
       - name: Cálculo con la planilla, datos del panel y disponibilidad del sitio
         # Va antes de compilar el sitio: deja src/_data/disponibilidad.json (solo el estado de cada libro, sin cantidades)
         # para que las fichas muestren «Disponible», «Agotado» o «Bajo pedido». Si Google falla o no hay planilla, el

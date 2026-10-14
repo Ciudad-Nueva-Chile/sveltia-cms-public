@@ -91,12 +91,23 @@ lo recordado en los dispositivos deja de servir y se pide la nueva.
 ## 5b. Agregar un libro en Sveltia
 
 1. **Libros del catálogo → Nuevo libro.** Escribe primero el **ISBN**.
-2. Deja vacíos el título y el autor si no los tienes a mano: al guardar se buscan solos por ISBN. Revisa el resultado; si no
-   se encontró, el título queda como «SIN TÍTULO (ISBN …)» y hay que escribirlo.
+2. Deja vacíos el título y el autor si no los tienes a mano: al guardar se buscan solos por ISBN. Si no se encontró, el
+   título queda como «SIN TÍTULO (ISBN …)».
 3. Escribe el **precio de lista** o el **neto**: al guardar se calcula el otro (IVA de 19 %).
+4. Unos minutos después, al publicarse, GitHub completa lo que siga faltando (título, autor, portada y edición) con los
+   sitios de Ciudad Nueva. Vuelve a abrir el libro y revisa el resultado; lo que no se encontró hay que escribirlo.
 
-Las búsquedas usan Google Books y Open Library. Google Books sin clave propia comparte una cuota diaria con todos los sitios
-y a veces no responde; Open Library tiene parte del catálogo de Ciudad Nueva, no todo.
+Al guardar, Sveltia busca en Google Books y Open Library (desde el navegador no se pueden consultar los sitios de Ciudad
+Nueva). Google Books sin clave propia comparte una cuota diaria con todos los sitios y a veces no responde; Open Library
+tiene parte del catálogo de Ciudad Nueva, no todo.
+
+Al publicar, `herramientas/completar_libros.py` busca en ciudadnueva.com (cada ficha trae ISBN, título, autor y portada),
+en la tienda de Ciudad Nueva Argentina (no publica el ISBN: solo se usa para la portada, por título casi idéntico) y en
+Open Library. Solo toca libros agregados en Sveltia (sin «ID interno del catálogo»), solo completa lo vacío y deja la
+marca oculta `busqueda_isbn` (fecha y fuente) para no buscar el mismo libro en cada pasada. Para repetir la búsqueda de un
+libro, borra la línea `busqueda_isbn` de su archivo en `src/libros`. Como el buscador de ciudadnueva.com no busca por
+ISBN, `herramientas/indice_ciudadnueva.json` guarda cada ficha del sitio con su ISBN (datos públicos); en cada búsqueda
+solo se leen las fichas nuevas y se agregan al índice.
 
 ## 6. Traspaso
 

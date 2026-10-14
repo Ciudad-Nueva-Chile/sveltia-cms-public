@@ -46,7 +46,7 @@ collections:
       - { label: Categoría, field: categoria }
       - { label: Colección, field: coleccion }
     fields:
-      - { name: isbn, label: "ISBN", widget: string, pattern: ['^\d{9}[\dXx]$|^\d{13}$', "Debe tener 10 o 13 dígitos, sin guiones"], hint: "Escríbelo primero. Si dejas vacíos el título o el autor, al guardar se buscan solos por ISBN (Google Books y Open Library). Revisa el resultado." }
+      - { name: isbn, label: "ISBN", widget: string, pattern: ['^\d{9}[\dXx]$|^\d{13}$', "Debe tener 10 o 13 dígitos, sin guiones"], hint: "Escríbelo primero. Si dejas vacíos el título o el autor, al guardar se buscan por ISBN en Google Books y Open Library. Lo que siga faltando (también la portada y la edición) se busca minutos después en los sitios de Ciudad Nueva, al publicar. Revisa el resultado." }
       - { name: titulo, label: "Título", widget: string, required: false, hint: "Tal como aparece en la lista de precios. Vacío: se completa por ISBN al guardar. Si termina en una sigla como (BP. 46), el sitio la muestra como insignia." }
       - { name: autor, label: "Autor", widget: string, required: false, hint: "Vacío: se completa por ISBN al guardar. Para obras colectivas escribe «Aa.Vv.»; el sitio muestra «Varios autores»." }
       - { name: portada, label: "Portada", widget: image, required: false, hint: "Foto o imagen de la tapa, vertical. Si no hay, el sitio genera una portada con el título." }
@@ -54,6 +54,7 @@ collections:
       - { name: precio_neto, label: "Precio neto (CLP, sin IVA)", widget: number, value_type: int, min: 0, required: false, hint: "Escribe este o el de lista: al guardar, el otro se calcula solo. Si cambias los dos, manda el de lista." }
       - { name: precio_iva_guardado, widget: hidden, required: false }
       - { name: precio_neto_guardado, widget: hidden, required: false }
+      - { name: busqueda_isbn, widget: hidden, required: false }
       - name: categoria
         label: "Categoría"
         widget: relation
@@ -74,13 +75,13 @@ collections:
         widget: select
         required: false
         options: ["", "Estacional", "Coyuntural"]
-        hint: "Estacional: calendarios y agendas (un pedido al año antes de septiembre). Coyuntural: un acontecimiento que no se repite, como la línea Carlo Acutis (se atiende por reacción). Ambos van a la categoría AA. Vacío: la clase la decide el cálculo por meses con venta."
+        hint: "Estacional: calendarios y agendas (un pedido al año antes de septiembre). Coyuntural: un acontecimiento que no se repite, como la línea Carlo Acutis (se atiende por reacción). Ambos van a la categoría A. Vacío: la clase la decide el cálculo por meses con venta."
       - name: inventario_decision
         label: "Inventario: decisión manual"
         widget: select
         required: false
         options: ["", "Reponer", "Reponer lo vendido", "Temporada", "No reponer", "A pedido"]
-        hint: "Solo si quieres pasar por encima de la política que asigna la categoría (AA repone hasta S, BB repone lo vendido, CC y DD no se reponen). Vacío: la decide el cálculo."
+        hint: "Solo si quieres pasar por encima de la política que asigna la categoría (A repone hasta S, B repone lo vendido, C y D no se reponen). Vacío: la decide el cálculo."
       - { name: estado_comercial, label: "Estado comercial — uso interno", widget: string, required: false }
       - { name: id_catalogo, label: "ID interno del catálogo", widget: string, required: false }
 

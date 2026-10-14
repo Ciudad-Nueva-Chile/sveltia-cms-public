@@ -88,7 +88,8 @@ admin/                      Sveltia CMS: libros, páginas y ajustes del sitio (v
 config/parametros.yml       decisiones del modelo (se editan a mano; las constantes de la memoria están en inventario/config.py)
 inventario/                 el modelo (Python); lenguaje.py tiene todos los textos que ve Roberto
 panel/                      panel de inventario: «Esta semana», «Libros» y «Análisis»
-herramientas/               generar_ejemplo.py (datos sintéticos) y crear_planilla.py (prepara la Google Sheet)
+herramientas/               generar_ejemplo.py (datos sintéticos), crear_planilla.py (prepara la Google Sheet) y
+                            completar_libros.py (completa por ISBN los libros nuevos al publicar)
 datos_ejemplo/              datos sintéticos: los títulos y precios son públicos; clientes, cantidades y costos son inventados
 tests/                      pruebas del modelo (63)
 .github/workflows/          pruebas; publicación diaria y con cada cambio (sitio + /admin + /inventario + cálculo con la planilla)

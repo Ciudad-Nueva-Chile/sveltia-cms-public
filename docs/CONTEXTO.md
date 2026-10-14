@@ -184,7 +184,7 @@ Estas condiciones salen de los requerimientos RF-01 a RF-08 y RNF-01 a RNF-05 de
 
 | Colección | Archivo(s) | Qué se edita |
 |---|---|---|
-| **Libros del catálogo** | `src/libros/*.md` | **El ISBN va primero.** Al guardar (evento `preSave`, `admin/ayudas.js`): si el título o el autor están vacíos se buscan por ISBN en Google Books y Open Library (si no aparece, queda «SIN TÍTULO (ISBN …)» para completarlo a mano), y si se escribe el precio de lista o el neto se calcula el otro con IVA de 19 % (si cambian los dos, manda el de lista; dos campos ocultos guardan los valores anteriores para saber cuál cambió). Además: Título, autor, ISBN, portada, precio, categoría, **Ocultar en el sitio**, **Destacar**, edición, colección, n.º, sinopsis, tipo especial y decisión manual para el inventario. Vistas: destacados, ocultos, sin portada, patrística. En la lista, los ocultos llevan «🚫 OCULTO» |
+| **Libros del catálogo** | `src/libros/*.md` | **El ISBN va primero.** Al guardar (evento `preSave`, `admin/ayudas.js`): si el título o el autor están vacíos se buscan por ISBN en Google Books y Open Library (si no aparece, queda «SIN TÍTULO (ISBN …)»); lo que siga faltando (título, autor, portada, edición) lo completa minutos después la publicación en GitHub con los sitios de Ciudad Nueva (`herramientas/completar_libros.py`, marca oculta `busqueda_isbn`), y si se escribe el precio de lista o el neto se calcula el otro con IVA de 19 % (si cambian los dos, manda el de lista; dos campos ocultos guardan los valores anteriores para saber cuál cambió). Además: Título, autor, ISBN, portada, precio, categoría, **Ocultar en el sitio**, **Destacar**, edición, colección, n.º, sinopsis, tipo especial y decisión manual para el inventario. Vistas: destacados, ocultos, sin portada, patrística. En la lista, los ocultos llevan «🚫 OCULTO» |
 | **Páginas del sitio** | `src/paginas/*.md` | Nosotros, Librerías e instituciones |
 | **Ajustes del sitio** | `src/_data/*.json` | Contacto, WhatsApp, portada, franja de anuncio, categorías, colecciones |
 
@@ -199,7 +199,7 @@ Los parámetros del modelo ya no se editan en Sveltia: están en `config/paramet
 | Flujo | Cuándo | Qué hace |
 |---|---|---|
 | **Pruebas** (`pruebas.yml`) | Cada push y pull request | `pytest` (63 pruebas), el modelo de punta a punta con datos de ejemplo, la compilación del sitio con prefijo y una verificación de que el mapa del sitio trae todas las categorías (16), que ninguna descripción de ficha se repite y que no se cargan tipografías externas |
-| **Publicar sitio y panel** (`publicar.yml`) | Cada push a `main`, **cada hora de lunes a sábado de 08:00 a 20:00 de Chile** (07:00 a 19:00 en invierno), **todos los días a las 07:00** y a mano | Compila el sitio y Sveltia, copia el panel, calcula con la planilla, cifra los datos del panel y publica en GitHub Pages |
+| **Publicar sitio y panel** (`publicar.yml`) | Cada push a `main`, **cada hora de lunes a sábado de 08:00 a 20:00 de Chile** (07:00 a 19:00 en invierno), **todos los días a las 07:00** y a mano | Completa por ISBN los libros nuevos agregados en Sveltia (y guarda el cambio en el repositorio), compila el sitio y Sveltia, copia el panel, calcula con la planilla, cifra los datos del panel y publica en GitHub Pages |
 
 Detalle del paso de cálculo de `publicar.yml`:
 
@@ -342,7 +342,8 @@ inventario/
 ├── cifrado.py            AES-256-GCM para los datos del panel
 └── config.py             lectura de config/parametros.yml
 panel/                    index.html, panel.css, panel.js (dibuja; no calcula salvo el comparador de envíos)
-herramientas/             crear_planilla.py (prepara la planilla), generar_ejemplo.py (datos sintéticos)
+herramientas/             crear_planilla.py (prepara la planilla), generar_ejemplo.py (datos sintéticos),
+                          completar_libros.py (completa por ISBN los libros nuevos al publicar)
 datos_ejemplo/            Catalogo, Movimientos, EnTransito, Costos, Ventas, Importaciones, Envios (CSV inventados)
 tests/test_modelo.py      63 pruebas
 ```
