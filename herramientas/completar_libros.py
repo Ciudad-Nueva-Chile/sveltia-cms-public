@@ -109,7 +109,10 @@ def escribir_campos(md: Path, cambios: dict) -> None:
         if i is None:
             lineas.append(nueva)
         else:
-            lineas[i] = nueva
+            fin = i + 1
+            while fin < len(lineas) and lineas[fin][:1] in (" ", "\t"):    # valor largo partido en varias líneas
+                fin += 1
+            lineas[i:fin] = [nueva]
     md.write_text("---\n" + "\n".join(lineas) + "\n---" + cuerpo, encoding="utf-8")
 
 

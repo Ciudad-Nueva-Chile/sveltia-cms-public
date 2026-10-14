@@ -121,3 +121,10 @@ def test_open_library_y_marca_si_no_hay_nada(tmp_path):
     d = cl.leer(b)
     assert d["titulo"].startswith("SIN TÍTULO") and d["busqueda_isbn"] == "13-10-2026 · sin resultado"
     assert cl.pendientes(tmp_path) == []                                  # no se vuelve a buscar
+
+
+def test_escribe_sobre_el_formato_de_sveltia(tmp_path):
+    md = libro(tmp_path, "a.md", "---\ntitulo: SIN TÍTULO (ISBN\n  9788497155908)\nautor: ''\nisbn: '9788497155908'\n"
+                                 "oculto: false\n---\n")
+    cl.escribir_campos(md, {"titulo": "FRANCISCO Y EL SULTÁN", "autor": "Herrero"})
+    assert cl.leer(md) == {"titulo": "FRANCISCO Y EL SULTÁN", "autor": "Herrero", "isbn": "9788497155908", "oculto": False}
