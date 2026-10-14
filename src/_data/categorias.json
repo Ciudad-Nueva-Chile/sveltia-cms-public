@@ -15,6 +15,7 @@
     { "nombre": "Ecumenismo y diálogo interreligioso", "corto": "Diálogo y ecumenismo", "descripcion": "Encuentro entre confesiones cristianas y religiones.", "color": "#3a6186" },
     { "nombre": "Catequesis y sacramentos", "corto": "Catequesis", "descripcion": "Para preparar y vivir los sacramentos.", "color": "#8b4f6e" },
     { "nombre": "Doctrina social de la Iglesia", "corto": "Doctrina social", "descripcion": "La enseñanza social de la Iglesia, explicada.", "color": "#5c5c3d" },
-    { "nombre": "Calendarios y papelería", "corto": "Calendarios", "descripcion": "Calendarios, agendas y papelería.", "color": "#6d6d6d" }
+    { "nombre": "Calendarios y papelería", "corto": "Calendarios", "descripcion": "Calendarios, agendas y papelería.", "color": "#6d6d6d" },
+    { "nombre": "Otros títulos", "corto": "Otros títulos", "descripcion": "Más títulos del catálogo.", "color": "#555555" }
   ]
 }

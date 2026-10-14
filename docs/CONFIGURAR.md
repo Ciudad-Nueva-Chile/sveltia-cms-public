@@ -93,7 +93,8 @@ lo recordado en los dispositivos deja de servir y se pide la nueva.
 1. **Libros del catálogo → Nuevo libro.** Escribe primero el **ISBN**.
 2. Deja vacíos el título y el autor si no los tienes a mano: al guardar se buscan solos por ISBN. Si no se encontró, el
    título queda como «SIN TÍTULO (ISBN …)».
-3. Escribe el **precio de lista** o el **neto**: al guardar se calcula el otro (IVA de 19 %).
+3. Escribe el **precio de lista** o el **neto**: al guardar se calcula el otro (IVA de 19 %). La categoría es opcional: sin
+   ella el libro aparece en «Otros títulos» hasta que le asignes una.
 4. Unos minutos después, al publicarse, GitHub completa lo que siga faltando (título, autor, portada y edición) con los
    sitios de Ciudad Nueva. Vuelve a abrir el libro y revisa el resultado; lo que no se encontró hay que escribirlo.
 

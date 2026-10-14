@@ -63,6 +63,8 @@ collections:
         search_fields: ["lista.*.nombre"]
         value_field: "lista.*.nombre"
         display_fields: ["lista.*.nombre"]
+        required: false
+        hint: "Opcional. Si la dejas vacía, el libro aparece en «Otros títulos» hasta que le asignes una."
       - { name: oculto, label: "Ocultar en el sitio", widget: boolean, default: false, required: false, hint: "Activado: el libro no aparece en ninguna parte del sitio (catálogo, búsqueda, portada) y su página deja de publicarse. Sigue en la planilla de inventario." }
       - { name: destacado, label: "Destacar en la portada", widget: boolean, default: false, required: false }
       - { name: origen_editorial, label: "Edición", widget: select, options: ["Ciudad Nueva España", "Ciudad Nueva Argentina", "Uruguay", "Otra"], required: false }

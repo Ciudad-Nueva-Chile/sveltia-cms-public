@@ -18,6 +18,8 @@ export default {
   eleventyComputed: {
     // Un libro oculto desde /admin no genera su página
     permalink: (data) => (data.oculto ? false : `/catalogo/${data.page.fileSlug}/`),
+    // Un libro nuevo sin categoría va a «Otros títulos» hasta que se le asigne una
+    categoria: (data) => String(data.categoria || "").trim() || "Otros títulos",
     // Título sin la sigla de colección final, p. ej. "CARTAS CRISTOLOGICAS (BP. 46)" → "CARTAS CRISTOLOGICAS"
     titulo_visible: (data) => String(data.titulo || "").replace(/\\"/g, '"').replace(SIGLA_FINAL, "").replace(/\s{2,}/g, " ").trim(),
     // "BP 46", o vacío si el título no trae sigla
