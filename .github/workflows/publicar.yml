@@ -100,7 +100,7 @@ jobs:
           cp -R panel/. _site/inventario/
           rm -f _site/inventario/datos.json _site/inventario/datos.cifrado.json
           cp "$PANEL"/datos*.json _site/inventario/ 2>/dev/null || true
-      - uses: actions/configure-pages@v5
+      - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
