@@ -309,7 +309,7 @@ política de embarques con lo observado en «Importaciones» como comparación.
 
 | Pestaña | Contenido |
 |---|---|
-| **Configuración** | Una fila por origen de compra y edición: «FOB / precio neto», «Costo en bodega / precio neto», «Pesos por dólar», «Tipo de cambio vigente desde» y «Factores vigentes desde» (para los avisos de caducidad, 9.9). Si un país vende libros de otra edición con otras condiciones (p. ej. españoles comprados en Argentina), va en una fila aparte con esa «Edición del libro» |
+| **Configuración** | Una fila por origen de compra y edición: «FOB / precio neto», «Costo en bodega / precio neto», «Pesos por dólar», «Tipo de cambio vigente desde», «Factores vigentes desde» (para los avisos de caducidad, 9.9) y «Cómo se obtuvo». **Se actualiza sola en cada cálculo** (`inventario/costos.py`): el dólar del Banco Central (mindicador.cl) y los factores medidos con los últimos 3 embarques de «Importaciones» que tienen FOB y gastos de internación; sin esos datos queda lo escrito a mano. Si un país vende libros de otra edición con otras condiciones (p. ej. españoles comprados en Argentina), va en una fila aparte con esa «Edición del libro» |
 | **Registro de movimientos** | Historia de demanda: la carga inicial (facturas, guías y notas de crédito del SII) más los movimientos deducidos de los cambios en «Inventario». Solo crece |
 | **Historial** | Fotos de existencias (fecha, código, bodega, consignación, en camino) cada vez que algo cambia. Solo crece |
 | **Lista de libros** | «Código · Título», ISBN y precio, para la lista desplegable y las fórmulas de «Ventas» |
@@ -575,8 +575,16 @@ FOBᵢ,o        = neto_USDᵢ × «FOB / precio neto»            → lo que se 
 Costoᵢ,o      = neto_USDᵢ × «Costo en bodega / precio neto» → puesto en bodega, decide dónde comprar
 ```
 La memoria mide estos factores por origen en su sección 4.1.5 (economía del negocio) y los usa en 4.2.5 para valorizar
-la reposición. **Sus valores reales y el tipo de cambio no se escriben en este repositorio**: Andrés los carga en la fila de
-cada origen de la pestaña Configuración de la planilla privada. Precio neto = precio con IVA / 1,19.
+la reposición. **Sus valores reales y el tipo de cambio no se escriben en este repositorio**: viven en la pestaña
+Configuración de la planilla privada. Precio neto = precio con IVA / 1,19. Cada cálculo los actualiza:
+```
+tipo_cambio          = dólar observado del Banco Central del último día hábil (mindicador.cl)
+FOB / precio neto    = Σ (FOB US$ × dólar del día de llegada) / Σ (precio_lista / 1,19 × cantidad)
+Costo / precio neto  = Σ (FOB en pesos + gastos de internación) / Σ (precio_lista / 1,19 × cantidad)
+```
+con los últimos 3 embarques llegados del país y la edición de la fila (la fila general usa las ediciones sin fila propia).
+Un embarque es una factura o DIN; los gastos se anotan una vez por embarque y se reparten entre ediciones según el FOB.
+Sin embarques con datos queda el valor escrito a mano (al inicio, los de la memoria).
 
 La importación se atribuye al origen del título (su editorial), porque el registro no dice desde dónde llegó, y todo origen
 distinto de Argentina se cuenta como España. Sin importaciones registradas, el embarque se considera vencido. Un embarque

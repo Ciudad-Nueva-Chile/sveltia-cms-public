@@ -43,9 +43,17 @@ crea la pestaña **Inventario** con las existencias que dan los movimientos carg
 - **Configuración** (oculta; menú Ver → Hojas ocultas): una fila por origen de compra con FOB / precio neto, costo
   puesto en bodega / precio neto y pesos por dólar. Si un origen vende libros de otra edición con otras condiciones
   (por ejemplo, libros españoles comprados en Argentina), se agrega una fila con esa «Edición del libro». La fila
-  con la edición vacía vale para todo lo demás. Los factores reales salen de la memoria (sección 4.1.5) y el tipo de
-  cambio es el vigente: se escriben solo aquí, nunca en el repositorio. Cada fila lleva «Tipo de cambio vigente desde» y
-  «Factores vigentes desde»: con ellas «Esta semana» avisa cuando el tipo de cambio pasa de 6 meses o los factores de 12.
+  con la edición vacía vale para todo lo demás. Se escriben solo aquí, nunca en el repositorio. **Cada cálculo la
+  actualiza sola** (`inventario/costos.py`):
+  - **Pesos por dólar**: el dólar observado del Banco Central del último día hábil (mindicador.cl). Si no responde,
+    queda el que había.
+  - **FOB / precio neto**: medido con los últimos 3 embarques llegados de «Importaciones» que tienen «FOB total US$»:
+    Σ FOB × dólar del día de llegada / Σ precio neto de esos libros.
+  - **Costo en bodega / precio neto**: igual, sumando los «Gastos de internación $» del embarque (flete, seguro, agente
+    y aranceles, sin IVA; se anotan una vez por factura o DIN).
+  - Sin embarques con esos datos queda el valor escrito a mano (al principio, los de la memoria, sección 4.1.5).
+    «Cómo se obtuvo» dice el origen de cada valor y «Factores vigentes desde» la fecha del último embarque usado: «Esta
+    semana» avisa si pasa de 12 meses.
 - **Inventario**: la crea el primer cálculo. Desde entonces Roberto corrige ahí las llegadas, conteos y consignaciones.
 - **Importaciones** (cómo anotar un embarque, para Roberto):
   1. Al hacer el pedido a la editorial, agrega una fila por libro con la fecha de pedido, el país, el libro y la cantidad.
@@ -128,7 +136,8 @@ Lo que depende de quien mantiene el sistema. Si esa persona cambia, hay que tras
 Una vez al año, quien mantiene el sistema:
 
 1. Renueva el token de GitHub antes de que venza.
-2. Revisa el tipo de cambio y los factores de costo en Configuración y actualiza sus fechas «vigente desde».
+2. Revisa en Configuración que los factores de costo se estén midiendo («Cómo se obtuvo»): si dice «el escrito a mano»,
+   anota el FOB y los gastos de internación de las importaciones en «Importaciones».
 3. Revisa T y L en `config/parametros.yml` (y la tasa de costo de capital de la que sale T).
 4. Revisa y acepta (o descarta) las propuestas de Dependabot pendientes.
 5. Comprueba en **Actions → Publicar sitio y panel** que el proceso diario corre sin errores.

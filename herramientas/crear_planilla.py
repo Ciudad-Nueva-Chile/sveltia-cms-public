@@ -93,8 +93,9 @@ def main():
         f.escribir("Costos", cfg.rename(columns=ENCABEZADOS["Costos"]), oculta=True,
                    formatos={5: "dd-mm-yyyy", 6: "dd-mm-yyyy"},
                    notas={5: "Fecha desde la que vale este tipo de cambio. Se avisa si pasan más de 6 meses.",
-                          6: "Fecha desde la que valen los factores de costo. Se avisa si pasan más de 12 meses."},
-                   anchos={0: 110, 1: 150, 2: 210, 3: 230, 4: 130, 5: 200, 6: 180})
+                          6: "Fecha desde la que valen los factores de costo. Se avisa si pasan más de 12 meses.",
+                          7: "Lo completa el cálculo: si cada valor se midió o quedó el escrito a mano."},
+                   anchos={0: 110, 1: 150, 2: 210, 3: 230, 4: 130, 5: 200, 6: 180, 7: 420})
         print("  Configuración: lista (oculta)")
 
     # Ventas (visible): con --con-ejemplo, las ventas de ejemplo quedan como históricas (ya están en las existencias)

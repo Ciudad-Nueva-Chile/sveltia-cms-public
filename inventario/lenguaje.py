@@ -42,10 +42,10 @@ ENCABEZADOS = {
     "ListaLibros": {"libro": "Libro", "isbn": "ISBN", "precio_lista": "Precio de lista"},
     "Importaciones": {"fecha_pedido": "Fecha de pedido", "fecha_llegada": "Fecha de llegada", "pais": "País de compra",
                       "documento": "N° de factura o DIN", "id": "Libro", "cantidad": "Cantidad", "fob_usd": "FOB total US$",
-                      "notas": "Notas", "sumado": "Sumado al stock"},
+                      "gastos_clp": "Gastos de internación $", "notas": "Notas", "sumado": "Sumado al stock"},
     "Costos": {"origen": "Se compra en", "edicion": "Edición del libro", "fob_sobre_precio_neto": "FOB / precio neto",
                "costo_sobre_precio_neto": "Costo en bodega / precio neto", "tipo_cambio": "Pesos por dólar",
-               "tc_desde": "Tipo de cambio vigente desde", "factores_desde": "Factores vigentes desde"},
+               "tc_desde": "Tipo de cambio vigente desde", "factores_desde": "Factores vigentes desde", "como": "Cómo se obtuvo"},
 }
 PESTANAS = {"Catalogo": "Catálogo", "Movimientos": "Movimientos", "EnTransito": "En tránsito", "Costos": "Costos"}
 

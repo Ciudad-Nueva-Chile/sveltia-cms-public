@@ -1,7 +1,8 @@
 """La pestaña «Importaciones»: una fila por libro y embarque.
 
 Columnas que edita Roberto: fecha de pedido, fecha de llegada (vacía = en camino), país de compra, factura o DIN, libro,
-cantidad, FOB total (opcional) y notas. «Sumado al stock» lo completa el cálculo.
+cantidad, FOB total y gastos de internación del embarque (opcionales; con ellos se miden los factores de costo de
+«Configuración», ver costos.py) y notas. «Sumado al stock» lo completa el cálculo.
 
 1. Una fila con fecha de llegada es una importación real (fecha y país reales). Se suma a «En bodega» una sola vez y se
    anota cuándo en «Sumado al stock». Cuadratura como en «Ventas»: si ese día Roberto ya subió la bodega a mano en
@@ -22,8 +23,8 @@ import pandas as pd
 
 from .config import DIAS_POR_MES
 
-COLUMNAS = ["fecha_pedido", "fecha_llegada", "pais", "documento", "id", "cantidad", "fob_usd", "notas", "sumado"]
-EDITABLES = ["fecha_pedido", "fecha_llegada", "pais", "documento", "id", "cantidad", "fob_usd", "notas"]
+COLUMNAS = ["fecha_pedido", "fecha_llegada", "pais", "documento", "id", "cantidad", "fob_usd", "gastos_clp", "notas", "sumado"]
+EDITABLES = ["fecha_pedido", "fecha_llegada", "pais", "documento", "id", "cantidad", "fob_usd", "gastos_clp", "notas"]
 HISTORICO = "Histórico (ya en existencias)"
 MINIMO_EMBARQUES = 3      # embarques con datos necesarios para usar T y L medidos
 ULTIMOS_EMBARQUES = 5     # T se mide sobre los últimos 5 embarques del país

@@ -61,7 +61,7 @@ Límites que conviene tener presentes:
   tiempo; el porcentaje queda anotado para separarlas más adelante.
 - El modelo supone que los próximos meses se parecen a los de la ventana. Un evento como una canonización cambia
   eso: por eso existe la clase Coyuntural.
-- Las cifras en dólares dependen de los factores de la pestaña oculta Configuración, que son una estimación por origen. Los valores reales los carga Andrés en la planilla privada y no se suben al repositorio.
+- Las cifras en dólares dependen de la pestaña Configuración de la planilla privada: el dólar se actualiza solo (Banco Central) y los factores de costo se miden con las importaciones que tienen FOB y gastos anotados; sin ellas, quedan los escritos a mano. Nunca se suben al repositorio.
 - El flete no se calcula por peso, porque el catálogo no tiene el peso de cada título.
 - El nivel de servicio de 95 %, el supuesto de Poisson, α = 0,15 y las reglas de B y de Estacional son supuestos o criterios y no mediciones. Las dos reglas están marcadas «por confirmar» en `inventario/politica.py`.
 

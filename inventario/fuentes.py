@@ -25,7 +25,8 @@ COLUMNAS = {
     "Catalogo": ["id", "isbn", "titulo", "origen", "categoria", "precio_lista", "clase_manual", "politica_manual", "compra_en"],
     "Movimientos": ["fecha", "id", "tipo", "cantidad", "documento", "cliente"],
     "EnTransito": ["id", "cantidad", "origen", "fecha_estimada"],
-    "Costos": ["origen", "edicion", "fob_sobre_precio_neto", "costo_sobre_precio_neto", "tipo_cambio", "tc_desde", "factores_desde"],
+    "Costos": ["origen", "edicion", "fob_sobre_precio_neto", "costo_sobre_precio_neto", "tipo_cambio", "tc_desde", "factores_desde",
+               "como"],
     "Inventario": ["id", "isbn", "titulo", "autor", "origen", "compra_en", "categoria", "categoria_gestion", "precio_lista",
                    "bodega", "consignacion", "en_camino", "actualizado", "se_vende", "que_hacer", "notas"],
     "Historial": ["fecha", "id", "bodega", "consignacion", "en_camino"],
@@ -62,9 +63,9 @@ def _fechas(serie: pd.Series) -> pd.Series:
 
 def _normalizar(nombre: str, df: pd.DataFrame) -> pd.DataFrame:
     df.columns = [str(c).strip() for c in df.columns]
-    if nombre in ("Ventas", "Importaciones"):
+    if nombre in ("Ventas", "Importaciones", "Costos"):
         df = df.reset_index(drop=True)
-        df["fila_planilla"] = range(2, len(df) + 2)  # fila en la planilla, para anotar «Descontado» o «Sumado al stock»
+        df["fila_planilla"] = range(2, len(df) + 2)  # fila en la planilla, para anotar «Descontado», «Sumado al stock», etc.
     legibles = {v.lower(): k for k, v in ENCABEZADOS.get(nombre, {}).items()}
     df = df.rename(columns=lambda c: legibles.get(c.lower(), c))
     for col in COLUMNAS.get(nombre, []):
@@ -96,6 +97,9 @@ def _normalizar(nombre: str, df: pd.DataFrame) -> pd.DataFrame:
             df[col] = _fechas(df[col])
         df["cantidad"] = pd.to_numeric(df["cantidad"], errors="coerce").fillna(0).astype(int)
         df["fob_usd"] = pd.to_numeric(df["fob_usd"].astype(str).str.replace(",", "."), errors="coerce")
+        # Pesos: la planilla entrega números; si alguien lo escribió como texto («$350.000»), el punto es de miles
+        texto = df["gastos_clp"].astype(str).str.replace(r"[$\s.]", "", regex=True).str.replace(",", ".")
+        df["gastos_clp"] = pd.to_numeric(df["gastos_clp"], errors="coerce").fillna(pd.to_numeric(texto, errors="coerce"))
         for col in ("pais", "documento", "notas", "sumado"):
             df[col] = df[col].astype(str).str.strip()
     if nombre == "Envios":
@@ -416,6 +420,52 @@ class FuenteSheets:
             valores = [[self._celda(datos.at[i, col]) if i in datos.index else ""] for i in ids]
             letra = self._letra(j)
             rangos.append({"range": f"{letra}2:{letra}{len(ids) + 1}", "values": valores})
+        if rangos:
+            hoja.batch_update(rangos, value_input_option="USER_ENTERED")
+
+    def asegurar_columnas(self, nombre: str, encabezados: list[str], notas: dict | None = None,
+                          editables: tuple = (), formatos: dict | None = None) -> None:
+        """Agrega al final de la pestaña las columnas que falten (pestañas creadas con una versión anterior)."""
+        hoja = self.hoja(nombre)
+        if hoja is None:
+            return
+        actual = hoja.row_values(1)
+        faltan = [e for e in encabezados if e not in actual]
+        if not faltan:
+            return
+        if hoja.col_count < len(actual) + len(faltan):
+            hoja.add_cols(len(actual) + len(faltan) - hoja.col_count)
+        pedidos = []
+        for k, enc in enumerate(faltan):
+            j = len(actual) + k
+            color = {"red": 1, "green": 0.894, "blue": 0.6} if enc in editables else self.COLOR_ENCABEZADO
+            pedidos.append({"updateCells": {"range": {"sheetId": hoja.id, "startRowIndex": 0, "endRowIndex": 1,
+                                                      "startColumnIndex": j, "endColumnIndex": j + 1},
+                                            "rows": [{"values": [{"userEnteredValue": {"stringValue": enc},
+                                                                  "userEnteredFormat": {"textFormat": {"bold": True},
+                                                                                        "backgroundColor": color},
+                                                                  "note": (notas or {}).get(enc, "")}]}],
+                                            "fields": "userEnteredValue,userEnteredFormat(textFormat,backgroundColor),note"}})
+            if enc in editables:
+                pedidos.append({"repeatCell": {"range": {"sheetId": hoja.id, "startRowIndex": 1, "startColumnIndex": j, "endColumnIndex": j + 1},
+                                               "cell": {"userEnteredFormat": {"backgroundColor": {"red": 1, "green": 0.973, "blue": 0.827}}},
+                                               "fields": "userEnteredFormat.backgroundColor"}})
+            if enc in (formatos or {}):
+                patron = formatos[enc]
+                pedidos.append({"repeatCell": {"range": {"sheetId": hoja.id, "startRowIndex": 1, "startColumnIndex": j, "endColumnIndex": j + 1},
+                                               "cell": {"userEnteredFormat": {"numberFormat": {"type": "DATE" if "yy" in patron else "NUMBER",
+                                                                                               "pattern": patron}}},
+                                               "fields": "userEnteredFormat.numberFormat"}})
+        self.libro.batch_update({"requests": pedidos})
+
+    def escribir_filas(self, nombre: str, valores: dict, columnas: list[str]) -> None:
+        """Escribe columnas (por encabezado) en filas conocidas: {fila: {encabezado: valor}}."""
+        if not valores:
+            return
+        hoja = self.hoja(nombre)
+        encabezado = hoja.row_values(1)
+        rangos = [{"range": f"{self._letra(encabezado.index(col))}{fila}", "values": [[self._celda(v)]]}
+                  for fila, cols in valores.items() for col, v in cols.items() if col in columnas and col in encabezado]
         if rangos:
             hoja.batch_update(rangos, value_input_option="USER_ENTERED")
 
