@@ -201,6 +201,9 @@ def ciclo_planilla(fuente: FuenteSheets, catalogo: pd.DataFrame, p, fecha_corte=
     calcular y escribir resultados."""
     hoy = pd.Timestamp(fecha_corte) if fecha_corte else pd.Timestamp.now(tz="America/Santiago").tz_localize(None).normalize()
     inv = fuente.leer("Inventario")
+    # Filas sin código o con el código repetido (p. ej. un libro de prueba ya borrado) no se pueden cruzar: se ignoran y
+    # desaparecen al reescribir la pestaña, que se arma desde el catálogo
+    inv = inv[inv["id"].astype(str).str.strip(" '\"") != ""].drop_duplicates("id")
     hist = fuente.leer("Historial")
     mov = fuente.leer("Movimientos")
     mov = mov[mov["tipo"] != "pedido_en_camino"]  # lo que viene en camino se lee de la columna del inventario

@@ -15,6 +15,7 @@ import re
 from pathlib import Path
 
 import pandas as pd
+import yaml
 
 from .lenguaje import ENCABEZADOS, ETIQUETA_ENVIO, TIPO_INTERNO
 from . import ventas as ventas_mod
@@ -117,11 +118,13 @@ def catalogo_desde_sitio(carpeta: Path) -> pd.DataFrame:
     """El catálogo del sitio (src/libros/*.md) es la fuente única de títulos, precios y decisiones manuales."""
     filas = []
     for md in sorted(Path(carpeta).glob("*.md")):
-        cabecera = md.read_text(encoding="utf-8").split("\n---", 1)[0]  # solo el encabezado YAML
+        # Se lee como YAML: Sveltia escribe sin comillas o con comillas simples ('') y el catálogo original con dobles
+        partes = md.read_text(encoding="utf-8").split("---", 2)
+        datos = (yaml.safe_load(partes[1]) or {}) if len(partes) == 3 else {}
 
-        def campo(k):
-            m = re.search(rf'^{k}:\s*(.*?)\s*$', cabecera, re.M)
-            return m.group(1).strip().strip('"').replace('\\"', '"') if m else ""
+        def campo(k, datos=datos):
+            v = datos.get(k)
+            return "" if v is None else str(v).strip()
 
         editorial = campo("origen_editorial")
         filas.append({

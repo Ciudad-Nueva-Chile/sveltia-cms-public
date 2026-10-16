@@ -626,3 +626,19 @@ def test_disponibilidad_solo_estado_sin_cantidades():
                            "c": {"estado": "agotado", "llega": False}, "d": {"estado": "bajo_pedido"}, "s": {"estado": "bajo_pedido"}}
     for v in d["libros"].values():                       # nunca cantidades ni la categoría
         assert set(v) <= {"estado", "llega"} and not any(isinstance(x, (int, float)) and not isinstance(x, bool) for x in v.values())
+
+
+# ---------- Catálogo desde el sitio: formatos de Sveltia y del catálogo original ----------
+def test_catalogo_lee_el_formato_de_sveltia(tmp_path):
+    from inventario.fuentes import catalogo_desde_sitio
+
+    (tmp_path / "a.md").write_text('---\nid_catalogo: "CN-0001"\nisbn: "9788497150033"\ntitulo: "CARTAS \\"X\\""\n'
+                                   'origen_editorial: "Ciudad Nueva España"\nprecio_iva: 70900\n---\n', encoding="utf-8")
+    (tmp_path / "b.md").write_text("---\ntitulo: LIBRO NUEVO\nautor: ''\nisbn: '9789505864089'\nprecio_iva: 0\n"
+                                   "origen_editorial: Ciudad Nueva Argentina\nid_catalogo: ''\n---\nSinopsis: con dos puntos.\n",
+                                   encoding="utf-8")
+    c = catalogo_desde_sitio(tmp_path).set_index("id")
+    assert list(c.index) == ["CN-0001", "9789505864089"]          # sin ID interno: el ISBN, nunca «''»
+    assert c.loc["CN-0001", "titulo"] == 'CARTAS "X"' and c.loc["CN-0001", "precio_lista"] == 70900
+    assert c.loc["9789505864089", "isbn"] == "9789505864089" and c.loc["9789505864089", "autor"] == ""
+    assert c.loc["9789505864089", "origen"] == "Argentina"
