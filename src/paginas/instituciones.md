@@ -7,6 +7,7 @@ bajada: Trabajamos directamente con quienes hacen llegar estos libros a sus lect
 
 ## A quiénes atendemos
 
+- A todas las personas
 - Librerías religiosas y generales
 - Parroquias, congregaciones y movimientos
 - Colegios, seminarios y facultades de teología
