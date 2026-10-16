@@ -15,7 +15,7 @@ Ciudad Nueva es la editorial del Movimiento de los Focolares, con casas editoras
 
 Los libros que ofrecemos provienen de **Ciudad Nueva España**, que edita entre otras las colecciones de patrística, y de **Ciudad Nueva Argentina**.
 
-## Lo que buscamos
+## Lo que queremos
 
 Que se sepa que Ciudad Nueva existe en Chile, que sus libros se conozcan y que sea fácil conseguirlos: para la librería que los ofrece, la comunidad que los estudia y la persona que los lee.
 
