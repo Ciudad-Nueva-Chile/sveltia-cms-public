@@ -13,4 +13,5 @@ precio_neto: 59580
 portada: "/assets/portadas/CN-0001.jpg"
 estado_comercial: ""
 oculto: false
+busqueda_sinopsis: "22-10-2026 · sin resultado"
 ---
