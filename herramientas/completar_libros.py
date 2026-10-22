@@ -46,6 +46,7 @@ SIN_TITULO = "SIN TÍTULO"
 MAX_PORTADA = 8_000_000         # bytes, antes de achicarla
 ALTO_PORTADA = 1000             # px
 HILOS = 4                       # consultas a la vez al recorrer ciudadnueva.com
+SINOPSIS_POR_PASADA = 40        # libros del catálogo que buscan su sinopsis en cada publicación
 INDICE = RAIZ / "herramientas" / "indice_ciudadnueva.json"
 
 
@@ -332,13 +333,15 @@ def texto_plano(fragmento: str) -> str:
 
 
 def sinopsis_es(pagina: str) -> str:
-    """Los párrafos largos de la ficha antes del ISBN (la descripción del libro)."""
-    hasta = pagina.find("ISBN:</strong>")
-    zona = pagina[:hasta] if hasta > 0 else pagina
-    zona = zona[zona.find("og:title"):] if "og:title" in zona else zona
+    """La sección «Sinopsis» de la ficha (sin «Autor» ni «Información», que vienen después)."""
+    m = re.search(r">\s*Sinopsis\s*</span>", pagina)
+    if not m:
+        return ""
+    zona = pagina[m.end():]
+    fin = re.search(r'id="subhistoria_articulo|>\s*Autor\s*</span>|>\s*Informaci', zona)
+    zona = zona[:fin.start()] if fin else zona
     parrafos = [texto_plano(p) for p in re.findall(r"(?is)<p[^>]*>(.*?)</p>", zona)]
-    buenos = [p for p in parrafos if len(p) >= 60 and not RUIDO.search(p)]
-    return "\n\n".join(buenos)
+    return "\n\n".join(p for p in parrafos if len(p) > 1 and not RUIDO.search(p))
 
 
 def productos_ar(bajar_fn=bajar) -> list[dict]:
@@ -371,10 +374,11 @@ def escribir_cuerpo(md: Path, texto_: str) -> None:
 
 
 def completar_sinopsis(carpeta: Path, bajar_fn=bajar, hoy: str | None = None, indice_ruta: Path | None = INDICE,
-                       solo_nuevos: bool = True, edicion: str | None = None) -> list[tuple[Path, str]]:
+                       solo_nuevos: bool = True, edicion: str | None = None, limite: int | None = None) -> list[tuple[Path, str]]:
     """Agrega la sinopsis a los libros sin cuerpo y sin «busqueda_sinopsis». solo_nuevos: solo libros agregados en
-    Sveltia (sin ID interno), como en cada publicación; False: todo el catálogo (carga inicial, a mano).
-    edicion: solo libros de esa edición (por ejemplo «Argentina»)."""
+    Sveltia (sin ID interno); False: todo el catálogo. edicion: solo libros de esa edición (por ejemplo «Argentina»).
+    limite: máximo de libros por pasada (para no cargar los sitios). Si un sitio no responde, el libro no se marca y se
+    vuelve a intentar en la próxima pasada."""
     hoy = hoy or dt.date.today().strftime("%d-%m-%Y")
     lista = []
     for md in sorted(carpeta.glob("*.md")):
@@ -384,25 +388,33 @@ def completar_sinopsis(carpeta: Path, bajar_fn=bajar, hoy: str | None = None, in
         if edicion and edicion not in str(d.get("origen_editorial") or ""):
             continue
         lista.append((md, d))
+    if limite is not None:
+        lista = lista[:limite]
     if not lista:
         return []
     indice = {i: u for u, i in (leer_indice(indice_ruta) if indice_ruta else {}).items() if i}
     productos = None
+    es_caido = False                              # si ciudadnueva.com no responde, no se insiste en esta pasada
     hechos = []
     for md, d in lista:
         isbn, ed = isbn13(d.get("isbn")), str(d.get("origen_editorial") or "")
-        texto_, fuente = "", ""
+        texto_, fuente, fallo = "", "", False
         if "Argentina" not in ed and isbn in indice:
+            if es_caido:
+                continue
             try:
                 texto_, fuente = sinopsis_es(texto(indice[isbn], bajar_fn)), "Ciudad Nueva España"
             except Exception:
-                pass
+                fallo = es_caido = True           # el sitio no respondió: se reintenta en la próxima pasada
         if not texto_ and "España" not in ed and not vacio(d, "titulo"):
             if productos is None:
                 productos = productos_ar(bajar_fn)
+            fallo = fallo or not productos
             texto_, fuente = sinopsis_ar(str(d["titulo"]), productos), "Ciudad Nueva Argentina"
         if texto_:
             escribir_cuerpo(md, texto_)
+        elif fallo:
+            continue
         escribir_campos(md, {"busqueda_sinopsis": f"{hoy} · {fuente if texto_ else 'sin resultado'}"})
         hechos.append((md, fuente if texto_ else ""))
     return hechos
@@ -569,6 +581,10 @@ def main(argv=None) -> int:
     res = completar(a.carpeta, a.portadas)
     for md, fuente in completar_sinopsis(a.carpeta):
         print(f"{md.name}: sinopsis {'de ' + fuente if fuente else 'no encontrada'}")
+    # Catálogo existente sin sinopsis: de a poco, para no cargar los sitios de Ciudad Nueva
+    hechos = completar_sinopsis(a.carpeta, solo_nuevos=False, limite=SINOPSIS_POR_PASADA)
+    if hechos:
+        print(f"Sinopsis del catálogo: {sum(1 for _, f in hechos if f)} de {len(hechos)} buscadas en esta pasada.")
     for md, c in res:
         campos = [k for k in c if k != "busqueda_isbn"]
         print(f"{md.name}: {', '.join(campos) if campos else 'nada encontrado'} ({c['busqueda_isbn']})")

@@ -125,8 +125,10 @@ solo se leen las fichas nuevas y se agregan al índice.
 
 **Sinopsis.** Cada libro toma la de su edición: las españolas de su ficha en ciudadnueva.com y las argentinas de la tienda
 de Ciudad Nueva Argentina (por título casi idéntico). Se escribe solo si «Sobre el libro» está vacío, y la marca oculta
-`busqueda_sinopsis` evita repetir la búsqueda. Carga inicial de todo el catálogo:
-`python herramientas/completar_libros.py --sinopsis-todos` (o `--sinopsis-todos España` / `Argentina`).
+`busqueda_sinopsis` evita repetir la búsqueda. Los libros nuevos la buscan en la primera publicación; el resto del
+catálogo, de a 40 por publicación (`SINOPSIS_POR_PASADA`), para no cargar los sitios. Si un sitio no responde, esos libros
+se reintentan en la pasada siguiente. A mano: `python herramientas/completar_libros.py --sinopsis-todos` (o
+`--sinopsis-todos España` / `Argentina`). Son los textos de la propia editorial; conviene revisarlos al publicar.
 
 ## 6. Traspaso
 

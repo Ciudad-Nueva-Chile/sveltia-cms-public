@@ -149,14 +149,30 @@ def test_sinopsis_de_cada_edicion(tmp_path):
     con = libro(tmp_path, "con.md", '---\nisbn: "9780140449136"\ntitulo: "X"\n---\nYa tenía sinopsis.\n')
     productos = [{"name": "A los jóvenes &#8211; Exhortación a un hijo espiritual [BPa, 83]",
                   "description": "<p>Basilio escribe a los <b>jóvenes</b>.</p><p>Segundo párrafo.</p>"}]
-    ficha = FICHA.replace("<p><strong>ISBN", "<p>Un encuentro entre Francisco de Asís y el sultán en plena cruzada.</p>"
-                                              "<p><strong>ISBN")
+    ficha = FICHA.replace("<p><strong>ISBN", '<span style="x">Sinopsis</span><br/><p>Un encuentro entre Francisco de Asís '
+                                              'y el sultán en plena cruzada.</p><div id="subhistoria_articulo2"><span>Autor'
+                                              '</span><p>Madrid, 1981. Escritora.</p></div><p><strong>ISBN')
     indice = tmp_path / "i.json"
     cl.guardar_indice(indice, {"https://www.ciudadnueva.com/libro/fys": "9788497155908"})
     bajar = web({"wc/store": json.dumps(productos), "ciudadnueva.com/libro/fys": ficha})
     hechos = cl.completar_sinopsis(tmp_path, bajar, hoy="22-10-2026", indice_ruta=indice, solo_nuevos=False)
     assert cl.cuerpo(ar).startswith("Basilio escribe a los") and cl.cuerpo(ar).endswith("\n\nSegundo párrafo.")
-    assert cl.cuerpo(es).startswith("Un encuentro entre Francisco")
+    assert cl.cuerpo(es) == "Un encuentro entre Francisco de Asís y el sultán en plena cruzada."      # sin la biografía
     assert cl.cuerpo(con) == "Ya tenía sinopsis."
     assert cl.leer(es)["busqueda_sinopsis"] == "22-10-2026 · Ciudad Nueva España"
     assert len(hechos) == 2
+
+
+def test_si_el_sitio_espanol_no_responde_no_marca_ni_insiste(tmp_path):
+    for n in range(3):
+        libro(tmp_path, f"es{n}.md", f'---\nisbn: "978849715590{n}"\ntitulo: "T{n}"\norigen_editorial: "Ciudad Nueva España"\n---\n')
+    indice = tmp_path / "i.json"
+    cl.guardar_indice(indice, {f"https://www.ciudadnueva.com/libro/x{n}": cl.isbn13(f"978849715590{n}") for n in range(3)})
+    pedidos = []
+
+    def caido(url):
+        pedidos.append(url)
+        raise OSError("sin respuesta")
+    hechos = cl.completar_sinopsis(tmp_path, caido, hoy="22-10-2026", indice_ruta=indice, solo_nuevos=False)
+    assert hechos == [] and len(pedidos) == 1                  # una sola consulta fallida; nada marcado
+    assert all("busqueda_sinopsis" not in cl.leer(m) for m in tmp_path.glob("es*.md"))
