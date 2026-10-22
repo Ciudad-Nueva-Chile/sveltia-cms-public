@@ -13,5 +13,4 @@ precio_neto: 61008
 portada: "/assets/portadas/CN-0002.jpg"
 estado_comercial: ""
 oculto: false
-aviso: "Posible duplicado: mismo ISBN que 9788497153188 «1-2 REYES, 1-2 CRÓNICAS, ESDRAS, NEHEMÍAS»"
 ---
