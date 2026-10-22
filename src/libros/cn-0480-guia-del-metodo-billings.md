@@ -13,4 +13,5 @@ precio_neto: 27647
 portada: ""
 estado_comercial: ""
 oculto: false
+aviso: "Posible duplicado: mismo ISBN que CN-0650 «REGULACION NATURAL DE LA FERTILIDAD»"
 ---

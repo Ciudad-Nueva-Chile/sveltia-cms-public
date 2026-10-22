@@ -13,4 +13,5 @@ precio_neto: 63950
 portada: "/assets/portadas/CN-0050.jpg"
 estado_comercial: ""
 oculto: false
+aviso: "Posible duplicado: mismo ISBN que CN-0046 «CREDO COLECCIÓN  COMPLETA (CC. 1 AL CC. 5)»"
 ---

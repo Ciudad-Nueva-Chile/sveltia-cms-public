@@ -13,4 +13,5 @@ precio_neto: 17647
 portada: ""
 estado_comercial: ""
 oculto: false
+aviso: "Posible duplicado: mismo ISBN que CN-0480 «GUIA DEL METODO BILLINGS»"
 ---

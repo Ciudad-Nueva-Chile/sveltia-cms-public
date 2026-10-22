@@ -13,4 +13,5 @@ precio_neto: 10168
 portada: ""
 estado_comercial: ""
 oculto: false
+aviso: "Posible duplicado: mismo ISBN que CN-0710 «Y VUELVE LA NAVIDAD»"
 ---

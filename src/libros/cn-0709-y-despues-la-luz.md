@@ -14,6 +14,7 @@ portada: "/assets/portadas/9789505861927_CN-0709.jpg"
 estado_comercial: ""
 oculto: false
 busqueda_sinopsis: "22-10-2026 · Ciudad Nueva Argentina"
+aviso: "Posible duplicado: mismo ISBN que CN-0711 «YA LO SE TODO, ES SOLO SEXO»"
 ---
 La pregunta sobre el sentido de nuestra vida está íntimamente relacionada con la conciencia de que un día moriremos. La sentencia de muerte nos acompaña como una sombra desde el día de nuestro nacimiento. Pero por cuanto obvia sea esta constatación, es difícil agregarla a las otras evidencias de nuestra existencia.
 

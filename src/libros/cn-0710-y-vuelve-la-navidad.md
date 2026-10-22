@@ -13,4 +13,5 @@ precio_neto: 11681
 portada: "/assets/portadas/9788485159932_CN-0710.jpg"
 estado_comercial: ""
 oculto: false
+aviso: "Posible duplicado: mismo ISBN que CN-0712 «YO, MADRE DE UN DROGADICTO»"
 ---
