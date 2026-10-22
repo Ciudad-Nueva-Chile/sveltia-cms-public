@@ -13,5 +13,4 @@ precio_neto: 21092
 portada: "/assets/portadas/CN-0555.jpg"
 estado_comercial: ""
 oculto: false
-aviso: "Posible duplicado: mismo ISBN que CN-0505 «LA DESVENTURA DE UN HOMBRE JUSTO»"
 ---
