@@ -12,4 +12,5 @@ precio_iva: 32900
 precio_neto: 27647
 portada: "/assets/portadas/CN-0579.jpg"
 estado_comercial: ""
+oculto: false
 ---

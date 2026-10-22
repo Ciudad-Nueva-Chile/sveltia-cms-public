@@ -35,9 +35,10 @@ collections:
     create: true
     slug: "{{fields.isbn}}"
     identifier_field: titulo
-    summary: "{{oculto | ternary('🚫 OCULTO · ', '')}}{{titulo}} — {{autor}} · ${{precio_iva}}"
+    summary: "{{aviso | ternary('⚠ REVISAR · ', '')}}{{oculto | ternary('🚫 OCULTO · ', '')}}{{titulo}} — {{autor}} · ${{precio_iva}}"
     sortable_fields: [titulo, autor, categoria, precio_iva]
     view_filters:
+      - { label: "⚠ Posibles duplicados", field: aviso, pattern: ".+" }
       - { label: "Destacados en la portada", field: destacado, pattern: true }
       - { label: "Ocultos en el sitio", field: oculto, pattern: true }
       - { label: "Sin portada", field: portada, pattern: "^$" }
@@ -55,6 +56,7 @@ collections:
       - { name: precio_iva_guardado, widget: hidden, required: false }
       - { name: precio_neto_guardado, widget: hidden, required: false }
       - { name: busqueda_isbn, widget: hidden, required: false }
+      - { name: aviso, label: "⚠ Aviso del sistema", widget: string, required: false, readonly: true, hint: "Lo escribe el sistema al publicar (por ejemplo, el mismo ISBN que otro libro). Si es un duplicado, elimina uno de los dos; el aviso se borra solo." }
       - name: categoria
         label: "Categoría"
         widget: relation
@@ -65,7 +67,7 @@ collections:
         display_fields: ["lista.*.nombre"]
         required: false
         hint: "Opcional. Si la dejas vacía, el libro aparece en «Otros títulos» hasta que le asignes una."
-      - { name: oculto, label: "Ocultar en el sitio", widget: boolean, default: false, required: false, hint: "Activado: el libro no aparece en ninguna parte del sitio (catálogo, búsqueda, portada) y su página deja de publicarse. Sigue en la planilla de inventario." }
+      - { name: oculto, label: "Ocultar en el sitio", widget: boolean, default: true, required: false, hint: "Un libro nuevo parte OCULTO: revisa sus datos (título, autor, portada, sinopsis, precio) y desactívalo para publicarlo. Activado, el libro no aparece en ninguna parte del sitio (catálogo, búsqueda, portada) y su página no se publica. Sigue en la planilla de inventario." }
       - { name: destacado, label: "Destacar en la portada", widget: boolean, default: false, required: false }
       - { name: origen_editorial, label: "Edición", widget: select, options: ["Ciudad Nueva España", "Ciudad Nueva Argentina", "Uruguay", "Otra"], required: false }
       - { name: coleccion, label: "Colección", widget: string, required: false, hint: "Solo para patrística: por ejemplo «Biblioteca de Patrística»." }

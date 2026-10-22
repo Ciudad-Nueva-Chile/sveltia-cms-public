@@ -16,4 +16,5 @@ inventario_decision: ''
 precio_neto: 14958
 estado_comercial: ''
 id_catalogo: CN-0319
+busqueda_sinopsis: "22-10-2026 · sin resultado"
 ---

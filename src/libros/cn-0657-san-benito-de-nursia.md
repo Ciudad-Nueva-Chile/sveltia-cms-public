@@ -13,4 +13,7 @@ precio_neto: 3866
 portada: "/assets/portadas/9789505862610.jpg"
 destacado: true
 estado_comercial: ""
+oculto: false
+busqueda_sinopsis: "22-10-2026 · Ciudad Nueva Argentina"
 ---
+Benito de Nursia fue un contemplativo volcado a los hombres. Nunca exigió a los demás algo que no pudiera ofrecer como testimonio en su vida. Su corazón se mostró firme con los fuertes, tierno y comprensivo con los débiles.

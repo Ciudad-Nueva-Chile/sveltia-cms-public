@@ -12,4 +12,6 @@ precio_iva: 22500
 precio_neto: 18908
 portada: "/assets/portadas/CN-0696.jpg"
 estado_comercial: ""
+oculto: false
+busqueda_sinopsis: "22-10-2026 · sin resultado"
 ---

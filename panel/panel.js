@@ -52,6 +52,13 @@
   // =====================================================================
   // ESTA SEMANA
   // =====================================================================
+  // España factura en euros: «€ 2.150 (US$ 2.333)»; Argentina, solo en dólares
+  function montoPedido(p, clave) {
+    var usd = "US$ " + fmt.format(Math.round(p[clave + "_usd"]));
+    var eur = p[clave + "_eur"];
+    return eur !== "" && eur != null && !isNaN(eur) ? "€ " + fmt.format(Math.round(eur)) + " (" + usd + ")" : usd;
+  }
+
   function pintarPedidos() {
     var S = D.semana;
     $("#pedidos").innerHTML = S.pedidos.map(function (p) {
@@ -63,7 +70,7 @@
           "<h2>" + esc(p.titulo) + "</h2><p>" + esc(p.detalle) + "</p>" + (p.t_y_l ? '<p class="nota">' + esc(p.t_y_l) + "</p>" : "") + "</div></div>" +
         (p.minimo_usd && lineas.length ? '<div class="barra-minimo" role="img" aria-label="US$ ' + fmt.format(Math.round(p.total_usd)) + " de un mínimo de US$ " + fmt.format(p.minimo_usd) + '">' +
           '<span style="width:' + (p.total_usd / escala * 100) + '%"></span><i style="left:' + (p.minimo_usd / escala * 100) + '%"></i></div>' +
-          '<div class="barra-texto"><span>US$ ' + fmt.format(Math.round(p.total_usd)) + ' FOB</span><span>mínimo US$ ' + fmt.format(p.minimo_usd) + "</span></div>" : "") +
+          '<div class="barra-texto"><span>' + montoPedido(p, "total") + ' FOB</span><span>mínimo ' + montoPedido(p, "minimo") + "</span></div>" : "") +
         (lineas.length ?
           '<ul class="lista-pedido">' + lineas.map(function (l) {
             var espera = l.cuando && l.cuando !== "Ahora";
@@ -485,6 +492,18 @@
   // ---------- Carga ----------
   // Con datos reales se publica datos.cifrado.json (AES-GCM con una clave derivada de la contraseña, ver
   // inventario/cifrado.py) y se pide la contraseña. Sin él, se muestran los datos de ejemplo de datos.json.
+  // Botón «Mostrar / Ocultar» de la contraseña
+  var verClave = document.getElementById("ver-clave");
+  if (verClave) verClave.addEventListener("click", function () {
+    var campo = document.getElementById("contrasena");
+    var ver = campo.type === "password";
+    campo.type = ver ? "text" : "password";
+    verClave.textContent = ver ? "Ocultar" : "Mostrar";
+    verClave.setAttribute("aria-pressed", String(ver));
+    verClave.setAttribute("aria-label", ver ? "Ocultar la contraseña" : "Mostrar la contraseña");
+    campo.focus();
+  });
+
   var CLAVE_RECORDADA = "inventario-panel.clave";
 
   function iniciar(datos) {

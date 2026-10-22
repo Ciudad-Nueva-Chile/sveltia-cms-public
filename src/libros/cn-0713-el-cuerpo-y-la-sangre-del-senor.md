@@ -12,4 +12,5 @@ precio_iva: 61200
 precio_neto: 51429
 portada: "/assets/portadas/9788497156783.jpg"
 estado_comercial: ""
+oculto: false
 ---

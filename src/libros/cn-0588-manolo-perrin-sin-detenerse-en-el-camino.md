@@ -12,4 +12,6 @@ precio_iva: 31700
 precio_neto: 26639
 portada: "/assets/portadas/CN-0588.jpg"
 estado_comercial: ""
+oculto: false
+busqueda_sinopsis: "22-10-2026 · sin resultado"
 ---

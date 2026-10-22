@@ -245,7 +245,6 @@ def calcular(catalogo: pd.DataFrame, movimientos: pd.DataFrame, transito: pd.Dat
 
     ind, perdidas = {}, []
     if hoja_ventas is not None and len(ventas_mod.validas(hoja_ventas)):
-        errores += ventas_mod.errores(hoja_ventas, set(ids))
         ind = ventas_mod.indicadores(hoja_ventas, fecha_corte)
         perdidas = ventas_mod.perdidas_recientes(hoja_ventas, catalogo, fecha_corte)
     resumen = _resumen(titulos, categorias, por_origen, conteo, errores, fecha_corte, p, ind)

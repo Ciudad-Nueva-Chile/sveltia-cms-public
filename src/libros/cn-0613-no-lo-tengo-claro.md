@@ -12,4 +12,5 @@ precio_iva: 14700
 precio_neto: 12353
 portada: "/assets/portadas/CN-0613.jpg"
 estado_comercial: ""
+oculto: false
 ---

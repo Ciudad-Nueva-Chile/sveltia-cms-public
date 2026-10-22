@@ -12,4 +12,5 @@ precio_iva: 57000
 precio_neto: 47899
 portada: "/assets/portadas/CN-0230.jpg"
 estado_comercial: ""
+oculto: false
 ---

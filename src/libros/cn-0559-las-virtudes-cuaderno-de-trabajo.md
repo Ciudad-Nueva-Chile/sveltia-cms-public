@@ -12,4 +12,5 @@ precio_iva: 8700
 precio_neto: 7311
 portada: "/assets/portadas/CN-0559.jpg"
 estado_comercial: ""
+oculto: false
 ---

@@ -12,4 +12,5 @@ precio_iva: 27400
 precio_neto: 23025
 portada: "/assets/portadas/CN-0084.jpg"
 estado_comercial: ""
+oculto: false
 ---

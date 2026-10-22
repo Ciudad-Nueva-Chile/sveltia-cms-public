@@ -288,6 +288,11 @@ body.bloqueado .pestanas, body.bloqueado .vista, body.bloqueado .meta > :not(.bo
 .acceso-campo { display: grid; gap: 6px; font-weight: 600; font-size: .9rem; }
 .acceso-campo input { height: 42px; border: 1px solid var(--borde); border-radius: 8px; padding: 0 12px; font: inherit; background: var(--superficie); color: var(--texto); }
 .acceso-campo input:focus { outline: 2px solid var(--acento); outline-offset: 1px; }
+.acceso-clave { display: flex; gap: 6px; margin-top: -8px; }
+.acceso-clave input { flex: 1; min-width: 0; height: 42px; border: 1px solid var(--borde); border-radius: 8px; padding: 0 12px; font: inherit; background: var(--superficie); color: var(--texto); }
+.acceso-clave input:focus { outline: 2px solid var(--acento); outline-offset: 1px; }
+.ver-clave { height: 42px; padding: 0 12px; border: 1px solid var(--borde); border-radius: 8px; background: var(--superficie); color: var(--texto-2); font: inherit; font-size: .85rem; cursor: pointer; }
+.ver-clave:hover { color: var(--texto); }
 .boton { height: 44px; border: 0; border-radius: 999px; background: var(--acento); color: #fff; font: inherit; font-weight: 650; cursor: pointer; }
 .boton:hover { background: var(--acento-oscuro); }
 .boton:disabled { opacity: .6; cursor: progress; }

@@ -194,6 +194,19 @@ def sugerir(titulos: pd.DataFrame, costos: pd.DataFrame, p: Parametros, fecha_co
                       "costo_unitario_usd": "" if math.isnan(valor) else round(valor, 2),
                       "subtotal_usd": "" if math.isnan(valor) else round(valor * cant, 2)})
 
+    # España factura en euros: sus montos también en € (pesos por dólar / pesos por euro de «Configuración»)
+    def eur_por_usd(o: str) -> float:
+        if o != "España" or "tipo_cambio_eur" not in costos:
+            return NAN
+        f = costos[costos["origen"] == o]
+        tc = pd.to_numeric(f["tipo_cambio"], errors="coerce").dropna()
+        te = pd.to_numeric(f["tipo_cambio_eur"], errors="coerce").dropna()
+        return float(tc.iloc[0] / te.iloc[0]) if len(tc) and len(te) and te.iloc[0] else NAN
+
+    for l in filas:
+        k = eur_por_usd(l["origen"])
+        l["subtotal_eur"] = "" if math.isnan(k) or l["subtotal_usd"] == "" else round(l["subtotal_usd"] * k, 2)
+
     # Resumen por origen, con aviso de mínimo
     resumen = []
     for o in origenes:
@@ -211,6 +224,8 @@ def sugerir(titulos: pd.DataFrame, costos: pd.DataFrame, p: Parametros, fecha_co
             estado = "Bajo el mínimo"
         resumen.append({"origen": o, "estado": estado, "titulos": len(lineas_o), "unidades": sum(l["cantidad"] for l in lineas_o),
                         "total_usd": total, "minimo_usd": minimo,
+                        "total_eur": "" if math.isnan(eur_por_usd(o)) else round(total * eur_por_usd(o), 2),
+                        "minimo_eur": "" if math.isnan(eur_por_usd(o)) else round(minimo * eur_por_usd(o), 2),
                         "falta_usd": round(max(0.0, minimo - total), 2) if lineas_o else 0.0,
                         "ultima_importacion": ultima.date().isoformat() if ultima is not None else "",
                         "proximo_embarque": proximo.date().isoformat(), "intervalo_meses": p.intervalo_meses(o),
@@ -224,5 +239,6 @@ def sugerir(titulos: pd.DataFrame, costos: pd.DataFrame, p: Parametros, fecha_co
         "libros_ahora": sum(l[1] for l in e["lineas"]), "libros_usd": round(e["libros"], 2),
         "envio_usd": round(e["envio"], 2), "total_usd": round(e["total"], 2),
     } for e in combinaciones]
-    columnas = ["cuando", "origen", "id", "isbn", "titulo", "categoria", "cantidad", "motivo", "costo_unitario_usd", "subtotal_usd"]
+    columnas = ["cuando", "origen", "id", "isbn", "titulo", "categoria", "cantidad", "motivo", "costo_unitario_usd", "subtotal_usd",
+                "subtotal_eur"]
     return pd.DataFrame(filas, columns=columnas), resumen

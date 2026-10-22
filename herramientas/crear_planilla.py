@@ -100,7 +100,7 @@ def main():
     # planilla privada a partir de la memoria. Nunca se escriben en el repositorio.
     hoja = f.hoja("Costos")
     if hoja is None or a.reemplazar or len(hoja.get_all_values()) <= 1:
-        cfg = leer_csv("Costos", ("fob_sobre_precio_neto", "costo_sobre_precio_neto", "tipo_cambio")) if hay("Costos") else pd.DataFrame(
+        cfg = leer_csv("Costos", ("fob_sobre_precio_neto", "costo_sobre_precio_neto", "tipo_cambio", "tipo_cambio_eur")) if hay("Costos") else pd.DataFrame(
             [{"origen": o, "edicion": "", "fob_sobre_precio_neto": "", "costo_sobre_precio_neto": "", "tipo_cambio": "",
               "tc_desde": "", "factores_desde": ""} for o in ("España", "Argentina")])
         cfg = cfg.reindex(columns=COLUMNAS["Costos"]).fillna("")
@@ -108,8 +108,9 @@ def main():
                    formatos={5: "dd-mm-yyyy", 6: "dd-mm-yyyy"},
                    notas={5: "Fecha desde la que vale este tipo de cambio. Se avisa si pasan más de 6 meses.",
                           6: "Fecha desde la que valen los factores de costo. Se avisa si pasan más de 12 meses.",
-                          7: "Lo completa el cálculo: si cada valor se midió o quedó el escrito a mano."},
-                   anchos={0: 110, 1: 150, 2: 210, 3: 230, 4: 130, 5: 200, 6: 180, 7: 420})
+                          7: "Lo completa el cálculo: si cada valor se midió o quedó el escrito a mano.",
+                          8: "Lo completa el cálculo con el euro del Banco Central. España factura en euros."},
+                   anchos={0: 110, 1: 150, 2: 210, 3: 230, 4: 130, 5: 200, 6: 180, 7: 420, 8: 120})
         print("  Configuración: lista (oculta)")
 
     # Ventas (visible): con --con-ejemplo, las ventas de ejemplo quedan como históricas (ya están en las existencias)
@@ -128,7 +129,7 @@ def main():
     if f.hoja("Importaciones") is None:
         filas = []
         if hay("Importaciones"):
-            i = leer_csv("Importaciones", ("cantidad", "fob_usd", "gastos_clp"))
+            i = leer_csv("Importaciones", ("cantidad", "fob_usd", "fob_eur", "gastos_clp"))
             filas = i.reindex(columns=importaciones_mod.COLUMNAS, fill_value="").values.tolist()
         preparar_importaciones(f, [o.nombre for o in cargar_parametros().origenes], filas)
         print(f"  Importaciones: lista ({len(filas)} filas)")

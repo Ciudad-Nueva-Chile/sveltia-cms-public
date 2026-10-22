@@ -26,9 +26,9 @@ COLUMNAS = {
     "Movimientos": ["fecha", "id", "tipo", "cantidad", "documento", "cliente"],
     "EnTransito": ["id", "cantidad", "origen", "fecha_estimada"],
     "Costos": ["origen", "edicion", "fob_sobre_precio_neto", "costo_sobre_precio_neto", "tipo_cambio", "tc_desde", "factores_desde",
-               "como"],
+               "como", "tipo_cambio_eur"],
     "Inventario": ["id", "isbn", "titulo", "autor", "origen", "compra_en", "categoria", "categoria_gestion", "precio_lista",
-                   "bodega", "consignacion", "en_camino", "actualizado", "se_vende", "que_hacer", "notas"],
+                   "bodega", "consignacion", "en_camino", "actualizado", "se_vende", "que_hacer", "notas", "valor"],
     "Historial": ["fecha", "id", "bodega", "consignacion", "en_camino"],
     "Ventas": ventas_mod.COLUMNAS,
     "Importaciones": importaciones_mod.COLUMNAS,
@@ -63,7 +63,7 @@ def _fechas(serie: pd.Series) -> pd.Series:
 
 def _normalizar(nombre: str, df: pd.DataFrame) -> pd.DataFrame:
     df.columns = [str(c).strip() for c in df.columns]
-    if nombre in ("Ventas", "Importaciones", "Costos"):
+    if nombre in ("Ventas", "Importaciones", "Costos", "Inventario"):
         df = df.reset_index(drop=True)
         df["fila_planilla"] = range(2, len(df) + 2)  # fila en la planilla, para anotar «Descontado», «Sumado al stock», etc.
     legibles = {v.lower(): k for k, v in ENCABEZADOS.get(nombre, {}).items()}
@@ -100,6 +100,7 @@ def _normalizar(nombre: str, df: pd.DataFrame) -> pd.DataFrame:
         # Pesos: la planilla entrega números; si alguien lo escribió como texto («$350.000»), el punto es de miles
         texto = df["gastos_clp"].astype(str).str.replace(r"[$\s.]", "", regex=True).str.replace(",", ".")
         df["gastos_clp"] = pd.to_numeric(df["gastos_clp"], errors="coerce").fillna(pd.to_numeric(texto, errors="coerce"))
+        df["fob_eur"] = pd.to_numeric(df["fob_eur"].astype(str).str.replace(",", "."), errors="coerce")
         for col in ("pais", "documento", "notas", "sumado"):
             df[col] = df[col].astype(str).str.strip()
     if nombre == "Envios":
@@ -110,7 +111,7 @@ def _normalizar(nombre: str, df: pd.DataFrame) -> pd.DataFrame:
         df["precio_lista"] = pd.to_numeric(df["precio_lista"], errors="coerce").fillna(0)
     if nombre == "Costos":
         df["edicion"] = df["edicion"].astype(str).str.strip()
-        for col in ("fob_sobre_precio_neto", "costo_sobre_precio_neto", "tipo_cambio"):
+        for col in ("fob_sobre_precio_neto", "costo_sobre_precio_neto", "tipo_cambio", "tipo_cambio_eur"):
             df[col] = pd.to_numeric(df[col].astype(str).str.replace(",", "."), errors="coerce")
         for col in ("tc_desde", "factores_desde"):   # «Vigente desde»: para avisar cuando un dato externo envejece
             df[col] = _fechas(df[col])

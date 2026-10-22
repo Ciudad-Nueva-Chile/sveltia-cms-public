@@ -42,9 +42,11 @@
         <img src="img/isotipo.png" alt="" width="44" height="42">
         <h1>Panel de inventario</h1>
         <p>Escribe la contraseña para ver los datos.</p>
-        <label class="acceso-campo">Contraseña
+        <label class="acceso-campo" for="contrasena">Contraseña</label>
+        <div class="acceso-clave">
           <input type="password" id="contrasena" autocomplete="current-password" required autofocus>
-        </label>
+          <button type="button" class="ver-clave" id="ver-clave" aria-label="Mostrar la contraseña" aria-pressed="false">Mostrar</button>
+        </div>
         <label class="casilla"><input type="checkbox" id="recordar" checked> Recordar en este dispositivo</label>
         <button type="submit" class="boton" id="entrar">Entrar</button>
         <p class="acceso-error" id="acceso-error" role="alert" hidden>Contraseña incorrecta.</p>

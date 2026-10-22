@@ -12,4 +12,5 @@ precio_iva: 10500
 precio_neto: 8824
 portada: "/assets/portadas/CN-0708.jpg"
 estado_comercial: ""
+oculto: false
 ---

@@ -253,6 +253,7 @@ robot, con permiso de **Editor** solo en esa planilla). Las pestañas automátic
 | Se vende | `se_vende` | Auto | Ritmo en palabras («≈1 cada 2 meses») |
 | Qué hacer | `que_hacer` | Auto | Política en palabras («Mantener en bodega») |
 | **Notas** | `notas` | Roberto | Libre |
+| Valor del stock $ | `valor` | Fórmula | (En bodega + En consignación) × Precio de venta; cambia al instante al corregir una cantidad |
 
 **Ventas** — una fila por libro vendido o pedido no atendido.
 
@@ -280,7 +281,9 @@ robot, con permiso de **Editor** solo en esa planilla). Las pestañas automátic
 | **N° de factura o DIN** | `documento` | Roberto | Opcional |
 | **Libro** | `id` | Roberto | Lista desplegable «CN-XXXX · TÍTULO» |
 | **Cantidad** | `cantidad` | Roberto | Ejemplares de ese libro en ese embarque |
-| **FOB total US$** | `fob_usd` | Roberto | Opcional |
+| **FOB total US$** | `fob_usd` | Roberto | Opcional; para facturas en dólares (Argentina) |
+| **FOB total €** | `fob_eur` | Roberto | Opcional; para facturas en euros (España). Se usa una de las dos |
+| **Gastos de internación $** | `gastos_clp` | Roberto | Opcional; flete, seguro, agente y aranceles del embarque, sin IVA, una vez por factura o DIN |
 | **Notas** | `notas` | Roberto | Libre |
 | Sumado al stock | `sumado` | Auto | Cuándo el cálculo sumó la llegada a «En bodega» («Sumado el …», «Ya estaba sumado a mano …», «Revisar: …») |
 
@@ -291,7 +294,15 @@ llegada cuenta como «Pedido en camino». Con estas filas se miden T y L (9.8).
 **Esta semana** — resumen para decidir (solo lectura): pedidos por país y cuál conviene, libros que se venden y
 están sin stock, «Te los pidieron y no había», «Se venden más rápido que antes», «Bajas de stock sin venta anotada»,
 **qué contar esta semana** (sección 9.9), los que pasan a B en el próximo cálculo, los títulos C y D con su valor, datos por
-actualizar, consignaciones de más de un año, productos de temporada, errores de datos y cómo anotar. Para cada país muestra la
+actualizar, consignaciones de más de un año, productos de temporada, **«Revisar en la planilla»** y cómo anotar. España se
+muestra en € con su equivalente en US$ (la comparación entre países va en US$).
+
+**Revisar en la planilla** (`inventario/revision.py`, también en el panel): filas con problemas y su número de fila, sin
+corregir nada. «Ventas»: falta la fecha, el libro o la cantidad; libro fuera del catálogo; fecha futura; cantidad negativa;
+descuento fuera de 0 a 100; venta repetida. «Importaciones»: falta libro, cantidad, país o fechas; llegada anterior al
+pedido o futura; país distinto de España o Argentina; FOB en US$ y en € a la vez; línea repetida. «Inventario»: código
+vacío, repetido o que ya no está en el catálogo; cantidades negativas. «Configuración»: falta la fila de un país, un factor
+o el tipo de cambio, o un factor fuera de rango. Para cada país muestra la
 política de embarques con lo observado en «Importaciones» como comparación.
 
 **Pedido sugerido** — dos bloques:
@@ -309,7 +320,7 @@ política de embarques con lo observado en «Importaciones» como comparación.
 
 | Pestaña | Contenido |
 |---|---|
-| **Configuración** | Una fila por origen de compra y edición: «FOB / precio neto», «Costo en bodega / precio neto», «Pesos por dólar», «Tipo de cambio vigente desde», «Factores vigentes desde» (para los avisos de caducidad, 9.9) y «Cómo se obtuvo». **Se actualiza sola en cada cálculo** (`inventario/costos.py`): el dólar del Banco Central (mindicador.cl) y los factores medidos con los últimos 3 embarques de «Importaciones» que tienen FOB y gastos de internación; sin esos datos queda lo escrito a mano. Si un país vende libros de otra edición con otras condiciones (p. ej. españoles comprados en Argentina), va en una fila aparte con esa «Edición del libro» |
+| **Configuración** | Una fila por origen de compra y edición: «FOB / precio neto», «Costo en bodega / precio neto», «Pesos por dólar», «Pesos por euro», «Tipo de cambio vigente desde», «Factores vigentes desde» (para los avisos de caducidad, 9.9) y «Cómo se obtuvo». **Se actualiza sola en cada cálculo** (`inventario/costos.py`): el dólar del Banco Central (mindicador.cl) y los factores medidos con los últimos 3 embarques de «Importaciones» que tienen FOB y gastos de internación; sin esos datos queda lo escrito a mano. Si un país vende libros de otra edición con otras condiciones (p. ej. españoles comprados en Argentina), va en una fila aparte con esa «Edición del libro» |
 | **Registro de movimientos** | Historia de demanda: la carga inicial (facturas, guías y notas de crédito del SII) más los movimientos deducidos de los cambios en «Inventario». Solo crece |
 | **Historial** | Fotos de existencias (fecha, código, bodega, consignación, en camino) cada vez que algo cambia. Solo crece |
 | **Lista de libros** | «Código · Título», ISBN y precio, para la lista desplegable y las fórmulas de «Ventas» |

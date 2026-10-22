@@ -13,4 +13,6 @@ precio_neto: 6975
 portada: "/assets/portadas/CN-0320.jpg"
 inventario_tipo: "Coyuntural"
 estado_comercial: ""
+oculto: false
+busqueda_sinopsis: "22-10-2026 · sin resultado"
 ---

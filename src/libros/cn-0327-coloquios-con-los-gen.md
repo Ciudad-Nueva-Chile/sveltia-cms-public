@@ -12,4 +12,6 @@ precio_iva: 34000
 precio_neto: 28571
 portada: ""
 estado_comercial: ""
+oculto: false
+busqueda_sinopsis: "22-10-2026 · sin resultado"
 ---

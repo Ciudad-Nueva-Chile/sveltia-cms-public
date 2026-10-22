@@ -12,4 +12,5 @@ precio_iva: 41500
 precio_neto: 34874
 portada: "/assets/portadas/CN-0223.jpg"
 estado_comercial: ""
+oculto: false
 ---

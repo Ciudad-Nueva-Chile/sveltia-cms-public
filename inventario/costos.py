@@ -1,10 +1,12 @@
 """«Configuración» automática: el dólar del día y los factores de costo medidos con «Importaciones».
 
-1. Pesos por dólar: el dólar observado del Banco Central del último día hábil (mindicador.cl, sin clave). Si no
-   responde, queda el valor de la planilla.
+1. Pesos por dólar y pesos por euro: los observados del Banco Central del último día hábil (mindicador.cl, sin
+   clave). Si no responde, queda el valor de la planilla. España factura en euros: con los dos se muestran sus montos
+   en € y en US$ (para comparar con Argentina).
 2. FOB / precio neto, para cada fila de «Configuración» (país de compra y edición del libro), con los últimos
    EMBARQUES embarques llegados que tienen FOB anotado:
-       Σ (FOB US$ × dólar del día de llegada)  /  Σ (precio de lista / 1,19 × cantidad)
+       Σ (FOB × dólar o euro del día de llegada)  /  Σ (precio de lista / 1,19 × cantidad)
+   (el FOB se anota en «FOB total US$» o, para facturas en euros, en «FOB total €»)
 3. Costo en bodega / precio neto: lo mismo sumando al FOB los gastos de internación del embarque (flete, seguro,
    agente de aduana y aranceles, sin el IVA, que se recupera), solo con embarques que los tienen anotados.
 
@@ -28,6 +30,7 @@ from .importaciones import llegadas, pais
 EMBARQUES = 3                  # factores: promedio ponderado de los últimos 3 embarques con datos
 EDICION_GENERAL = ("", "todas")
 API_DOLAR = "https://mindicador.cl/api/dolar"
+API_EURO = "https://mindicador.cl/api/euro"
 
 
 def _bajar_json(url: str):
@@ -36,9 +39,11 @@ def _bajar_json(url: str):
 
 
 class Dolar:
-    """Dólar observado por fecha. Baja la serie de cada año una sola vez; sin conexión devuelve None."""
+    """Dólar (o euro, con api=API_EURO) observado por fecha. Baja la serie de cada año una sola vez; sin conexión
+    devuelve None."""
 
-    def __init__(self, bajar_json=_bajar_json, espera: float = 2):
+    def __init__(self, bajar_json=_bajar_json, espera: float = 2, api: str = API_DOLAR):
+        self.api = api
         self.bajar_json = bajar_json
         self.espera = espera
         self._anios: dict[int, pd.Series] = {}
@@ -56,7 +61,7 @@ class Dolar:
         return s.sort_index()
 
     def hoy(self) -> tuple[float, pd.Timestamp] | None:
-        s = self._serie(API_DOLAR)
+        s = self._serie(self.api)
         return (float(s.iloc[-1]), s.index[-1]) if len(s) else None
 
     def en(self, fecha) -> float | None:
@@ -64,7 +69,7 @@ class Dolar:
         fecha = pd.Timestamp(fecha).normalize()
         for anio in (fecha.year, fecha.year - 1):
             if anio not in self._anios:
-                self._anios[anio] = self._serie(f"{API_DOLAR}/{anio}")
+                self._anios[anio] = self._serie(f"{self.api}/{anio}")
             s = self._anios[anio]
             if s.empty:
                 continue
@@ -74,7 +79,7 @@ class Dolar:
         return None
 
 
-def lineas_medibles(imp: pd.DataFrame, catalogo: pd.DataFrame, dolar: Dolar) -> pd.DataFrame:
+def lineas_medibles(imp: pd.DataFrame, catalogo: pd.DataFrame, dolar: Dolar, euro: Dolar | None = None) -> pd.DataFrame:
     """Filas llegadas con FOB, con su embarque, edición, precio neto, FOB en pesos y gastos repartidos."""
     ll = llegadas(imp).copy()
     if ll.empty:
@@ -91,6 +96,12 @@ def lineas_medibles(imp: pd.DataFrame, catalogo: pd.DataFrame, dolar: Dolar) -> 
     ll["gastos_clp"] = pd.to_numeric(ll.get("gastos_clp", 0), errors="coerce").fillna(0)
     tc = {f: dolar.en(f) for f in ll["fecha"].dropna().unique()}
     ll["fob_clp"] = ll["fob_usd"] * ll["fecha"].map(tc)
+    # Facturas en euros (España): «FOB total €» con el euro del día de llegada, donde no hay FOB en dólares
+    ll["fob_eur"] = pd.to_numeric(ll.get("fob_eur", pd.Series(index=ll.index, dtype=float)), errors="coerce")
+    en_euros = ll["fob_clp"].isna() & ll["fob_eur"].notna() & (ll["fob_eur"] > 0)
+    if en_euros.any() and euro is not None:
+        tc_eur = {f: euro.en(f) for f in ll.loc[en_euros, "fecha"].dropna().unique()}
+        ll.loc[en_euros, "fob_clp"] = ll.loc[en_euros, "fob_eur"] * ll.loc[en_euros, "fecha"].map(tc_eur)
     # Gastos: se anotan una vez por embarque; se reparten entre sus filas según el FOB
     gastos_emb = ll.groupby("embarque")["gastos_clp"].sum()
     fob_emb = ll.groupby("embarque")["fob_clp"].sum(min_count=1)
@@ -125,13 +136,16 @@ def _fecha(f) -> str:
 
 
 def actualizar(costos: pd.DataFrame, imp: pd.DataFrame, catalogo: pd.DataFrame, hoy: pd.Timestamp,
-               dolar: Dolar | None = None) -> pd.DataFrame:
-    """Devuelve «Configuración» con el dólar del día y los factores medidos donde hay datos, más la columna «como»."""
+               dolar: Dolar | None = None, euro: Dolar | None = None) -> pd.DataFrame:
+    """Devuelve «Configuración» con el dólar y el euro del día y los factores medidos donde hay datos, más «como»."""
     dolar = dolar or Dolar()
+    euro = euro or Dolar(api=API_EURO)
     c = costos.copy()
     if c.empty:
         return c
-    for col in ("fob_sobre_precio_neto", "costo_sobre_precio_neto", "tipo_cambio"):
+    if "tipo_cambio_eur" not in c:
+        c["tipo_cambio_eur"] = ""
+    for col in ("fob_sobre_precio_neto", "costo_sobre_precio_neto", "tipo_cambio", "tipo_cambio_eur"):
         c[col] = pd.to_numeric(c[col], errors="coerce")
     c["como"] = ""
     notas = [[] for _ in range(len(c))]
@@ -145,8 +159,11 @@ def actualizar(costos: pd.DataFrame, imp: pd.DataFrame, catalogo: pd.DataFrame, 
     else:
         for n in notas:
             n.append("Dólar: el escrito a mano (mindicador.cl no respondió)")
+    actual_eur = euro.hoy()
+    if actual_eur:
+        c["tipo_cambio_eur"] = round(actual_eur[0], 2)
 
-    lineas = lineas_medibles(imp, catalogo, dolar)
+    lineas = lineas_medibles(imp, catalogo, dolar, euro)
     propias = {o: {str(e).strip() for e in c.loc[c["origen"] == o, "edicion"] if str(e).strip().lower() not in EDICION_GENERAL}
                for o in c["origen"].unique()}
     for i, (idx, fila) in enumerate(c.iterrows()):

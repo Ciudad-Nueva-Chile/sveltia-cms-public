@@ -12,4 +12,5 @@ precio_iva: 70900
 precio_neto: 59580
 portada: "/assets/portadas/CN-0237.jpg"
 estado_comercial: ""
+oculto: false
 ---

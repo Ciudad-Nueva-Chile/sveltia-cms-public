@@ -12,4 +12,5 @@ precio_iva: 23100
 precio_neto: 19412
 portada: "/assets/portadas/CN-0377.jpg"
 estado_comercial: ""
+oculto: false
 ---

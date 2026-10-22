@@ -5,7 +5,7 @@ import { readFileSync } from "node:fs";
 
 // ayudas.js se carga como en el navegador: define globalThis.CiudadNuevaAyudas (sin CMS, no registra el evento)
 new Function(readFileSync(new URL("../admin/ayudas.js", import.meta.url), "utf8"))();
-const { calcularPrecios, completarPorIsbn } = globalThis.CiudadNuevaAyudas;
+const { calcularPrecios, completarPorIsbn, duplicados, isbn13 } = globalThis.CiudadNuevaAyudas;
 
 test("si escribo el precio de lista, se calcula el neto", () => {
   const r = calcularPrecios({ precio_iva: 23800, precio_neto: "", precio_iva_guardado: undefined, precio_neto_guardado: undefined });
@@ -59,4 +59,13 @@ test("no pisa lo que ya está escrito", async () => {
 test("sin resultado deja un título que se nota en la lista", async () => {
   const c = await completarPorIsbn({ isbn: "9788497151234", titulo: "", autor: "" }, respuestas({}, {}));
   assert.deepEqual(c, { titulo: "SIN TÍTULO (ISBN 9788497151234)" });
+});
+
+test("detecta el mismo ISBN en otro libro, aunque esté escrito distinto", () => {
+  const libros = [{ archivo: "cn-0002", isbn: "9788497153188", id: "CN-0002", titulo: "1-2 REYES" },
+                  { archivo: "otro", isbn: "8497150036", id: "CN-0001", titulo: "CORINTIOS" }];
+  assert.equal(isbn13("84-9715-003-6"), "9788497150033");
+  assert.deepEqual(duplicados("978-84-9715-318-8", "nuevo", libros).map((l) => l.id), ["CN-0002"]);
+  assert.deepEqual(duplicados("9788497150033", "nuevo", libros).map((l) => l.id), ["CN-0001"]);
+  assert.deepEqual(duplicados("9788497153188", "cn-0002", libros), []);     // el propio libro no cuenta
 });

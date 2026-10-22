@@ -12,4 +12,5 @@ precio_iva: 19100
 precio_neto: 16050
 portada: "/assets/portadas/CN-0426.jpg"
 estado_comercial: ""
+oculto: false
 ---

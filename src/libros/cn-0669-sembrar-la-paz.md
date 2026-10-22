@@ -12,4 +12,5 @@ precio_iva: 28500
 precio_neto: 23950
 portada: "/assets/portadas/CN-0669.jpg"
 estado_comercial: ""
+oculto: false
 ---

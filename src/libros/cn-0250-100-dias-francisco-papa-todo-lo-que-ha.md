@@ -12,4 +12,5 @@ precio_iva: 22500
 precio_neto: 18908
 portada: ""
 estado_comercial: ""
+oculto: false
 ---

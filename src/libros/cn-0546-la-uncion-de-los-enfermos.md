@@ -12,4 +12,5 @@ precio_iva: 15600
 precio_neto: 13109
 portada: "/assets/portadas/CN-0546.jpg"
 estado_comercial: ""
+oculto: false
 ---

@@ -12,4 +12,7 @@ precio_iva: 15700
 precio_neto: 13193
 portada: "/assets/portadas/CN-0532.jpg"
 estado_comercial: ""
+oculto: false
+busqueda_sinopsis: "22-10-2026 · Ciudad Nueva Argentina"
 ---
+Nueva edición ampliada e íntegramente ilustrada con la reseña sobre Chiara Lubich publicada por Ciudad Nueva con motivo de su fallecimiento, en marzo de 2008. Escriben sobre Lubich grandes autores e intelectuales argentinos y extranjeros.

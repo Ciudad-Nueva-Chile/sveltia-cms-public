@@ -12,4 +12,6 @@ precio_iva: 21600
 precio_neto: 18151
 portada: "/assets/portadas/CN-0485.jpg"
 estado_comercial: ""
+oculto: false
+busqueda_sinopsis: "22-10-2026 · sin resultado"
 ---

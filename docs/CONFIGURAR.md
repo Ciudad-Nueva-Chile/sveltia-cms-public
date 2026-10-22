@@ -103,8 +103,13 @@ lo recordado en los dispositivos deja de servir y se pide la nueva.
    título queda como «SIN TÍTULO (ISBN …)».
 3. Escribe el **precio de lista** o el **neto**: al guardar se calcula el otro (IVA de 19 %). La categoría es opcional: sin
    ella el libro aparece en «Otros títulos» hasta que le asignes una.
-4. Unos minutos después, al publicarse, GitHub completa lo que siga faltando (título, autor, portada y edición) con los
-   sitios de Ciudad Nueva. Vuelve a abrir el libro y revisa el resultado; lo que no se encontró hay que escribirlo.
+4. Unos minutos después, al publicarse, GitHub completa lo que siga faltando (título, autor, portada, edición y
+   **sinopsis**) con los sitios de Ciudad Nueva. Vuelve a abrir el libro y revisa el resultado; lo que no se encontró hay
+   que escribirlo.
+5. **Un libro nuevo parte oculto** («Ocultar en el sitio» activado). Cuando esté bien, desactívalo y guarda: sale publicado.
+6. **Duplicados:** si el ISBN ya está en otro libro, Sveltia pregunta antes de guardar. Además, al publicar se marcan con
+   «⚠ REVISAR» los libros con el mismo ISBN, o el mismo título y edición, que otro (filtro «⚠ Posibles duplicados» en la
+   lista; el detalle está en el campo «Aviso del sistema»). Si es un duplicado, elimina uno: el aviso se borra solo.
 
 Al guardar, Sveltia busca en Google Books y Open Library (desde el navegador no se pueden consultar los sitios de Ciudad
 Nueva). Google Books sin clave propia comparte una cuota diaria con todos los sitios y a veces no responde; Open Library
@@ -117,6 +122,11 @@ marca oculta `busqueda_isbn` (fecha y fuente) para no buscar el mismo libro en c
 libro, borra la línea `busqueda_isbn` de su archivo en `src/libros`. Como el buscador de ciudadnueva.com no busca por
 ISBN, `herramientas/indice_ciudadnueva.json` guarda cada ficha del sitio con su ISBN (datos públicos); en cada búsqueda
 solo se leen las fichas nuevas y se agregan al índice.
+
+**Sinopsis.** Cada libro toma la de su edición: las españolas de su ficha en ciudadnueva.com y las argentinas de la tienda
+de Ciudad Nueva Argentina (por título casi idéntico). Se escribe solo si «Sobre el libro» está vacío, y la marca oculta
+`busqueda_sinopsis` evita repetir la búsqueda. Carga inicial de todo el catálogo:
+`python herramientas/completar_libros.py --sinopsis-todos` (o `--sinopsis-todos España` / `Argentina`).
 
 ## 6. Traspaso
 

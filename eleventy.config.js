@@ -76,6 +76,12 @@ export default function (eleventyConfig) {
   // Páginas de texto (Nosotros, Librerías e instituciones), para el mapa del sitio
   eleventyConfig.addCollection("paginas", (api) => api.getFilteredByGlob("src/paginas/*.md"));
 
+  // Todos los libros, también los ocultos: para la revisión de duplicados de Sveltia (/admin/libros.json)
+  eleventyConfig.addCollection("todosLosLibros", (api) => api.getFilteredByGlob("src/libros/*.md"));
+  eleventyConfig.addFilter("librosParaAdmin", (libros) => JSON.stringify((libros || []).map((l) => ({
+    archivo: l.page.fileSlug, isbn: String(l.data.isbn || ""), id: l.data.id_catalogo || "", titulo: l.data.titulo || "",
+  }))));
+
   eleventyConfig.addCollection("destacados", (api) =>
     librosVisibles(api).filter((l) => l.data.destacado).sort(porTitulo)
   );

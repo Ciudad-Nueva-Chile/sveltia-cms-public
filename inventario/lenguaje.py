@@ -28,7 +28,8 @@ ENCABEZADOS = {
     "Inventario": {"id": "Código", "isbn": "ISBN", "titulo": "Título", "autor": "Autor", "origen": "Editorial",
                    "compra_en": "Se compra en", "categoria": "Categoría", "categoria_gestion": "Categoría de gestión", "precio_lista": "Precio de venta", "bodega": "En bodega",
                    "consignacion": "En consignación", "en_camino": "Pedido en camino",
-                   "actualizado": "Última actualización", "se_vende": "Se vende", "que_hacer": "Qué hacer", "notas": "Notas"},
+                   "actualizado": "Última actualización", "se_vende": "Se vende", "que_hacer": "Qué hacer", "notas": "Notas",
+                   "valor": "Valor del stock $"},
     "Historial": {"fecha": "Fecha", "id": "Código", "bodega": "En bodega", "consignacion": "En consignación",
                   "en_camino": "Pedido en camino"},
     "Catalogo": {"id": "Código", "isbn": "ISBN", "titulo": "Título", "origen": "Origen", "categoria": "Categoría",
@@ -42,9 +43,9 @@ ENCABEZADOS = {
     "ListaLibros": {"libro": "Libro", "isbn": "ISBN", "precio_lista": "Precio de lista"},
     "Importaciones": {"fecha_pedido": "Fecha de pedido", "fecha_llegada": "Fecha de llegada", "pais": "País de compra",
                       "documento": "N° de factura o DIN", "id": "Libro", "cantidad": "Cantidad", "fob_usd": "FOB total US$",
-                      "gastos_clp": "Gastos de internación $", "notas": "Notas", "sumado": "Sumado al stock"},
+                      "fob_eur": "FOB total €", "gastos_clp": "Gastos de internación $", "notas": "Notas", "sumado": "Sumado al stock"},
     "Costos": {"origen": "Se compra en", "edicion": "Edición del libro", "fob_sobre_precio_neto": "FOB / precio neto",
-               "costo_sobre_precio_neto": "Costo en bodega / precio neto", "tipo_cambio": "Pesos por dólar",
+               "costo_sobre_precio_neto": "Costo en bodega / precio neto", "tipo_cambio": "Pesos por dólar", "tipo_cambio_eur": "Pesos por euro",
                "tc_desde": "Tipo de cambio vigente desde", "factores_desde": "Factores vigentes desde", "como": "Cómo se obtuvo"},
 }
 PESTANAS = {"Catalogo": "Catálogo", "Movimientos": "Movimientos", "EnTransito": "En tránsito", "Costos": "Costos"}
@@ -135,7 +136,8 @@ def libros(t: pd.DataFrame) -> pd.DataFrame:
 
 def pedido(lineas: pd.DataFrame) -> pd.DataFrame:
     if lineas.empty:
-        return pd.DataFrame(columns=["Cuándo", "Comprar en", "Cantidad", "Título", "Código", "Categoría", "Por qué", "US$ aprox."])
+        return pd.DataFrame(columns=["Cuándo", "Comprar en", "Cantidad", "Título", "Código", "Categoría", "Por qué", "US$ aprox.",
+                                     "€ aprox."])
     return pd.DataFrame({
         "Cuándo": lineas["cuando"],
         "Comprar en": lineas["origen"],
@@ -145,6 +147,7 @@ def pedido(lineas: pd.DataFrame) -> pd.DataFrame:
         "Categoría": lineas["categoria"],
         "Por qué": lineas["motivo"].map(motivo_simple),
         "US$ aprox.": lineas["subtotal_usd"],
+        "€ aprox.": lineas["subtotal_eur"] if "subtotal_eur" in lineas else "",
     }).sort_values(["Cuándo", "Comprar en", "Título"])
 
 
@@ -202,15 +205,16 @@ def hoja_pedido(lineas: pd.DataFrame, combinaciones: list[dict], envios: dict, f
             filas.append(["", "Solo hay una combinación que cubre todo lo que hay que pedir: varios títulos se compran en un solo país."])
     else:
         filas.append(["", "No hay nada que pedir en los próximos embarques."])
-    filas += [[""], ["2. EMBARQUES"], ["Origen", "Estado", "Próximo embarque", "US$ FOB", "Mínimo US$", "Falta US$"]]
+    filas += [[""], ["2. EMBARQUES"], ["Origen", "Estado", "Próximo embarque", "US$ FOB", "Mínimo US$", "Falta US$", "€ FOB (España)"]]
     negritas_extra = [len(filas) - 1]
     for o in (por_origen.to_dict("records") if por_origen is not None and len(por_origen) else []):
-        filas.append([o["origen"], o["estado"], fecha(o["proximo_embarque"]), o["total_usd"], o["minimo_usd"], o["falta_usd"]])
+        filas.append([o["origen"], o["estado"], fecha(o["proximo_embarque"]), o["total_usd"], o["minimo_usd"], o["falta_usd"],
+                      o.get("total_eur", "")])
         if o["estado"] == "Bajo el mínimo":
             filas.append(["", aviso_minimo(o)])
     filas += [[""], ["3. QUÉ PEDIR"]]
     tabla = pedido(lineas)
-    tabla = tabla[["Cuándo", "Comprar en", "Cantidad", "Título", "Código", "US$ aprox.", "Por qué", "Categoría"]]
+    tabla = tabla[["Cuándo", "Comprar en", "Cantidad", "Título", "Código", "US$ aprox.", "€ aprox.", "Por qué", "Categoría"]]
     encabezado = len(filas)
     filas.append(list(tabla.columns))
     filas += tabla.values.tolist() or [["Nada que pedir por ahora."]]
@@ -223,8 +227,15 @@ def hoja_pedido(lineas: pd.DataFrame, combinaciones: list[dict], envios: dict, f
     }
 
 
+def monto(o, clave: str = "total") -> str:
+    """«US$ 2.333», o para España «€ 2.150 (US$ 2.333)»."""
+    usd = f"US$ {miles(o[clave + '_usd'])}"
+    eur = o.get(clave + "_eur", "")
+    return f"€ {miles(eur)} ({usd})" if eur not in ("", None) and not pd.isna(eur) else usd
+
+
 def aviso_minimo(o) -> str:
-    return f"El envío a {o['origen']} no alcanza el mínimo FOB de US$ {miles(o['minimo_usd'])}."
+    return f"El envío a {o['origen']} no alcanza el mínimo FOB de {monto(o, 'minimo')}."
 
 
 def estado_pedido(o) -> dict:
@@ -232,10 +243,10 @@ def estado_pedido(o) -> dict:
     proximo = fecha(o.get("proximo_embarque", ""))
     if str(o.get("estado", "")).startswith("Pedir"):
         return {"tono": "ok", "titulo": f"Embarque a {o['origen']}: listo para pedir",
-                "detalle": f"{o['unidades']} libros, unos US$ {miles(o['total_usd'])} FOB (el mínimo es US$ {miles(o['minimo_usd'])}). Próximo embarque: {proximo}."}
+                "detalle": f"{o['unidades']} libros, unos {monto(o)} FOB (el mínimo es {monto(o, 'minimo')}). Próximo embarque: {proximo}."}
     if str(o.get("estado", "")).startswith("Bajo"):
         return {"tono": "esperar", "titulo": f"Embarque a {o['origen']}: no alcanza el mínimo",
-                "detalle": f"{aviso_minimo(o)} Hay {o['unidades']} libros por pedir (US$ {miles(o['total_usd'])} FOB). "
+                "detalle": f"{aviso_minimo(o)} Hay {o['unidades']} libros por pedir ({monto(o)} FOB). "
                            f"Roberto decide cómo completarlo. Próximo embarque: {proximo}."}
     return {"tono": "nada", "titulo": f"Embarque a {o['origen']}: nada que pedir",
             "detalle": f"Los títulos que se reponen están sobre su nivel. Próximo embarque: {proximo}."}
@@ -260,6 +271,7 @@ def esta_semana(t: pd.DataFrame, por_origen: pd.DataFrame, lineas: pd.DataFrame,
     return {
         "fecha": pd.Timestamp(fecha_corte).date().isoformat(),
         "pedidos": [estado_pedido(o) | {"origen": o["origen"], "total_usd": o["total_usd"], "minimo_usd": o["minimo_usd"],
+                                        "total_eur": o.get("total_eur", ""), "minimo_eur": o.get("minimo_eur", ""),
                                         "unidades": int(o["unidades"]), "proximo_embarque": o["proximo_embarque"],
                                         "falta_usd": o["falta_usd"], "t_y_l": o.get("t_y_l", "")}
                      for o in por_origen.to_dict("records")],

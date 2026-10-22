@@ -3,6 +3,8 @@
 // 1. Precio de lista y precio neto: si cambias uno, el otro se calcula solo (IVA de 19 %).
 //    Para saber cuál cambiaste se guardan los valores de la última vez en dos campos ocultos.
 // 2. ISBN: si el título o el autor están vacíos, se buscan por ISBN en Google Books y, si no aparece, en Open Library.
+// 3. Duplicados: si el ISBN ya está en otro libro (según /admin/libros.json, que se publica con el sitio), pide
+//    confirmación antes de guardar.
 //    (bookfinder.com no tiene una API pública que se pueda consultar desde el navegador.)
 //
 // Las funciones de cálculo están separadas para poder probarlas sin Sveltia: node --test tests/ayudas_admin.test.mjs
@@ -33,6 +35,24 @@
 
   function limpiarIsbn(v) {
     return String(v || "").replace(/[^0-9Xx]/g, "").toUpperCase();
+  }
+
+  // ISBN de 13 dígitos (los de 10 se convierten), para comparar sin guiones ni formatos distintos
+  function isbn13(v) {
+    var s = limpiarIsbn(v);
+    if (s.length === 10) {
+      var base = "978" + s.slice(0, 9), suma = 0;
+      for (var i = 0; i < 12; i++) suma += Number(base[i]) * (i % 2 ? 3 : 1);
+      return base + String((10 - (suma % 10)) % 10);
+    }
+    return s.length === 13 ? s : "";
+  }
+
+  // Otros libros con el mismo ISBN. `libros`: lista de /admin/libros.json; `archivo`: el del libro que se guarda.
+  function duplicados(isbn, archivo, libros) {
+    var i = isbn13(isbn);
+    if (!i) return [];
+    return (libros || []).filter(function (l) { return l.archivo !== archivo && isbn13(l.isbn) === i; });
   }
 
   // Busca título y autor por ISBN. Devuelve {titulo, autor} o null.
@@ -72,7 +92,8 @@
     return cambios;
   }
 
-  var api = { calcularPrecios: calcularPrecios, buscarPorIsbn: buscarPorIsbn, completarPorIsbn: completarPorIsbn };
+  var api = { calcularPrecios: calcularPrecios, buscarPorIsbn: buscarPorIsbn, completarPorIsbn: completarPorIsbn,
+              isbn13: isbn13, duplicados: duplicados };
   raiz.CiudadNuevaAyudas = api;
 
   if (raiz.CMS && raiz.CMS.registerEventListener) {
@@ -83,6 +104,18 @@
         if (entry.get("collection") !== "libros") return;
         var datos = entry.get("data");
         var d = datos.toJS();
+        // ¿El ISBN ya está en otro libro? (la lista es la del último sitio publicado)
+        try {
+          var libros = await (await raiz.fetch("libros.json", { cache: "no-store" })).json();
+          var otros = duplicados(d.isbn, entry.get("slug") || "", libros);
+          if (otros.length && !raiz.confirm("Este ISBN ya está en: " + otros.map(function (l) {
+            return (l.id || l.archivo) + " «" + l.titulo + "»";
+          }).join(", ") + ".\n\n¿Guardar igual? (Cancelar = no guardar, para revisar o eliminar el duplicado)")) {
+            throw new Error("Guardado cancelado: ISBN repetido");
+          }
+        } catch (e) {
+          if (e && /ISBN repetido/.test(e.message)) throw e;   // sin la lista (sin conexión) se guarda igual
+        }
         var cambios = Object.assign({}, calcularPrecios(d), await completarPorIsbn(d));
         return datos.merge(cambios);
       },

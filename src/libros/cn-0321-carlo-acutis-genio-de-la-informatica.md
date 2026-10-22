@@ -14,4 +14,6 @@ portada: "/assets/portadas/CN-0321.jpg"
 destacado: true
 inventario_tipo: "Coyuntural"
 estado_comercial: ""
+oculto: false
+busqueda_sinopsis: "22-10-2026 · sin resultado"
 ---

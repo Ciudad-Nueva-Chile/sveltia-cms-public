@@ -12,4 +12,5 @@ precio_iva: 29400
 precio_neto: 24706
 portada: "/assets/portadas/CN-0447.jpg"
 estado_comercial: ""
+oculto: false
 ---

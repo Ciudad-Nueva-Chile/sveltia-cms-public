@@ -116,6 +116,64 @@ def escribir_campos(md: Path, cambios: dict) -> None:
     md.write_text("---\n" + "\n".join(lineas) + "\n---" + cuerpo, encoding="utf-8")
 
 
+def quitar_campo(md: Path, clave: str) -> None:
+    contenido = md.read_text(encoding="utf-8")
+    _, cabeza, cuerpo = contenido.split("---", 2)
+    lineas, fuera = [], False
+    for l in cabeza.strip("\n").split("\n"):
+        if re.match(rf"{re.escape(clave)}:", l):
+            fuera = True
+            continue
+        if fuera and l[:1] in (" ", "\t"):
+            continue
+        fuera = False
+        lineas.append(l)
+    md.write_text("---\n" + "\n".join(lineas) + "\n---" + cuerpo, encoding="utf-8")
+
+
+# ---------------------------------------------------------------- Duplicados
+def nombre_libro(md: Path, d: dict) -> str:
+    return f"{d.get('id_catalogo') or md.stem} «{str(d.get('titulo') or '').strip()[:50]}»"
+
+
+def avisos_duplicados(carpeta: Path) -> dict[Path, str]:
+    """{archivo: aviso} para libros con el mismo ISBN que otro, o con el mismo título y la misma edición."""
+    libros = [(md, leer(md)) for md in sorted(carpeta.glob("*.md"))]
+    por_isbn, por_titulo = {}, {}
+    for md, d in libros:
+        i = isbn13(d.get("isbn"))
+        if i:
+            por_isbn.setdefault(i, []).append((md, d))
+        t = normalizar(d.get("titulo"))
+        if t and not vacio(d, "titulo"):
+            por_titulo.setdefault((t, str(d.get("origen_editorial") or "")), []).append((md, d))
+    avisos: dict[Path, list[str]] = {}
+    for grupo, motivo in [(g, "mismo ISBN") for g in por_isbn.values()] + [(g, "mismo título") for g in por_titulo.values()]:
+        if len(grupo) < 2:
+            continue
+        for md, d in grupo:
+            otros = ", ".join(nombre_libro(m, x) for m, x in grupo if m != md)
+            avisos.setdefault(md, []).append(f"{motivo} que {otros}")
+    return {md: "Posible duplicado: " + "; ".join(dict.fromkeys(v)) for md, v in avisos.items()}
+
+
+def marcar_duplicados(carpeta: Path) -> list[tuple[Path, str]]:
+    """Escribe el campo «aviso» en los duplicados y lo borra en los que ya no lo son. Devuelve lo que cambió."""
+    nuevos = avisos_duplicados(carpeta)
+    cambios = []
+    for md in sorted(carpeta.glob("*.md")):
+        actual = str(leer(md).get("aviso") or "")
+        nuevo = nuevos.get(md, "")
+        if actual == nuevo:
+            continue
+        if nuevo:
+            escribir_campos(md, {"aviso": nuevo})
+        else:
+            quitar_campo(md, "aviso")
+        cambios.append((md, nuevo))
+    return cambios
+
+
 def vacio(d: dict, campo: str) -> bool:
     v = str(d.get(campo) or "").strip()
     return not v or (campo == "titulo" and v.upper().startswith(SIN_TITULO))
@@ -257,6 +315,99 @@ def portada_ar(titulo: str, bajar_fn=bajar) -> str:
     return ""
 
 
+# ---------------------------------------------------------------- Sinopsis
+# Texto de la editorial: ficha de ciudadnueva.com para las ediciones españolas y tienda de Ciudad Nueva Argentina para las
+# argentinas (cada libro con la de su edición: la misma colección numera distinto en cada país). Se escribe como cuerpo
+# del .md («Sobre el libro» en la ficha) solo si está vacío, y la marca «busqueda_sinopsis» evita repetir la búsqueda.
+RUIDO = re.compile(r"cookie|pinchar|b[uú]squeda|carrito|suscr[ií]b|newsletter|aviso legal|pol[ií]tica de", re.I)
+
+
+def texto_plano(fragmento: str) -> str:
+    """HTML → párrafos de texto separados por una línea en blanco."""
+    t = re.sub(r"(?i)<br\s*/?>", "\n", fragmento)
+    t = re.sub(r"(?i)</p>|</div>|</li>", "\n\n", t)
+    t = html.unescape(re.sub(r"<[^>]+>", " ", t))
+    parrafos = [" ".join(p.split()) for p in re.split(r"\n\s*\n", t)]
+    return "\n\n".join(p for p in parrafos if p)
+
+
+def sinopsis_es(pagina: str) -> str:
+    """Los párrafos largos de la ficha antes del ISBN (la descripción del libro)."""
+    hasta = pagina.find("ISBN:</strong>")
+    zona = pagina[:hasta] if hasta > 0 else pagina
+    zona = zona[zona.find("og:title"):] if "og:title" in zona else zona
+    parrafos = [texto_plano(p) for p in re.findall(r"(?is)<p[^>]*>(.*?)</p>", zona)]
+    buenos = [p for p in parrafos if len(p) >= 60 and not RUIDO.search(p)]
+    return "\n\n".join(buenos)
+
+
+def productos_ar(bajar_fn=bajar) -> list[dict]:
+    """Todo el catálogo de la tienda argentina (unas 5 consultas de 100)."""
+    todos = []
+    for pag in range(1, 20):
+        try:
+            lote = json.loads(texto(f"{AR}/wp-json/wc/store/v1/products?per_page=100&page={pag}", bajar_fn))
+        except Exception:
+            break
+        nuevos = [x for x in lote if x.get("id", x.get("name")) not in {t.get("id", t.get("name")) for t in todos}]
+        if not nuevos:
+            break
+        todos += nuevos
+    return todos
+
+
+def sinopsis_ar(titulo: str, productos: list[dict]) -> str:
+    buenos = [p for p in productos if mismo_libro(titulo, html.unescape(p.get("name", "")))]
+    return texto_plano(buenos[0].get("description", "")) if len(buenos) == 1 else ""
+
+
+def cuerpo(md: Path) -> str:
+    return md.read_text(encoding="utf-8").split("---", 2)[2].strip()
+
+
+def escribir_cuerpo(md: Path, texto_: str) -> None:
+    _, cabeza, _ = md.read_text(encoding="utf-8").split("---", 2)
+    md.write_text("---" + cabeza + "---\n" + texto_.strip() + "\n", encoding="utf-8")
+
+
+def completar_sinopsis(carpeta: Path, bajar_fn=bajar, hoy: str | None = None, indice_ruta: Path | None = INDICE,
+                       solo_nuevos: bool = True, edicion: str | None = None) -> list[tuple[Path, str]]:
+    """Agrega la sinopsis a los libros sin cuerpo y sin «busqueda_sinopsis». solo_nuevos: solo libros agregados en
+    Sveltia (sin ID interno), como en cada publicación; False: todo el catálogo (carga inicial, a mano).
+    edicion: solo libros de esa edición (por ejemplo «Argentina»)."""
+    hoy = hoy or dt.date.today().strftime("%d-%m-%Y")
+    lista = []
+    for md in sorted(carpeta.glob("*.md")):
+        d = leer(md)
+        if d.get("busqueda_sinopsis") or cuerpo(md) or (solo_nuevos and d.get("id_catalogo")):
+            continue
+        if edicion and edicion not in str(d.get("origen_editorial") or ""):
+            continue
+        lista.append((md, d))
+    if not lista:
+        return []
+    indice = {i: u for u, i in (leer_indice(indice_ruta) if indice_ruta else {}).items() if i}
+    productos = None
+    hechos = []
+    for md, d in lista:
+        isbn, ed = isbn13(d.get("isbn")), str(d.get("origen_editorial") or "")
+        texto_, fuente = "", ""
+        if "Argentina" not in ed and isbn in indice:
+            try:
+                texto_, fuente = sinopsis_es(texto(indice[isbn], bajar_fn)), "Ciudad Nueva España"
+            except Exception:
+                pass
+        if not texto_ and "España" not in ed and not vacio(d, "titulo"):
+            if productos is None:
+                productos = productos_ar(bajar_fn)
+            texto_, fuente = sinopsis_ar(str(d["titulo"]), productos), "Ciudad Nueva Argentina"
+        if texto_:
+            escribir_cuerpo(md, texto_)
+        escribir_campos(md, {"busqueda_sinopsis": f"{hoy} · {fuente if texto_ else 'sin resultado'}"})
+        hechos.append((md, fuente if texto_ else ""))
+    return hechos
+
+
 # ---------------------------------------------------------------- Open Library y Google Books
 def buscar_abiertas(isbn: str, bajar_fn=bajar) -> dict | None:
     try:
@@ -395,6 +546,8 @@ def main(argv=None) -> int:
     ap.add_argument("--portadas", default=RAIZ / "src" / "assets" / "portadas", type=Path)
     ap.add_argument("--solo-mostrar", action="store_true", help="dice qué libros buscaría, sin conectarse ni escribir")
     ap.add_argument("--actualizar-indice", action="store_true", help="lee las fichas nuevas de ciudadnueva.com y las agrega al índice")
+    ap.add_argument("--sinopsis-todos", metavar="EDICION", nargs="?", const="",
+                    help="carga inicial: sinopsis para todo el catálogo (o solo una edición: España, Argentina)")
     a = ap.parse_args(argv)
     if a.solo_mostrar:
         for md, d in pendientes(a.carpeta):
@@ -407,7 +560,15 @@ def main(argv=None) -> int:
         guardar_indice(INDICE, indice)
         print(f"Índice: {len(indice)} fichas ({len(indice) - n} nuevas).")
         return 0
+    if a.sinopsis_todos is not None:
+        hechos = completar_sinopsis(a.carpeta, solo_nuevos=False, edicion=a.sinopsis_todos or None)
+        print(f"Sinopsis: {sum(1 for _, f in hechos if f)} de {len(hechos)} libros buscados.")
+        return 0
+    for md, aviso in marcar_duplicados(a.carpeta):
+        print(f"{md.name}: {aviso or 'ya no es duplicado'}")
     res = completar(a.carpeta, a.portadas)
+    for md, fuente in completar_sinopsis(a.carpeta):
+        print(f"{md.name}: sinopsis {'de ' + fuente if fuente else 'no encontrada'}")
     for md, c in res:
         campos = [k for k in c if k != "busqueda_isbn"]
         print(f"{md.name}: {', '.join(campos) if campos else 'nada encontrado'} ({c['busqueda_isbn']})")

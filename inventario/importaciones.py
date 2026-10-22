@@ -23,8 +23,8 @@ import pandas as pd
 
 from .config import DIAS_POR_MES
 
-COLUMNAS = ["fecha_pedido", "fecha_llegada", "pais", "documento", "id", "cantidad", "fob_usd", "gastos_clp", "notas", "sumado"]
-EDITABLES = ["fecha_pedido", "fecha_llegada", "pais", "documento", "id", "cantidad", "fob_usd", "gastos_clp", "notas"]
+COLUMNAS = ["fecha_pedido", "fecha_llegada", "pais", "documento", "id", "cantidad", "fob_usd", "fob_eur", "gastos_clp", "notas", "sumado"]
+EDITABLES = ["fecha_pedido", "fecha_llegada", "pais", "documento", "id", "cantidad", "fob_usd", "fob_eur", "gastos_clp", "notas"]
 HISTORICO = "Histórico (ya en existencias)"
 MINIMO_EMBARQUES = 3      # embarques con datos necesarios para usar T y L medidos
 ULTIMOS_EMBARQUES = 5     # T se mide sobre los últimos 5 embarques del país

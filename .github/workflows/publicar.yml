@@ -50,8 +50,9 @@ jobs:
           cache: npm
       - run: pip install -r requirements.txt
       - run: npm ci
-      - name: Completar por ISBN los libros nuevos (título, autor, portada y edición)
-        # Solo libros agregados en Sveltia que no se buscaron antes (herramientas/completar_libros.py). Busca en los sitios
+      - name: Revisar el catálogo (duplicados) y completar por ISBN los libros nuevos (título, autor, portada, edición, sinopsis)
+        # Marca con «aviso» los libros con el mismo ISBN, o el mismo título y edición, que otro (se ven en Sveltia con
+        # «⚠ REVISAR»). Completa solo libros agregados en Sveltia que no se buscaron antes (herramientas/completar_libros.py). Busca en los sitios
         # de Ciudad Nueva España y Argentina y en Open Library, y guarda lo encontrado en el repositorio: sale publicado
         # en esta misma pasada. Un guardado hecho por Actions no vuelve a disparar la publicación.
         continue-on-error: true
@@ -61,7 +62,7 @@ jobs:
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git add src/libros src/assets/portadas herramientas/indice_ciudadnueva.json
-            git commit -q -m "Completa por ISBN libros nuevos"
+            git commit -q -m "Revisa el catálogo y completa por ISBN libros nuevos"
             git pull -q --rebase && git push -q
           fi
       - name: Cálculo con la planilla, datos del panel y disponibilidad del sitio

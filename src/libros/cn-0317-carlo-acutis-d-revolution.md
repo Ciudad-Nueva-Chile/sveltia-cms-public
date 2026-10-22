@@ -13,4 +13,6 @@ precio_neto: 18067
 portada: "/assets/portadas/CN-0317.jpg"
 inventario_tipo: "Coyuntural"
 estado_comercial: ""
+oculto: false
+busqueda_sinopsis: "22-10-2026 · sin resultado"
 ---

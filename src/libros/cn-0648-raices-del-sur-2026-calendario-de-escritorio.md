@@ -13,4 +13,5 @@ precio_neto: 1681
 portada: ""
 inventario_tipo: "Estacional"
 estado_comercial: ""
+oculto: false
 ---

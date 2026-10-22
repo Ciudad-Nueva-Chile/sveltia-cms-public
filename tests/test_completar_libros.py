@@ -128,3 +128,35 @@ def test_escribe_sobre_el_formato_de_sveltia(tmp_path):
                                  "oculto: false\n---\n")
     cl.escribir_campos(md, {"titulo": "FRANCISCO Y EL SULTÁN", "autor": "Herrero"})
     assert cl.leer(md) == {"titulo": "FRANCISCO Y EL SULTÁN", "autor": "Herrero", "isbn": "9788497155908", "oculto": False}
+
+
+def test_marca_y_desmarca_duplicados(tmp_path):
+    a = libro(tmp_path, "a.md", '---\nid_catalogo: "CN-1"\nisbn: "9788497153188"\ntitulo: "REYES"\n---\n')
+    b = libro(tmp_path, "b.md", "---\nisbn: '978-84-9715-318-8'\ntitulo: OTRO\n---\n")
+    libro(tmp_path, "c.md", '---\nisbn: "9780140449136"\ntitulo: "SOLO"\n---\n')
+    cl.marcar_duplicados(tmp_path)
+    assert "mismo ISBN que b «OTRO»" in cl.leer(a)["aviso"] and "CN-1 «REYES»" in cl.leer(b)["aviso"]
+    b.unlink()                                                  # se eliminó el duplicado: el aviso se borra solo
+    cl.marcar_duplicados(tmp_path)
+    assert "aviso" not in cl.leer(a)
+
+
+def test_sinopsis_de_cada_edicion(tmp_path):
+    ar = libro(tmp_path, "ar.md", '---\nisbn: "9789505863242"\ntitulo: "A LOS JOVENES EXHORTACION A UN HIJO... (BP. 83)"\n'
+                                  'origen_editorial: "Ciudad Nueva Argentina"\n---\n')
+    es = libro(tmp_path, "es.md", '---\nisbn: "9788497155908"\ntitulo: "FRANCISCO Y EL SULTÁN"\n'
+                                  'origen_editorial: "Ciudad Nueva España"\n---\n')
+    con = libro(tmp_path, "con.md", '---\nisbn: "9780140449136"\ntitulo: "X"\n---\nYa tenía sinopsis.\n')
+    productos = [{"name": "A los jóvenes &#8211; Exhortación a un hijo espiritual [BPa, 83]",
+                  "description": "<p>Basilio escribe a los <b>jóvenes</b>.</p><p>Segundo párrafo.</p>"}]
+    ficha = FICHA.replace("<p><strong>ISBN", "<p>Un encuentro entre Francisco de Asís y el sultán en plena cruzada.</p>"
+                                              "<p><strong>ISBN")
+    indice = tmp_path / "i.json"
+    cl.guardar_indice(indice, {"https://www.ciudadnueva.com/libro/fys": "9788497155908"})
+    bajar = web({"wc/store": json.dumps(productos), "ciudadnueva.com/libro/fys": ficha})
+    hechos = cl.completar_sinopsis(tmp_path, bajar, hoy="22-10-2026", indice_ruta=indice, solo_nuevos=False)
+    assert cl.cuerpo(ar).startswith("Basilio escribe a los") and cl.cuerpo(ar).endswith("\n\nSegundo párrafo.")
+    assert cl.cuerpo(es).startswith("Un encuentro entre Francisco")
+    assert cl.cuerpo(con) == "Ya tenía sinopsis."
+    assert cl.leer(es)["busqueda_sinopsis"] == "22-10-2026 · Ciudad Nueva España"
+    assert len(hechos) == 2

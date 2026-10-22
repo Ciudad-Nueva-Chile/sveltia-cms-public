@@ -12,4 +12,5 @@ precio_iva: 9100
 precio_neto: 7647
 portada: "/assets/portadas/CN-0686.jpg"
 estado_comercial: ""
+oculto: false
 ---

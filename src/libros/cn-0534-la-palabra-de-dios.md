@@ -12,4 +12,5 @@ precio_iva: 17300
 precio_neto: 14538
 portada: "/assets/portadas/CN-0534.jpg"
 estado_comercial: ""
+oculto: false
 ---

@@ -12,4 +12,6 @@ precio_iva: 9200
 precio_neto: 7731
 portada: "/assets/portadas/9789505863488.jpg"
 estado_comercial: ""
+oculto: false
+busqueda_sinopsis: "22-10-2026 · sin resultado"
 ---

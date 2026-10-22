@@ -12,4 +12,5 @@ precio_iva: 12000
 precio_neto: 10084
 portada: "/assets/portadas/CN-0253.jpg"
 estado_comercial: ""
+oculto: false
 ---

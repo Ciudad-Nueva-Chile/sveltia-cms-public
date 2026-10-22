@@ -12,4 +12,5 @@ precio_iva: 31200
 precio_neto: 26218
 portada: "/assets/portadas/9788486987947.jpg"
 estado_comercial: ""
+oculto: false
 ---

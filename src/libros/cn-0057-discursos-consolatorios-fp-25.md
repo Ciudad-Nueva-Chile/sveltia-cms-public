@@ -12,4 +12,5 @@ precio_iva: 57100
 precio_neto: 47983
 portada: "/assets/portadas/CN-0057.jpg"
 estado_comercial: ""
+oculto: false
 ---

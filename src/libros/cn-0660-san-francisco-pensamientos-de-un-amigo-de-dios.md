@@ -13,4 +13,6 @@ precio_neto: 3866
 portada: ""
 destacado: true
 estado_comercial: ""
+oculto: false
+busqueda_sinopsis: "22-10-2026 · sin resultado"
 ---

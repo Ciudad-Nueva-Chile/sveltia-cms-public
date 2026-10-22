@@ -12,4 +12,7 @@ precio_iva: 4600
 precio_neto: 3866
 portada: "/assets/portadas/CN-0584.jpg"
 estado_comercial: ""
+oculto: false
+busqueda_sinopsis: "22-10-2026 · Ciudad Nueva Argentina"
 ---
+El misterio de María de Nazaret a través de autores de todos los siglos y culturas.

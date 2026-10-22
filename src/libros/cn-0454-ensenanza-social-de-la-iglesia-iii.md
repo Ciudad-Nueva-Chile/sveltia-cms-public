@@ -12,4 +12,6 @@ precio_iva: 8500
 precio_neto: 7143
 portada: "/assets/portadas/9789505862290.jpg"
 estado_comercial: ""
+oculto: false
+busqueda_sinopsis: "22-10-2026 · sin resultado"
 ---

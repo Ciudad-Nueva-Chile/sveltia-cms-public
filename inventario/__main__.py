@@ -21,6 +21,7 @@ from . import stock
 from . import ventas as ventas_mod
 from . import importaciones as importaciones_mod
 from . import costos as costos_mod
+from . import revision
 from .fuentes import COLUMNAS, FuenteCSV, FuenteSheets, catalogo_desde_sitio
 from .modelo import Resultado, calcular
 from .planilla import COLUMNAS as COLUMNAS_INVENTARIO, EDITABLES, detectar_cambios, ultima_actualizacion
@@ -32,9 +33,22 @@ COLUMNAS_MOV = COLUMNAS["Movimientos"]
 ORDEN_PESTANAS = ["Inventario", "Ventas", "Importaciones", "Esta semana", "Pedido sugerido",
                   "Costos", "Movimientos", "Historial", "Lista de libros", "Análisis técnico", "Indicadores"]
 VISIBLES = 5
-AUTOMATICAS = ["isbn", "titulo", "autor", "origen", "categoria", "categoria_gestion", "precio_lista", "actualizado", "se_vende", "que_hacer"]
+AUTOMATICAS = ["isbn", "titulo", "autor", "origen", "categoria", "categoria_gestion", "precio_lista", "actualizado", "se_vende", "que_hacer",
+               "valor"]
+
+
+def _letra(i: int) -> str:
+    return FuenteSheets._letra(i)
+
+
+# Valor del stock de cada libro: fórmula de la planilla, para que cambie al instante cuando Roberto corrige una cantidad.
+# Es igual en todas las filas (usa ROW()), así sirve aunque la pestaña se ordene o se filtre.
+_c = {c: _letra(i) for i, c in enumerate(COLUMNAS_INVENTARIO)}
+FORMULA_VALOR = (f'=(N(INDIRECT("{_c["bodega"]}"&ROW()))+N(INDIRECT("{_c["consignacion"]}"&ROW())))'
+                 f'*N(INDIRECT("{_c["precio_lista"]}"&ROW()))')
 
 NOTAS_INVENTARIO = {
+    "valor": "(En bodega + En consignación) × Precio de venta, en pesos con IVA. Se actualiza al instante.",
     "bodega": "Ejemplares en la bodega. Las ventas anotadas en «Ventas» se descuentan solas en el próximo cálculo (cada hora de lunes a sábado): no las restes aquí. "
               "Corrígelo para llegadas, conteos u otras salidas.",
     "consignacion": "Ejemplares entregados en consignación (con guía) que el cliente aún no paga ni devuelve.",
@@ -100,6 +114,7 @@ NOTAS_IMPORTACIONES = {
     "id": "Escribe parte del título o del código y elige el libro de la lista.",
     "cantidad": "Ejemplares de este libro en este embarque.",
     "fob_usd": "Opcional: valor FOB total de esta línea, en dólares. Con él se mide «FOB / precio neto» de «Configuración».",
+    "fob_eur": "Opcional: para facturas en euros (España), el FOB total de esta línea en euros. Se usa en vez de «FOB total US$».",
     "gastos_clp": ("Opcional: lo que costó traer el embarque, en pesos y sin IVA (flete, seguro, agente de aduana y "
                    "aranceles). Se escribe una sola vez por factura o DIN, en cualquiera de sus filas. Con él se mide "
                    "«Costo en bodega / precio neto» de «Configuración»."),
@@ -113,7 +128,7 @@ def preparar_importaciones(fuente: FuenteSheets, paises: list[str], filas: list 
     idx = {c: i for i, c in enumerate(importaciones_mod.COLUMNAS)}
     fuente.escribir("Importaciones", [[enc[c] for c in importaciones_mod.COLUMNAS]] + (filas or []), solo_lectura=True,
                     filtro=True, editables=[idx[c] for c in importaciones_mod.EDITABLES], filas_minimas=1000,
-                    formatos={idx["fecha_pedido"]: "dd-mm-yyyy", idx["fecha_llegada"]: "dd-mm-yyyy", idx["fob_usd"]: "#,##0.00", idx["gastos_clp"]: '"$"#,##0'},
+                    formatos={idx["fecha_pedido"]: "dd-mm-yyyy", idx["fecha_llegada"]: "dd-mm-yyyy", idx["fob_usd"]: "#,##0.00", idx["fob_eur"]: "#,##0.00", idx["gastos_clp"]: '"$"#,##0'},
                     notas={idx[c]: t for c, t in NOTAS_IMPORTACIONES.items()},
                     listas={idx["pais"]: paises},
                     listas_rango={idx["id"]: "='Lista de libros'!A2:A"},
@@ -121,7 +136,7 @@ def preparar_importaciones(fuente: FuenteSheets, paises: list[str], filas: list 
                             idx["fecha_llegada"]: ({"type": "DATE_IS_VALID"}, "Vacía mientras el embarque no llegue"),
                             idx["cantidad"]: ({"type": "NUMBER_GREATER", "values": [{"userEnteredValue": "0"}]}, "Ejemplares (número entero)")},
                     anchos={idx["fecha_pedido"]: 105, idx["fecha_llegada"]: 110, idx["pais"]: 110, idx["documento"]: 140,
-                            idx["id"]: 340, idx["cantidad"]: 75, idx["fob_usd"]: 110, idx["gastos_clp"]: 150, idx["notas"]: 200, idx["sumado"]: 230})
+                            idx["id"]: 340, idx["cantidad"]: 75, idx["fob_usd"]: 110, idx["fob_eur"]: 100, idx["gastos_clp"]: 150, idx["notas"]: 200, idx["sumado"]: 230})
 
 
 def lista_libros(catalogo: pd.DataFrame) -> pd.DataFrame:
@@ -197,12 +212,14 @@ def _hoja_inventario(catalogo: pd.DataFrame, cantidades: pd.DataFrame, r: Result
     df["actualizado"] = df["id"].map(actualizado)
     df["se_vende"] = df["id"].map(t["tasa_mensual"]).map(lenguaje.ritmo)
     df["que_hacer"] = df["id"].map(t["politica"]).map(lenguaje.QUE_HACER)
+    df["valor"] = FORMULA_VALOR
     return df[COLUMNAS_INVENTARIO].sort_values("titulo", key=lambda s: s.str.lower())
 
 
 NOTAS_CONFIGURACION = {
     "Tipo de cambio vigente desde": "Lo completa el cálculo con el dólar observado del Banco Central (mindicador.cl).",
     "Factores vigentes desde": "Fecha del último embarque usado para medir los factores. Se avisa si pasan más de 12 meses.",
+    "Pesos por euro": "Lo completa el cálculo con el euro observado del Banco Central (mindicador.cl). España factura en euros.",
     "Cómo se obtuvo": ("Lo completa el cálculo: si cada valor se midió (dólar del Banco Central; factores con los últimos "
                        "embarques de «Importaciones» que tienen FOB y gastos) o quedó el escrito a mano."),
 }
@@ -217,10 +234,16 @@ def configuracion_automatica(fuente: FuenteSheets, imp: pd.DataFrame, catalogo: 
         print(f"::warning::Configuración automática: {type(e).__name__}")
         return costos
     enc = lenguaje.ENCABEZADOS["Costos"]
-    cols = ["tipo_cambio", "tc_desde", "fob_sobre_precio_neto", "costo_sobre_precio_neto", "factores_desde", "como"]
+    cols = ["tipo_cambio", "tc_desde", "fob_sobre_precio_neto", "costo_sobre_precio_neto", "factores_desde", "como",
+            "tipo_cambio_eur"]
     try:
-        fuente.asegurar_columnas("Costos", [enc[c] for c in ("tc_desde", "factores_desde", "como")], NOTAS_CONFIGURACION,
-                                 formatos={enc["tc_desde"]: "dd-mm-yyyy", enc["factores_desde"]: "dd-mm-yyyy"})
+        fuente.asegurar_columnas("Costos", [enc[c] for c in ("tc_desde", "factores_desde", "como", "tipo_cambio_eur")],
+                                 NOTAS_CONFIGURACION,
+                                 formatos={enc["tc_desde"]: "dd-mm-yyyy", enc["factores_desde"]: "dd-mm-yyyy",
+                                           enc["tipo_cambio_eur"]: "#,##0.00"})
+        enc_eur = lenguaje.ENCABEZADOS["Importaciones"]["fob_eur"]
+        fuente.asegurar_columnas("Importaciones", [enc_eur], {enc_eur: NOTAS_IMPORTACIONES["fob_eur"]},
+                                 editables=(enc_eur,), formatos={enc_eur: "#,##0.00"})
         fuente.asegurar_columnas("Importaciones", [lenguaje.ENCABEZADOS["Importaciones"]["gastos_clp"]],
                                  {lenguaje.ENCABEZADOS["Importaciones"]["gastos_clp"]: NOTAS_IMPORTACIONES["gastos_clp"]},
                                  editables=(lenguaje.ENCABEZADOS["Importaciones"]["gastos_clp"],),
@@ -237,6 +260,10 @@ def ciclo_planilla(fuente: FuenteSheets, catalogo: pd.DataFrame, p, fecha_corte=
     calcular y escribir resultados."""
     hoy = pd.Timestamp(fecha_corte) if fecha_corte else pd.Timestamp.now(tz="America/Santiago").tz_localize(None).normalize()
     inv = fuente.leer("Inventario")
+    inv_crudo = inv.copy()          # tal cual, para la revisión de filas
+    if not inv.empty:     # pestaña creada con una versión anterior: se le agrega la columna del valor del stock
+        enc = lenguaje.ENCABEZADOS["Inventario"]["valor"]
+        fuente.asegurar_columnas("Inventario", [enc], {enc: NOTAS_INVENTARIO["valor"]}, formatos={enc: '"$"#,##0'})
     # Filas sin código o con el código repetido (p. ej. un libro de prueba ya borrado) no se pueden cruzar: se ignoran y
     # desaparecen al reescribir la pestaña, que se arma desde el catálogo
     inv = inv[inv["id"].astype(str).str.strip(" '\"") != ""].drop_duplicates("id")
@@ -323,6 +350,8 @@ def ciclo_planilla(fuente: FuenteSheets, catalogo: pd.DataFrame, p, fecha_corte=
     r = calcular(catalogo, todos, transito, costos, p, hoy,
                  envios=dict(zip(envios["origen"], envios["costo_usd"])), hoja_ventas=ventas, fecha_lista=leer_fecha_lista(), importaciones=imp)
 
+    r.errores.extend(revision.revisar(ventas, imp, inv_crudo, costos, catalogo, [o.nombre for o in p.origenes], hoy))
+
     historial = pd.concat([hist, fotos], ignore_index=True)
     actualizado = ultima_actualizacion(historial)
 
@@ -338,12 +367,12 @@ def ciclo_planilla(fuente: FuenteSheets, catalogo: pd.DataFrame, p, fecha_corte=
         idx = {c: i for i, c in enumerate(COLUMNAS_INVENTARIO)}
         fuente.escribir("Inventario", completa.rename(columns=nombres), solo_lectura=True, filtro=True, congelar_columnas=3,
                         editables=[idx[c] for c in EDITABLES],
-                        formatos={idx["precio_lista"]: '"$"#,##0', idx["actualizado"]: "dd-mm-yyyy"},
+                        formatos={idx["precio_lista"]: '"$"#,##0', idx["actualizado"]: "dd-mm-yyyy", idx["valor"]: '"$"#,##0'},
                         notas={idx[c]: texto for c, texto in NOTAS_INVENTARIO.items()},
                         listas={idx["compra_en"]: ["España", "Argentina", "España o Argentina"]},
                         anchos={idx["id"]: 80, idx["isbn"]: 115, idx["titulo"]: 320, idx["autor"]: 170, idx["origen"]: 90, idx["compra_en"]: 150,
                                 idx["categoria"]: 190, idx["categoria_gestion"]: 110, idx["precio_lista"]: 95, idx["bodega"]: 80, idx["consignacion"]: 105,
-                                idx["en_camino"]: 95, idx["actualizado"]: 105, idx["se_vende"]: 125, idx["que_hacer"]: 190, idx["notas"]: 240})
+                                idx["en_camino"]: 95, idx["actualizado"]: 105, idx["se_vende"]: 125, idx["que_hacer"]: 190, idx["notas"]: 240, idx["valor"]: 130})
     else:
         faltan = completa[~completa["id"].isin(inv["id"])]
         if len(faltan):  # libros nuevos del sitio: se agregan al final
@@ -422,9 +451,11 @@ def main(argv=None):
         transito = fuente.leer("EnTransito")
         transito = pd.concat([transito[~transito["id"].isin(viene.index)][["id", "cantidad"]],
                               viene.rename("cantidad").reset_index()], ignore_index=True)
-        r = calcular(catalogo, movimientos, transito, fuente.leer("Costos"),
+        costos = fuente.leer("Costos")
+        r = calcular(catalogo, movimientos, transito, costos,
                      p, pd.Timestamp(a.fecha_corte) if a.fecha_corte else None,
                      envios=dict(zip(envios["origen"], envios["costo_usd"])), hoja_ventas=ventas, fecha_lista=leer_fecha_lista(), importaciones=imp)
+        r.errores.extend(revision.revisar(ventas, imp, None, costos, catalogo, [o.nombre for o in p.origenes], r.fecha_corte))
         fuente.escribir("Resultado_Titulos", r.titulos)
         fuente.escribir("Resultado_Pedido", r.pedido)
         fuente.escribir("Comparacion_envios", pd.DataFrame(r.pedido_resumen.attrs["combinaciones"]))

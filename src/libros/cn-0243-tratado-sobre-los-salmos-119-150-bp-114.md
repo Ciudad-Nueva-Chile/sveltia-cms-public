@@ -12,4 +12,5 @@ precio_iva: 60500
 precio_neto: 50840
 portada: "/assets/portadas/CN-0243.jpg"
 estado_comercial: ""
+oculto: false
 ---

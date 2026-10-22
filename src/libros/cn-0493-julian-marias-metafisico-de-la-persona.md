@@ -12,4 +12,5 @@ precio_iva: 17900
 precio_neto: 15042
 portada: "/assets/portadas/CN-0493.jpg"
 estado_comercial: ""
+oculto: false
 ---

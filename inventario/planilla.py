@@ -18,7 +18,7 @@ import pandas as pd
 
 EDITABLES = ["compra_en", "bodega", "consignacion", "en_camino", "notas"]
 COLUMNAS = ["id", "isbn", "titulo", "autor", "origen", "compra_en", "categoria", "categoria_gestion", "precio_lista",
-            "bodega", "consignacion", "en_camino", "actualizado", "se_vende", "que_hacer", "notas"]
+            "bodega", "consignacion", "en_camino", "actualizado", "se_vende", "que_hacer", "notas", "valor"]
 CANTIDADES = ["bodega", "consignacion", "en_camino"]
 
 

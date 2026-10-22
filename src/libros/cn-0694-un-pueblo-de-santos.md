@@ -12,4 +12,5 @@ precio_iva: 13900
 precio_neto: 11681
 portada: "/assets/portadas/CN-0694.jpg"
 estado_comercial: ""
+oculto: false
 ---

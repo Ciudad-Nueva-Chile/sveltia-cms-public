@@ -12,4 +12,5 @@ precio_iva: 86400
 precio_neto: 72605
 portada: "/assets/portadas/CN-0218.jpg"
 estado_comercial: ""
+oculto: false
 ---
