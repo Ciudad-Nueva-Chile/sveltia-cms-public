@@ -48,15 +48,15 @@ collections:
       - { label: Colección, field: coleccion }
     fields:
       - { name: isbn, label: "ISBN", widget: string, pattern: ['^\d{9}[\dXx]$|^\d{13}$', "Debe tener 10 o 13 dígitos, sin guiones"], hint: "Escríbelo primero. Si dejas vacíos el título o el autor, al guardar se buscan por ISBN en Google Books y Open Library. Lo que siga faltando (también la portada y la edición) se busca minutos después en los sitios de Ciudad Nueva, al publicar. Revisa el resultado." }
+      - { name: aviso, label: "⚠ Aviso del sistema", widget: string, required: false, readonly: true, hint: "Lo escribe el sistema al publicar (por ejemplo, el mismo ISBN que otro libro). Si es un duplicado, elimina uno de los dos; el aviso se borra solo." }
       - { name: titulo, label: "Título", widget: string, required: false, hint: "Tal como aparece en la lista de precios. Vacío: se completa por ISBN al guardar. Si termina en una sigla como (BP. 46), el sitio la muestra como insignia." }
       - { name: autor, label: "Autor", widget: string, required: false, hint: "Vacío: se completa por ISBN al guardar. Para obras colectivas escribe «Aa.Vv.»; el sitio muestra «Varios autores»." }
       - { name: portada, label: "Portada", widget: image, required: false, hint: "Foto o imagen de la tapa, vertical. Si no hay, el sitio genera una portada con el título." }
       - { name: precio_iva, label: "Precio de lista (CLP, con IVA)", widget: number, value_type: int, min: 0, required: false, hint: "Escribe este o el neto: al guardar, el otro se calcula solo (IVA de 19 %). Si lo dejas en 0 el sitio muestra «Precio a consultar»." }
       - { name: precio_neto, label: "Precio neto (CLP, sin IVA)", widget: number, value_type: int, min: 0, required: false, hint: "Escribe este o el de lista: al guardar, el otro se calcula solo. Si cambias los dos, manda el de lista." }
-      - { name: precio_iva_guardado, widget: hidden, required: false }
-      - { name: precio_neto_guardado, widget: hidden, required: false }
-      - { name: busqueda_isbn, widget: hidden, required: false }
-      - { name: aviso, label: "⚠ Aviso del sistema", widget: string, required: false, readonly: true, hint: "Lo escribe el sistema al publicar (por ejemplo, el mismo ISBN que otro libro). Si es un duplicado, elimina uno de los dos; el aviso se borra solo." }
+      - { name: precio_iva_guardado, widget: hidden }
+      - { name: precio_neto_guardado, widget: hidden }
+      - { name: busqueda_isbn, widget: hidden }
       - name: categoria
         label: "Categoría"
         widget: relation
