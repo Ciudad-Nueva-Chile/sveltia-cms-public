@@ -135,7 +135,7 @@ def test_marca_y_desmarca_duplicados(tmp_path):
     b = libro(tmp_path, "b.md", "---\nisbn: '978-84-9715-318-8'\ntitulo: OTRO\n---\n")
     libro(tmp_path, "c.md", '---\nisbn: "9780140449136"\ntitulo: "SOLO"\n---\n')
     cl.marcar_duplicados(tmp_path)
-    assert "mismo ISBN que b «OTRO»" in cl.leer(a)["aviso"] and "CN-1 «REYES»" in cl.leer(b)["aviso"]
+    assert cl.leer(a)["aviso"].startswith("ISBN REPETIDO: b «OTRO» es otro libro") and "CN-1 «REYES»" in cl.leer(b)["aviso"]
     b.unlink()                                                  # se eliminó el duplicado: el aviso se borra solo
     cl.marcar_duplicados(tmp_path)
     assert "aviso" not in cl.leer(a)
@@ -176,3 +176,10 @@ def test_si_el_sitio_espanol_no_responde_no_marca_ni_insiste(tmp_path):
     hechos = cl.completar_sinopsis(tmp_path, caido, hoy="22-10-2026", indice_ruta=indice, solo_nuevos=False)
     assert hechos == [] and len(pedidos) == 1                  # una sola consulta fallida; nada marcado
     assert all("busqueda_sinopsis" not in cl.leer(m) for m in tmp_path.glob("es*.md"))
+
+
+def test_mismo_isbn_y_mismo_titulo_es_duplicado(tmp_path):
+    a = libro(tmp_path, "a.md", '---\nid_catalogo: "CN-0505"\nisbn: "9788497153836"\ntitulo: "LA DESVENTURA DE UN HOMBRE JUSTO"\n---\n')
+    libro(tmp_path, "b.md", '---\nid_catalogo: "CN-0555"\nisbn: "9788497153836"\ntitulo: "LAS DESVENTURA DE UN HOMBRE JUSTO"\n---\n')
+    cl.marcar_duplicados(tmp_path)
+    assert cl.leer(a)["aviso"].startswith("DUPLICADO: es el mismo libro que CN-0555")

@@ -109,7 +109,12 @@ lo recordado en los dispositivos deja de servir y se pide la nueva.
 5. **Un libro nuevo parte oculto** («Ocultar en el sitio» activado). Cuando esté bien, desactívalo y guarda: sale publicado.
 6. **Duplicados:** si el ISBN ya está en otro libro, Sveltia pregunta antes de guardar. Además, al publicar se marcan con
    «⚠ REVISAR» los libros con el mismo ISBN, o el mismo título y edición, que otro (filtro «⚠ Posibles duplicados» en la
-   lista; el detalle está en el campo «Aviso del sistema»). Si es un duplicado, elimina uno: el aviso se borra solo.
+   lista; el detalle está en el campo «⚠ Aviso del sistema», bajo el ISBN). Dos tipos:
+   - **DUPLICADO** (mismo ISBN y mismo título): es el mismo libro dos veces; elimina uno.
+   - **ISBN REPETIDO** (mismo ISBN y títulos distintos): son libros distintos y uno tiene el ISBN equivocado (pasa con la
+     lista de precios, donde algunos ISBN quedaron corridos al título siguiente). No borres ninguno: corrige el ISBN
+     mirando el libro físico.
+   El aviso se borra solo en la publicación siguiente a la corrección.
 
 Al guardar, Sveltia busca en Google Books y Open Library (desde el navegador no se pueden consultar los sitios de Ciudad
 Nueva). Google Books sin clave propia comparte una cuota diaria con todos los sitios y a veces no responde; Open Library

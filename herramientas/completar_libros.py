@@ -138,7 +138,10 @@ def nombre_libro(md: Path, d: dict) -> str:
 
 
 def avisos_duplicados(carpeta: Path) -> dict[Path, str]:
-    """{archivo: aviso} para libros con el mismo ISBN que otro, o con el mismo título y la misma edición."""
+    """{archivo: aviso} para libros con el mismo ISBN que otro, o con el mismo título y la misma edición.
+
+    Mismo ISBN y título parecido: el mismo libro dos veces (hay que borrar uno). Mismo ISBN y título distinto: dos libros
+    distintos y uno tiene el ISBN equivocado (no se borra; se corrige el ISBN mirando el libro)."""
     libros = [(md, leer(md)) for md in sorted(carpeta.glob("*.md"))]
     por_isbn, por_titulo = {}, {}
     for md, d in libros:
@@ -149,13 +152,26 @@ def avisos_duplicados(carpeta: Path) -> dict[Path, str]:
         if t and not vacio(d, "titulo"):
             por_titulo.setdefault((t, str(d.get("origen_editorial") or "")), []).append((md, d))
     avisos: dict[Path, list[str]] = {}
-    for grupo, motivo in [(g, "mismo ISBN") for g in por_isbn.values()] + [(g, "mismo título") for g in por_titulo.values()]:
-        if len(grupo) < 2:
-            continue
+    for isbn, grupo in por_isbn.items():
         for md, d in grupo:
-            otros = ", ".join(nombre_libro(m, x) for m, x in grupo if m != md)
-            avisos.setdefault(md, []).append(f"{motivo} que {otros}")
-    return {md: "Posible duplicado: " + "; ".join(dict.fromkeys(v)) for md, v in avisos.items()}
+            for m, x in grupo:
+                if m == md:
+                    continue
+                if parecido(sin_sigla(str(d.get("titulo") or "")), sin_sigla(str(x.get("titulo") or ""))) >= 0.8:
+                    avisos.setdefault(md, []).append(
+                        f"DUPLICADO: es el mismo libro que {nombre_libro(m, x)} (mismo ISBN). Elimina uno de los dos.")
+                else:
+                    avisos.setdefault(md, []).append(
+                        f"ISBN REPETIDO: {nombre_libro(m, x)} es otro libro con el mismo ISBN ({isbn}). Uno de los dos "
+                        "tiene el ISBN equivocado: revísalo con el libro físico y corrígelo (no borres ninguno).")
+    for grupo in por_titulo.values():
+        for md, d in grupo:
+            for m, x in grupo:
+                if m != md and isbn13(d.get("isbn")) != isbn13(x.get("isbn")):
+                    avisos.setdefault(md, []).append(
+                        f"POSIBLE DUPLICADO: mismo título y edición que {nombre_libro(m, x)}, con otro ISBN. "
+                        "Si es el mismo libro, elimina uno.")
+    return {md: " ".join(dict.fromkeys(v)) for md, v in avisos.items()}
 
 
 def marcar_duplicados(carpeta: Path) -> list[tuple[Path, str]]:
