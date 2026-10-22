@@ -24,7 +24,7 @@ from . import costos as costos_mod
 from . import revision
 from .fuentes import COLUMNAS, FuenteCSV, FuenteSheets, catalogo_desde_sitio
 from .modelo import Resultado, calcular
-from .planilla import COLUMNAS as COLUMNAS_INVENTARIO, EDITABLES, detectar_cambios, ultima_actualizacion
+from .planilla import COLUMNAS as COLUMNAS_INVENTARIO, EDITABLES, detectar_cambios, filas_sobrantes, ultima_actualizacion
 
 COLUMNAS_MOV = COLUMNAS["Movimientos"]
 
@@ -216,6 +216,8 @@ def _hoja_inventario(catalogo: pd.DataFrame, cantidades: pd.DataFrame, r: Result
     return df[COLUMNAS_INVENTARIO].sort_values("titulo", key=lambda s: s.str.lower())
 
 
+MAX_FILAS_BORRADAS = 10    # libros eliminados del sitio cuya fila vacía se borra de una vez; más es sospechoso
+
 NOTAS_CONFIGURACION = {
     "Tipo de cambio vigente desde": "Lo completa el cálculo con el dólar observado del Banco Central (mindicador.cl).",
     "Factores vigentes desde": "Fecha del último embarque usado para medir los factores. Se avisa si pasan más de 12 meses.",
@@ -260,6 +262,15 @@ def ciclo_planilla(fuente: FuenteSheets, catalogo: pd.DataFrame, p, fecha_corte=
     calcular y escribir resultados."""
     hoy = pd.Timestamp(fecha_corte) if fecha_corte else pd.Timestamp.now(tz="America/Santiago").tz_localize(None).normalize()
     inv = fuente.leer("Inventario")
+    # Libros eliminados del sitio sin stock ni notas: su fila se borra sola (los que tienen stock se avisan en la revisión)
+    sobrantes = filas_sobrantes(inv, set(catalogo["id"]))
+    aviso_sobrantes = []
+    if len(sobrantes) > MAX_FILAS_BORRADAS:   # demasiadas de una vez: algo raro (¿catálogo mal leído?), no se toca nada
+        aviso_sobrantes = [f"Inventario: {len(sobrantes)} filas de libros que no están en el catálogo y sin stock; son "
+                           "demasiadas para borrarlas solas. Revisa el catálogo del sitio."]
+    elif sobrantes:
+        fuente.borrar_filas("Inventario", sobrantes)
+        inv = fuente.leer("Inventario")
     inv_crudo = inv.copy()          # tal cual, para la revisión de filas
     if not inv.empty:     # pestaña creada con una versión anterior: se le agrega la columna del valor del stock
         enc = lenguaje.ENCABEZADOS["Inventario"]["valor"]
@@ -347,10 +358,10 @@ def ciclo_planilla(fuente: FuenteSheets, catalogo: pd.DataFrame, p, fecha_corte=
     todos = pd.concat([mov, nuevos, ventas_mod.a_movimientos(ventas), importaciones_mod.a_movimientos(imp)], ignore_index=True)
     transito = cantidades[["id", "en_camino"]].rename(columns={"en_camino": "cantidad"})
     costos = configuracion_automatica(fuente, imp, catalogo, hoy)
-    r = calcular(catalogo, todos, transito, costos, p, hoy,
+    r = calcular(catalogo, todos, transito, costos, p, hoy, avisar_huerfanos=False,
                  envios=dict(zip(envios["origen"], envios["costo_usd"])), hoja_ventas=ventas, fecha_lista=leer_fecha_lista(), importaciones=imp)
 
-    r.errores.extend(revision.revisar(ventas, imp, inv_crudo, costos, catalogo, [o.nombre for o in p.origenes], hoy))
+    r.errores.extend(aviso_sobrantes + revision.revisar(ventas, imp, inv_crudo, costos, catalogo, [o.nombre for o in p.origenes], hoy))
 
     historial = pd.concat([hist, fotos], ignore_index=True)
     actualizado = ultima_actualizacion(historial)

@@ -459,6 +459,15 @@ class FuenteSheets:
                                                "fields": "userEnteredFormat.numberFormat"}})
         self.libro.batch_update({"requests": pedidos})
 
+    def borrar_filas(self, nombre: str, filas: list[int]) -> None:
+        """Borra filas enteras (números desde 1), de abajo hacia arriba para que no se corran."""
+        hoja = self.hoja(nombre)
+        if hoja is None or not filas:
+            return
+        pedidos = [{"deleteDimension": {"range": {"sheetId": hoja.id, "dimension": "ROWS", "startIndex": f - 1, "endIndex": f}}}
+                   for f in sorted(set(filas), reverse=True)]
+        self.libro.batch_update({"requests": pedidos})
+
     def escribir_filas(self, nombre: str, valores: dict, columnas: list[str]) -> None:
         """Escribe columnas (por encabezado) en filas conocidas: {fila: {encabezado: valor}}."""
         if not valores:

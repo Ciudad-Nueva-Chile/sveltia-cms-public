@@ -86,6 +86,18 @@ def detectar_cambios(inventario: pd.DataFrame, historial: pd.DataFrame, base: pd
     return fotos, movs
 
 
+def filas_sobrantes(inventario: pd.DataFrame, ids: set) -> list[int]:
+    """Filas de «Inventario» de libros que ya no están en el catálogo (o sin código válido) y no tienen nada: ni
+    cantidades ni notas. Se borran solas. Las que tienen stock se dejan, y la revisión de la planilla las avisa."""
+    if inventario.empty or "fila_planilla" not in inventario:
+        return []
+    codigo = inventario["id"].astype(str).str.strip(" '\"")
+    fuera = (codigo == "") | ~codigo.isin(ids)
+    vacias = (inventario[CANTIDADES].apply(lambda c: pd.to_numeric(c, errors="coerce")).fillna(0) == 0).all(axis=1)
+    sin_notas = inventario.get("notas", pd.Series("", index=inventario.index)).astype(str).str.strip() == ""
+    return sorted(int(f) for f in inventario.loc[fuera & vacias & sin_notas, "fila_planilla"])
+
+
 def ultima_actualizacion(historial: pd.DataFrame) -> pd.Series:
     """Fecha de la última foto en que cambió algún número, por libro."""
     if not len(historial):

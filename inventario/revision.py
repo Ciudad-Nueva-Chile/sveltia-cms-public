@@ -98,7 +98,8 @@ def inventario(inv: pd.DataFrame, ids: set) -> list[str]:
                 r.append(f"{fila}: código vacío o inválido «{x.id}» (se puede borrar la fila)")
             continue
         if cod not in ids:
-            r.append(f"{fila}: «{cod}» ya no está en el catálogo del sitio (si el libro se eliminó, revisa si quedaba stock)")
+            r.append(f"{fila}: «{cod}» se eliminó del sitio pero tiene cantidades o notas. Si ya no se vende, deja las "
+                     "cantidades en 0 y la fila se borra sola; si fue un error, vuelve a agregar el libro en Sveltia")
         for c, v in cantidades.items():
             if pd.notna(v) and v < 0:
                 r.append(f"{fila}: «{NOMBRES[c]}» negativo ({int(v)})")

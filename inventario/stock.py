@@ -32,7 +32,7 @@ TIPOS_VENTA = {"venta": +1, "consignacion_liquidada": +1, "devolucion_cliente": 
 TIPOS_VENTA_NETA = {**TIPOS_VENTA, "venta_perdida": +1}
 
 
-def validar(mov: pd.DataFrame, catalogo: pd.DataFrame) -> list[str]:
+def validar(mov: pd.DataFrame, catalogo: pd.DataFrame, avisar_huerfanos: bool = True) -> list[str]:
     """Problemas de datos que conviene corregir en la planilla. No detienen el cálculo."""
     errores = []
     desconocidos = sorted(set(mov["tipo"]) - set(EFECTOS))
@@ -43,7 +43,7 @@ def validar(mov: pd.DataFrame, catalogo: pd.DataFrame) -> list[str]:
         errores.append(f"{sin_fecha} movimientos sin fecha válida (se ignoran)")
     ids = set(catalogo["id"])
     huerfanos = sorted(set(mov["id"]) - ids)
-    if huerfanos:
+    if huerfanos and avisar_huerfanos:
         muestra = ", ".join(huerfanos[:5]) + ("…" if len(huerfanos) > 5 else "")
         errores.append(f"{len(huerfanos)} códigos en Movimientos que no están en el Catálogo: {muestra}")
     negativos = mov[(mov["cantidad"] < 0) & (mov["tipo"] != "ajuste")]

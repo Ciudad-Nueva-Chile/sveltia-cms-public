@@ -98,12 +98,14 @@ def conteo_ciclico(t: pd.DataFrame, p: Parametros, fecha_corte: pd.Timestamp) ->
 def calcular(catalogo: pd.DataFrame, movimientos: pd.DataFrame, transito: pd.DataFrame, costos: pd.DataFrame,
              p: Parametros, fecha_corte: pd.Timestamp | None = None, envios: dict | None = None,
              hoja_ventas: pd.DataFrame | None = None, fecha_lista=None,
-             importaciones: pd.DataFrame | None = None) -> Resultado:
+             importaciones: pd.DataFrame | None = None, avisar_huerfanos: bool = True) -> Resultado:
     """movimientos ya incluye los de «Ventas»; `hoja_ventas` (la pestaña) se usa para los indicadores de venta.
     `fecha_lista`: fecha de vigencia de la lista de precios del sitio, para el aviso de caducidad.
     `importaciones`: la pestaña «Importaciones», para medir T y L y fechar el próximo embarque (sus llegadas ya vienen
     como movimientos en `movimientos`)."""
-    errores = stock.validar(movimientos, catalogo)
+    # Con la planilla, los códigos fuera del catálogo en el registro son libros eliminados del sitio (su historia queda):
+    # no se avisan; si les quedaba stock, lo avisa la revisión de «Inventario»
+    errores = stock.validar(movimientos, catalogo, avisar_huerfanos)
     mov = stock.limpiar(movimientos)
     if fecha_corte is None:
         fecha_corte = mov["fecha"].max() if len(mov) else pd.Timestamp.today().normalize()

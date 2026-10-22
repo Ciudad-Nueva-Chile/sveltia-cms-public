@@ -255,6 +255,10 @@ robot, con permiso de **Editor** solo en esa planilla). Las pestañas automátic
 | **Notas** | `notas` | Roberto | Libre |
 | Valor del stock $ | `valor` | Fórmula | (En bodega + En consignación) × Precio de venta; cambia al instante al corregir una cantidad |
 
+Si un libro se elimina en Sveltia, su fila de «Inventario» se borra sola en el cálculo siguiente cuando no tiene cantidades
+ni notas (hasta 10 por pasada; más se avisa sin borrar). Si le quedaba stock, la fila se deja y «Revisar en la planilla»
+lo avisa. Su historia en el registro de movimientos se conserva.
+
 **Ventas** — una fila por libro vendido o pedido no atendido.
 
 | Columna | Interna | Quién | Significado |

@@ -642,3 +642,12 @@ def test_catalogo_lee_el_formato_de_sveltia(tmp_path):
     assert c.loc["CN-0001", "titulo"] == 'CARTAS "X"' and c.loc["CN-0001", "precio_lista"] == 70900
     assert c.loc["9789505864089", "isbn"] == "9789505864089" and c.loc["9789505864089", "autor"] == ""
     assert c.loc["9789505864089", "origen"] == "Argentina"
+
+
+def test_filas_de_libros_eliminados_sin_stock_se_borran():
+    from inventario.planilla import filas_sobrantes
+    inv = pd.DataFrame({"id": ["CN-0001", "CN-0505", "'", "CN-0777", "CN-0888"],
+                        "bodega": [0, 0, 0, 3, 0], "consignacion": [0, 0, 0, 0, 0], "en_camino": [0, 0, 0, 0, 0],
+                        "notas": ["", "", "", "", "ojo"], "fila_planilla": [2, 3, 4, 5, 6]})
+    # CN-0001 sigue en el catálogo; CN-0777 tiene stock y CN-0888 una nota: se quedan (los avisa la revisión)
+    assert filas_sobrantes(inv, {"CN-0001"}) == [3, 4]

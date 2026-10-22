@@ -54,7 +54,7 @@ def test_inventario_codigos_raros_negativos_y_repetidos():
     a = revision.inventario(inv, set(CAT["id"]))
     assert any("filas 2, 3: el código CN-0001 está repetido" in x for x in a)
     assert any("fila 4: código vacío o inválido" in x for x in a)
-    assert any("fila 5: «CN-0777» ya no está en el catálogo" in x for x in a)
+    assert any("fila 5: «CN-0777» se eliminó del sitio pero tiene cantidades" in x for x in a)
     assert any("fila 5: «En bodega» negativo (-2)" in x for x in a)
 
 
