@@ -47,6 +47,15 @@ def main():
     datos = a.datos or (RAIZ / "datos_ejemplo" if a.con_ejemplo else None)
     hay = lambda nombre: datos is not None and (datos / f"{nombre}.csv").exists()
 
+    def leer_csv(nombre: str, numericas: tuple = ()) -> pd.DataFrame:
+        """Lee un CSV y deja como números las columnas numéricas: escritas como texto, una planilla en español
+        leería «644.0» como 6.440 (el punto es separador de miles)."""
+        df = pd.read_csv(datos / f"{nombre}.csv", dtype=str, keep_default_na=False)
+        for c in numericas:
+            if c in df:
+                df[c] = pd.to_numeric(df[c], errors="coerce").astype(object).where(df[c].str.strip() != "", "")
+        return df
+
     f = FuenteSheets(a.planilla)
     libro = f.libro
 
@@ -76,7 +85,7 @@ def main():
     hoja = f.hoja("Movimientos")
     if hoja is None or a.reemplazar or len(hoja.get_all_values()) <= 1:
         if hay("Movimientos"):
-            mov = pd.read_csv(datos / "Movimientos.csv", dtype=str, keep_default_na=False)
+            mov = leer_csv("Movimientos", ("cantidad",))
             mov["tipo"] = mov["tipo"].map(TIPOS_LEGIBLES).fillna(mov["tipo"])
         else:
             mov = pd.DataFrame(columns=COLUMNAS["Movimientos"])
@@ -91,7 +100,7 @@ def main():
     # planilla privada a partir de la memoria. Nunca se escriben en el repositorio.
     hoja = f.hoja("Costos")
     if hoja is None or a.reemplazar or len(hoja.get_all_values()) <= 1:
-        cfg = pd.read_csv(datos / "Costos.csv", dtype=str, keep_default_na=False) if hay("Costos") else pd.DataFrame(
+        cfg = leer_csv("Costos", ("fob_sobre_precio_neto", "costo_sobre_precio_neto", "tipo_cambio")) if hay("Costos") else pd.DataFrame(
             [{"origen": o, "edicion": "", "fob_sobre_precio_neto": "", "costo_sobre_precio_neto": "", "tipo_cambio": "",
               "tc_desde": "", "factores_desde": ""} for o in ("España", "Argentina")])
         cfg = cfg.reindex(columns=COLUMNAS["Costos"]).fillna("")
@@ -108,7 +117,7 @@ def main():
         f.escribir("Lista de libros", lista_libros(catalogo_desde_sitio(RAIZ / "src" / "libros")), oculta=True, solo_lectura=True)
         filas = []
         if hay("Ventas"):
-            v = pd.read_csv(datos / "Ventas.csv", dtype=str, keep_default_na=False)
+            v = leer_csv("Ventas", ("cantidad", "descuento"))
             v["descontado"] = ventas_mod.HISTORICO
             filas = [[r[c] if c in ventas_mod.EDITABLES else "" for c in ventas_mod.COLUMNAS[:-1]] + [r["descontado"]]
                      for r in v.to_dict("records")]
@@ -119,7 +128,7 @@ def main():
     if f.hoja("Importaciones") is None:
         filas = []
         if hay("Importaciones"):
-            i = pd.read_csv(datos / "Importaciones.csv", dtype=str, keep_default_na=False)
+            i = leer_csv("Importaciones", ("cantidad", "fob_usd", "gastos_clp"))
             filas = i.reindex(columns=importaciones_mod.COLUMNAS, fill_value="").values.tolist()
         preparar_importaciones(f, [o.nombre for o in cargar_parametros().origenes], filas)
         print(f"  Importaciones: lista ({len(filas)} filas)")

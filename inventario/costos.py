@@ -32,7 +32,7 @@ API_DOLAR = "https://mindicador.cl/api/dolar"
 
 def _bajar_json(url: str):
     pedido = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (compatible; inventario Ciudad Nueva Chile)"})
-    return json.loads(urllib.request.urlopen(pedido, timeout=30).read().decode("utf-8"))
+    return json.loads(urllib.request.urlopen(pedido, timeout=60).read().decode("utf-8"))
 
 
 class Dolar:
