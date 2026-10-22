@@ -13,5 +13,5 @@ precio_neto: 17647
 portada: ""
 estado_comercial: ""
 oculto: false
-aviso: "Posible duplicado: mismo ISBN que CN-0480 «GUIA DEL METODO BILLINGS»"
+aviso: "ISBN REPETIDO: CN-0480 «GUIA DEL METODO BILLINGS» es otro libro con el mismo ISBN (9788486987442). Uno de los dos tiene el ISBN equivocado: revísalo con el libro físico y corrígelo (no borres ninguno)."
 ---

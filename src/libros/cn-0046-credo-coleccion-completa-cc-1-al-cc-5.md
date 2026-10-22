@@ -13,5 +13,5 @@ precio_neto: 289916
 portada: ""
 estado_comercial: ""
 oculto: false
-aviso: "Posible duplicado: mismo ISBN que CN-0050 «CREO EN UN SOLO DIOS (CC. 1)»"
+aviso: "ISBN REPETIDO: CN-0050 «CREO EN UN SOLO DIOS (CC. 1)» es otro libro con el mismo ISBN (9788497154109). Uno de los dos tiene el ISBN equivocado: revísalo con el libro físico y corrígelo (no borres ninguno)."
 ---
