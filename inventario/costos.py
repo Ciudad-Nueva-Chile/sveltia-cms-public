@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import json
 import math
+import time
 import urllib.request
 
 import pandas as pd
@@ -31,21 +32,26 @@ API_DOLAR = "https://mindicador.cl/api/dolar"
 
 def _bajar_json(url: str):
     pedido = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (compatible; inventario Ciudad Nueva Chile)"})
-    return json.loads(urllib.request.urlopen(pedido, timeout=20).read().decode("utf-8"))
+    return json.loads(urllib.request.urlopen(pedido, timeout=30).read().decode("utf-8"))
 
 
 class Dolar:
     """Dólar observado por fecha. Baja la serie de cada año una sola vez; sin conexión devuelve None."""
 
-    def __init__(self, bajar_json=_bajar_json):
+    def __init__(self, bajar_json=_bajar_json, espera: float = 2):
         self.bajar_json = bajar_json
+        self.espera = espera
         self._anios: dict[int, pd.Series] = {}
 
-    def _serie(self, url: str) -> pd.Series:
-        try:
-            datos = self.bajar_json(url).get("serie", [])
-        except Exception:
-            return pd.Series(dtype=float)
+    def _serie(self, url: str, intentos: int = 3) -> pd.Series:
+        for i in range(intentos):           # mindicador.cl a veces tarda: se reintenta antes de dejar el valor anterior
+            try:
+                datos = self.bajar_json(url).get("serie", [])
+                break
+            except Exception:
+                if i == intentos - 1:
+                    return pd.Series(dtype=float)
+                time.sleep(self.espera)
         s = pd.Series({pd.Timestamp(d["fecha"][:10]): float(d["valor"]) for d in datos if d.get("valor")})
         return s.sort_index()
 

@@ -10,6 +10,8 @@ Uso (en tu computador, con el archivo de credenciales de la cuenta de servicio):
     export GOOGLE_CREDENCIALES_ARCHIVO=~/credenciales-inventario.json
     python herramientas/crear_planilla.py --planilla ID                             # estructura vacía
     python herramientas/crear_planilla.py --planilla ID --con-ejemplo --reemplazar  # rehace todo con datos de ejemplo
+    python herramientas/crear_planilla.py --planilla ID --datos CARPETA             # carga datos reales (CSV con el
+                                                    # formato de datos_ejemplo/; la carpeta vive fuera del repositorio)
     python -m inventario --fuente sheets --planilla ID                             # primer cálculo: crea «Inventario»
 """
 from __future__ import annotations
@@ -39,8 +41,11 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--planilla", required=True)
     ap.add_argument("--con-ejemplo", action="store_true", help="carga los movimientos y costos de datos_ejemplo/")
+    ap.add_argument("--datos", type=Path, help="carga Movimientos, Importaciones, Costos y Ventas (si existen) de esta carpeta")
     ap.add_argument("--reemplazar", action="store_true", help="borra todo y rehace la planilla desde cero")
     a = ap.parse_args()
+    datos = a.datos or (RAIZ / "datos_ejemplo" if a.con_ejemplo else None)
+    hay = lambda nombre: datos is not None and (datos / f"{nombre}.csv").exists()
 
     f = FuenteSheets(a.planilla)
     libro = f.libro
@@ -70,8 +75,8 @@ def main():
     # Registro de movimientos (oculto): la historia de demanda. Con datos reales, aquí se cargan las facturas y guías del SII.
     hoja = f.hoja("Movimientos")
     if hoja is None or a.reemplazar or len(hoja.get_all_values()) <= 1:
-        if a.con_ejemplo:
-            mov = pd.read_csv(RAIZ / "datos_ejemplo" / "Movimientos.csv", dtype=str, keep_default_na=False)
+        if hay("Movimientos"):
+            mov = pd.read_csv(datos / "Movimientos.csv", dtype=str, keep_default_na=False)
             mov["tipo"] = mov["tipo"].map(TIPOS_LEGIBLES).fillna(mov["tipo"])
         else:
             mov = pd.DataFrame(columns=COLUMNAS["Movimientos"])
@@ -86,7 +91,7 @@ def main():
     # planilla privada a partir de la memoria. Nunca se escriben en el repositorio.
     hoja = f.hoja("Costos")
     if hoja is None or a.reemplazar or len(hoja.get_all_values()) <= 1:
-        cfg = pd.read_csv(RAIZ / "datos_ejemplo" / "Costos.csv") if a.con_ejemplo else pd.DataFrame(
+        cfg = pd.read_csv(datos / "Costos.csv", dtype=str, keep_default_na=False) if hay("Costos") else pd.DataFrame(
             [{"origen": o, "edicion": "", "fob_sobre_precio_neto": "", "costo_sobre_precio_neto": "", "tipo_cambio": "",
               "tc_desde": "", "factores_desde": ""} for o in ("España", "Argentina")])
         cfg = cfg.reindex(columns=COLUMNAS["Costos"]).fillna("")
@@ -102,8 +107,8 @@ def main():
     if f.hoja("Ventas") is None:
         f.escribir("Lista de libros", lista_libros(catalogo_desde_sitio(RAIZ / "src" / "libros")), oculta=True, solo_lectura=True)
         filas = []
-        if a.con_ejemplo:
-            v = pd.read_csv(RAIZ / "datos_ejemplo" / "Ventas.csv", dtype=str, keep_default_na=False)
+        if hay("Ventas"):
+            v = pd.read_csv(datos / "Ventas.csv", dtype=str, keep_default_na=False)
             v["descontado"] = ventas_mod.HISTORICO
             filas = [[r[c] if c in ventas_mod.EDITABLES else "" for c in ventas_mod.COLUMNAS[:-1]] + [r["descontado"]]
                      for r in v.to_dict("records")]
@@ -113,9 +118,9 @@ def main():
     # Importaciones (visible): con --con-ejemplo, los embarques de ejemplo quedan como históricos (ya en existencias)
     if f.hoja("Importaciones") is None:
         filas = []
-        if a.con_ejemplo:
-            i = pd.read_csv(RAIZ / "datos_ejemplo" / "Importaciones.csv", dtype=str, keep_default_na=False)
-            filas = i[importaciones_mod.COLUMNAS].values.tolist()
+        if hay("Importaciones"):
+            i = pd.read_csv(datos / "Importaciones.csv", dtype=str, keep_default_na=False)
+            filas = i.reindex(columns=importaciones_mod.COLUMNAS, fill_value="").values.tolist()
         preparar_importaciones(f, [o.nombre for o in cargar_parametros().origenes], filas)
         print(f"  Importaciones: lista ({len(filas)} filas)")
 

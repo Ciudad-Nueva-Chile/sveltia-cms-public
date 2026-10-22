@@ -15,7 +15,7 @@ def dolar_fijo(valor=1000.0, hoy="2026-10-16"):
 def sin_conexion():
     def falla(url):
         raise OSError("sin conexión")
-    return costos.Dolar(falla)
+    return costos.Dolar(falla, espera=0)
 
 
 CATALOGO = pd.DataFrame({"id": ["E1", "E2", "A1"], "origen": ["España", "España", "Argentina"],
