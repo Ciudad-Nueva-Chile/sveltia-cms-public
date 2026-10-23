@@ -13,4 +13,6 @@ precio_neto: 39244
 portada: "/assets/portadas/CN-0401.jpg"
 estado_comercial: ""
 oculto: false
+busqueda_sinopsis: "23-10-2026 · Ciudad Nueva España"
 ---
+Al filo de los Evangelios dominicales y festivos del tercer año del ciclo trienal (año C), la obra ofrece una amplia y selecta antología de textos de autores cristianos de todos los tiempos, desde los Padres Apostólicos hasta autores recientes, que han comentado o se han referido a estas perícopas evangélicas.

@@ -13,4 +13,5 @@ precio_neto: 10168
 portada: "/assets/portadas/CN-0417.jpg"
 estado_comercial: ""
 oculto: false
+busqueda_sinopsis: "23-10-2026 · sin resultado"
 ---

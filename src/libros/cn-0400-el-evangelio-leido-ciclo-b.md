@@ -13,4 +13,5 @@ precio_neto: 45042
 portada: "/assets/portadas/CN-0400.jpg"
 estado_comercial: ""
 oculto: false
+busqueda_sinopsis: "23-10-2026 · sin resultado"
 ---
