@@ -13,4 +13,6 @@ precio_neto: 34874
 portada: "/assets/portadas/CN-0131.jpg"
 estado_comercial: ""
 oculto: false
+busqueda_sinopsis: "23-10-2026 · Ciudad Nueva España"
 ---
+Orígenes es una de las figuras más destacadas de la Antigüedad cristiana por fecundidad literaria y por doctrina teológica.

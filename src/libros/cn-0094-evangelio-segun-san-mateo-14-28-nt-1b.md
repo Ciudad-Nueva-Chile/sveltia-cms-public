@@ -13,4 +13,5 @@ precio_neto: 79832
 portada: "/assets/portadas/CN-0094.jpg"
 estado_comercial: ""
 oculto: false
+busqueda_sinopsis: "23-10-2026 · sin resultado"
 ---
