@@ -13,4 +13,6 @@ precio_neto: 46471
 portada: "/assets/portadas/CN-0227.jpg"
 estado_comercial: ""
 oculto: false
+busqueda_sinopsis: "23-10-2026 · Ciudad Nueva España"
 ---
+El tratado De virginibus es un elogio de la virginidad cristiana complementado con varios ejemplos tomados de figuras relevantes de la tradición cristiana. El De viduis presenta una clara equiparación entre las vírgenes y la viudas a la hora de vivenciar la práctica de la virginidad, poniendo especial énfasis en la ejemplaridad de algunas viudas del Antiguo Testamento.

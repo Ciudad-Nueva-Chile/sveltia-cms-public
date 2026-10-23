@@ -13,4 +13,8 @@ precio_neto: 46471
 portada: "/assets/portadas/CN-0217.jpg"
 estado_comercial: ""
 oculto: false
+busqueda_sinopsis: "23-10-2026 · Ciudad Nueva España"
 ---
+Con este volumen comenzamos la colección “Conocer el siglo II”, donde cuatro autores (Ignacio, Justino, Ireneo y Clemente) y cuatro ciudades (Antioquía, Roma, Lyon y Alejandría) nos ayudarán a descubrir la realidad del cristianismo en uno de los períodos más fascinantes en la historia de la Iglesia. En un formato novedoso y entretenido, en forma narrativa.
+
+Edición en cartoné.
