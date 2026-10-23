@@ -13,4 +13,6 @@ precio_neto: 14538
 portada: "/assets/portadas/CN-0311.jpg"
 estado_comercial: ""
 oculto: false
+busqueda_sinopsis: "23-10-2026 · Ciudad Nueva España"
 ---
+Estos pensamientos espirituales muestran la novedad y la riqueza de la espiritualidad de la unidad.

@@ -13,4 +13,8 @@ precio_neto: 15966
 portada: "/assets/portadas/CN-0376.jpg"
 estado_comercial: ""
 oculto: false
+busqueda_sinopsis: "23-10-2026 · Ciudad Nueva España"
 ---
+Un nuevo título para conocer de cerca los 12 puntos fundamentales del «carisma de la unidad».
+
+En este caso sobre el mandamiento del amor recíproco, que, como Chiara Lubich explica, es un amor paradójico, pues requiere una donación completa y gratuita sin esperar nada, y al mismo tiempo contiene un reclamo a la reciprocidad y a la comunión.
