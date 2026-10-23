@@ -14,4 +14,5 @@ portada: "/assets/portadas/CN-0702.jpg"
 destacado: true
 estado_comercial: ""
 oculto: false
+busqueda_sinopsis: "23-10-2026 · sin resultado"
 ---

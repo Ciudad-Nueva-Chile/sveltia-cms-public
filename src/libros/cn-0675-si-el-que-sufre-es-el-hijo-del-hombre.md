@@ -13,4 +13,6 @@ precio_neto: 21849
 portada: "/assets/portadas/CN-0675.jpg"
 estado_comercial: ""
 oculto: false
+busqueda_sinopsis: "23-10-2026 · Ciudad Nueva España"
 ---
+En clave de lectura unitaria que imprime su sello a las fragmentarias meditaciones aquí propuestas. Por ser hijo del hombre, Jesús sufre, y sufre tanto que la imagen que mejor le representa es la del crucificado en el madero del Gólgota. Por eso, cada uno de nosotros puede sentirse uno con ÉL.
