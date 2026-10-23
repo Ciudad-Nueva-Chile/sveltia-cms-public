@@ -13,4 +13,8 @@ precio_neto: 33445
 portada: "/assets/portadas/CN-0069.jpg"
 estado_comercial: ""
 oculto: false
+busqueda_sinopsis: "23-10-2026 · Ciudad Nueva España"
 ---
+San Ambrosio es el primer Padre de la Iglesia de Occidente que escribió un tratado sobre el Espíritu Santo. Inspirándose en la mejor teología griega sobre el tema, muestra con argumentos de Escritura y de razón que el Espíritu Santo es Dios.
+
+Era lo que le había pedido el Emperador en carta autógrafa, cuya publicación constituye toda una recomendación de esta obra. La traducción de esta obra es la primera que se publica en lengua castellana.

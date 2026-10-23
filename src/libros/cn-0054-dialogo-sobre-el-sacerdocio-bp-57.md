@@ -13,4 +13,6 @@ precio_neto: 24706
 portada: "/assets/portadas/CN-0054.jpg"
 estado_comercial: ""
 oculto: false
+busqueda_sinopsis: "23-10-2026 · Ciudad Nueva España"
 ---
+No es fácil encontrar una obra de san Juan Crisóstomo que haya tenido una difusión tan amplia como "Diálogo sobre el sacerdocio".

@@ -13,4 +13,6 @@ precio_neto: 27647
 portada: "/assets/portadas/CN-0085.jpg"
 estado_comercial: ""
 oculto: false
+busqueda_sinopsis: "23-10-2026 · Ciudad Nueva España"
 ---
+Estas epístolas tienen una notable importancia desde el punto de vista histórico-dogmático, pues fueron escritas para refutar una nueva herejía que negaba la divinidad del Espíritu Santo. Contienen también un amplísimo florilegio de textos bíblicos de ambos Testamentos referidos al Espíritu Santo, que les confieren un valor añadido.

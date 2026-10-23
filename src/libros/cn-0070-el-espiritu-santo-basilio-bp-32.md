@@ -13,4 +13,5 @@ precio_neto: 31933
 portada: "/assets/portadas/9788489651005.jpg"
 estado_comercial: ""
 oculto: false
+busqueda_sinopsis: "23-10-2026 · sin resultado"
 ---

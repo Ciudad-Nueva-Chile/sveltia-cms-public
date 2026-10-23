@@ -13,4 +13,6 @@ precio_neto: 21849
 portada: "/assets/portadas/CN-0073.jpg"
 estado_comercial: ""
 oculto: false
+busqueda_sinopsis: "23-10-2026 · Ciudad Nueva España"
 ---
+En esta obra siguiendo un orden temático se presentan cerca de 200 textos breves, de 33 Padres de la Iglesia, donde aparecen los grandes temas teológicos sobre el Paráclito, tales como su naturaleza, su presencia en el Antiguo y Nuevo Testamento, sus carismas, sus dones, sus frutos, su acción por medio de los sacramentos, y en definitiva, su misión en todo el desarrollo de la vida espiritual del creyente. Los índices bíblicos, temáticos, y de autores y obras facilitan la utilización del libro.

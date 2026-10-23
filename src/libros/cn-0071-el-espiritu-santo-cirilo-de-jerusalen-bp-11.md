@@ -13,4 +13,6 @@ precio_neto: 14538
 portada: ""
 estado_comercial: ""
 oculto: false
+busqueda_sinopsis: "23-10-2026 · Ciudad Nueva España"
 ---
+Las catequesis sobre el Espíritu Santo (XVI y XVII), recogidas en el presente volumen reflejan una gran intuición teológica y una fe profunda. Su doctrina sobre el Espíritu Santo, conforme a la Fe de Nicea, se mantiene equidistante del "arrianismo" (que negaba la divinidad del Verbo y la del Espíritu Santo), y del "sabelianismo" (que negaba el carácter de Persona), defendiendo la divinidad y el carácter personal del Espíritu Santo.
