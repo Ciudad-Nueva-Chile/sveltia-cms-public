@@ -13,4 +13,6 @@ precio_neto: 11681
 portada: ""
 estado_comercial: ""
 oculto: false
+busqueda_sinopsis: "23-10-2026 · Ciudad Nueva España"
 ---
+Pensamientos espirituales que ponen de relieve una espiritualidad comunitaria, es decir, un camino hacia la perfección cristiana que se recorre junto a los demás.

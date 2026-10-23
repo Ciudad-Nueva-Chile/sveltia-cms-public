@@ -13,4 +13,5 @@ precio_neto: 18908
 portada: "/assets/portadas/CN-0644.jpg"
 estado_comercial: ""
 oculto: false
+busqueda_sinopsis: "23-10-2026 · sin resultado"
 ---
