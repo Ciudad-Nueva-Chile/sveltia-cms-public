@@ -13,4 +13,5 @@ precio_neto: 40672
 portada: "/assets/portadas/CN-0188.jpg"
 estado_comercial: ""
 oculto: false
+busqueda_sinopsis: "23-10-2026 · sin resultado"
 ---

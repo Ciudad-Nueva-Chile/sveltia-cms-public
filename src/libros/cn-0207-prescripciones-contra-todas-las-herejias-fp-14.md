@@ -13,4 +13,5 @@ precio_neto: 49412
 portada: "/assets/portadas/CN-0207.jpg"
 estado_comercial: ""
 oculto: false
+busqueda_sinopsis: "23-10-2026 · sin resultado"
 ---
