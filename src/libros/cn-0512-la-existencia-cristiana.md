@@ -13,4 +13,6 @@ precio_neto: 18908
 portada: ""
 estado_comercial: ""
 oculto: false
+busqueda_sinopsis: "23-10-2026 · Ciudad Nueva España"
 ---
+Meditaciones bíblicas sobre la pobreza, evangelización, sexualidad, enfermedad... como centro y corazón de la existencia cristiana.
