@@ -13,4 +13,6 @@ precio_neto: 31933
 portada: "/assets/portadas/CN-0010.jpg"
 estado_comercial: ""
 oculto: false
+busqueda_sinopsis: "23-10-2026 · Ciudad Nueva España"
 ---
+Una interpretación profunda y espiritual de los comentarios al Génesis que Agustín de Hipona escribió a lo largo de su vida, motivado por la preocupación filosófico-teológica de contrarrestar su primera influencia maniquea y, al tiempo, narrar su propia inconformidad y ansia de verdad.
