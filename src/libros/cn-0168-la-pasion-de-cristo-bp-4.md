@@ -13,4 +13,5 @@ precio_neto: 26218
 portada: "/assets/portadas/9788486987947.jpg"
 estado_comercial: ""
 oculto: false
+busqueda_sinopsis: "23-10-2026 · sin resultado"
 ---

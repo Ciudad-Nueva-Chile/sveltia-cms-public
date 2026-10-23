@@ -13,4 +13,5 @@ precio_neto: 26218
 portada: "/assets/portadas/CN-0161.jpg"
 estado_comercial: ""
 oculto: false
+busqueda_sinopsis: "23-10-2026 · sin resultado"
 ---

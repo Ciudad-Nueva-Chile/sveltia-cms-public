@@ -13,4 +13,6 @@ precio_neto: 30504
 portada: "/assets/portadas/CN-0151.jpg"
 estado_comercial: ""
 oculto: false
+busqueda_sinopsis: "23-10-2026 · Ciudad Nueva España"
 ---
+La encarnación del Hijo de Dios es el misterio más inefable y la novedad más sorprendente que ha acontecido desde el comienzo de los siglos transformando maravillosamente la historia. En la presente antología hemos agrupado los textos patrísticos en torno al discurso de la vida y obra de Jesús, según aparece en los Evangelios; de esta forma el libro resultará un instrumento útil de trabajo para encontrar fácilmente textos relevantes de los Santos Padres sobre los principales temas evangélicos.
