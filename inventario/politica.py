@@ -2,7 +2,7 @@
 
 La «decisión manual» del catálogo (Sveltia) siempre manda sobre estas reglas:
 
-    A Intermitente o Regular    Reponer             hasta el nivel objetivo S (Poisson al 95 %)
+    A Intermitente o Regular    Reponer             hasta el nivel objetivo S (modelo compuesto al 95 %)
     A Estacional                Temporada           un pedido anual que debe llegar antes de septiembre
     A Coyuntural                No reponer          se atiende por reacción
     B                           Reponer lo vendido  lo vendido desde el embarque anterior, sin stock de seguridad

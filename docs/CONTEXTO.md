@@ -7,7 +7,7 @@ se anota en la planilla y las fórmulas del código.
 > Este repositorio es **público**. Este documento no contiene contraseñas, claves, IDs de planilla ni datos reales.
 > Los secretos viven en GitHub (Settings → Secrets) y en la Google Sheet privada.
 
-> **Última revisión de este documento: 13-10-2026.**
+> **Última revisión de este documento: 01-11-2026.**
 
 ---
 
@@ -34,8 +34,8 @@ Personas:
 
 | Entorno | Repositorio | Estado |
 |---|---|---|
-| **Prueba / simulación** | `Ciudad-Nueva-Chile/sveltia-cms-public` (público) | Activo. Planilla de prueba con datos sintéticos |
-| **Oficial** | `Ciudad-Nueva-Chile/sveltia-cms` (versión anterior del sitio) | Se migrará cuando la prueba esté completa. Dominio previsto: `ciudadnueva.cl` |
+| **En uso** | `Ciudad-Nueva-Chile/sveltia-cms-public` (público) | Activo desde el 22-10-2026 con la planilla real: el repositorio solo tiene código y catálogo, y el panel se publica cifrado |
+| **Oficial** | `Ciudad-Nueva-Chile/sveltia-cms` (privado) | Se migrará cuando haya acceso a su configuración. Dominio previsto: `ciudadnueva.cl` |
 
 El mismo código sirve para ambos; cambian solo los secretos (planilla, contraseña) y el dominio.
 
@@ -309,16 +309,17 @@ vacío, repetido o que ya no está en el catálogo; cantidades negativas. «Conf
 o el tipo de cambio, o un factor fuera de rango. Para cada país muestra la
 política de embarques con lo observado en «Importaciones» como comparación.
 
-**Pedido sugerido** — dos bloques:
+**Pedido sugerido** — tres bloques:
 
 1. **Dónde conviene comprar**: fila «Costo de cada envío (US$)» con una celda amarilla por país, que **Roberto anota**
    con la cotización real de cada envío (el código no calcula el flete por peso, porque el catálogo no tiene el peso de
    cada título). Una tabla compara las combinaciones que cubren todo lo que hay que pedir (Todo a España, Todo a
    Argentina, Dividir) con Libros, Envíos y Total. Envíos y Total son **fórmulas** y la fila **CONVIENE** usa
    `INDICE(…; COINCIDIR(MIN(…); …; 0))`, de modo que la recomendación cambia **al instante** al editar un costo de envío.
-2. **Qué pedir**: Cuándo (el próximo embarque programado del origen), Comprar en, Cantidad, Título, Código, US$ aprox.,
-   Por qué. Si un envío no alcanza el mínimo FOB, la hoja avisa «El envío a [origen] no alcanza el mínimo FOB de
-   US$ 700» y Roberto decide cómo completarlo.
+2. **Embarques**: por origen, la fecha del próximo pedido, cuántos libros hay que pedir y su valor FOB aproximado (en US$, y
+   en € para España). El pedido que toca se pide aunque sea chico.
+3. **Qué pedir**: Cuándo (el próximo embarque programado del origen), Comprar en, Cantidad, Título, Código, US$ aprox.,
+   € aprox., Por qué.
 
 ### 7.2 Pestañas ocultas (Ver → Hojas ocultas)
 
@@ -350,7 +351,7 @@ inventario/
 ├── stock.py              efectos de cada movimiento y existencias
 ├── demanda.py            serie mensual, clase por meses con demanda, ADI y CV² informativos, pronóstico SBA
 ├── categorias.py         categorías de gestión A, B, C y D
-├── politica.py           política por categoría y nivel objetivo S (Poisson al 95 %)
+├── politica.py           política por categoría y nivel objetivo S (modelo compuesto al 95 %)
 ├── pedido.py             pedido por embarque programado y dónde comprar: combinaciones de envíos con costo fijo
 ├── modelo.py             une todo: calcular() → Resultado
 ├── lenguaje.py           todos los textos en lenguaje simple y las hojas armadas
@@ -545,32 +546,47 @@ políticas «Stock mínimo» y «Liquidar o revisar» ya no se asignan automáti
 **Nivel objetivo S** (solo A Intermitente o Regular): el nivel hasta el que se repone en cada embarque. T y L son
 siempre los de la política (`config/parametros.yml`) del país de la **edición** del libro (origen editorial). Los observados en
 «Importaciones» solo se muestran como comparación (9.8). Es el **percentil
-95 de una distribución de Poisson** cuya media es la tasa mensual λ por el intervalo entre embarques del origen más el
-plazo de reposición:
+95 de la venta en T + L según un modelo compuesto** (memoria 4.2.5, actualizado el 27-10-2026): los pedidos llegan como una
+Poisson y cada pedido trae un número de ejemplares sorteado de los tamaños de pedido registrados del título (líneas de
+venta, factura de consignación y venta perdida; Teunter, Syntetos y Babai, 2010). El percentil se calcula exacto con la
+recursión de Panjer (`demanda._percentil_compuesto`), sin simulación:
 ```
-S         = ppf_Poisson( nivel_servicio, λ × (T + L) )           con nivel_servicio = 0,95
+media     = λ × (T + L)                                          demanda esperada del horizonte
+pedidos   = media / tamaño medio de pedido del título
+S         = percentil( nivel_servicio, compuesto(pedidos ~ Poisson, tamaño ~ tamaños registrados) )   nivel_servicio = 0,95
+SS        = S − media                                            stock de seguridad
 Sugeridoᵢ = máx(0, S − Posiciónᵢ)                                Posición = máx(Bodega, 0) + En camino
 ```
+Si un título no tiene tamaños registrados, o todos sus pedidos fueron de un ejemplar, el modelo da exactamente lo mismo que
+una Poisson de ejemplares (hay una prueba de esto). «Análisis técnico» muestra `demanda_horizonte` y `stock_seguridad`, y la
+ficha del panel dice «Nivel objetivo S = N (modelo compuesto al 95 % para 6 meses entre embarques más el plazo)». Se eligió porque
+en una prueba fuera de muestra sobre los 21 meses atendió más demanda que Poisson, binomial negativa y remuestreo de meses
+por el mismo capital (memoria 4.2.5): en Argentina el 44 % de las líneas de venta trae más de un ejemplar.
 Un stock negativo es un error de datos: se avisa («Stock negativo») y cuenta como 0, para no inflar el pedido.
 
 **Reglas por confirmar con Andrés** (marcadas así en `politica.py`):
 - B sin ninguna importación registrada: cuenta lo vendido desde el inicio de la ventana.
 - Estacional: «Pedir» entre junio y agosto, hasta la venta neta de la última temporada completa (septiembre a marzo), menos
   la posición. El resto del año solo se avisa.
-- **T** es el intervalo entre embarques del origen, en meses (`intervalo_embarque_meses`): Argentina 12 y España 8,5. Todo origen
-  distinto de Argentina se trata como España. Estos valores salen del análisis de tamaño de lote por embarque de la memoria
+- **T** es el intervalo entre embarques del origen, en meses (`intervalo_embarque_meses`): 6 meses en ambos orígenes, y Argentina en febrero y agosto (`meses_embarque`). Todo origen
+  distinto de Argentina se trata como España. Estos valores salen del modelo de reposición coordinada de la memoria (sección 4.2.5, ecuación 12, mínimo arrepentimiento en 108 escenarios)
   (sección 4.2.5), con tasa de costo de capital de 15 % anual dentro de un rango de 10 % a 20 %. Si esa tasa cambia, hay
   que recalcularlos fuera del código.
-- **L** es el plazo de reposición, en días (`plazo_dias`): Argentina 5,5 y España 7.
+- **L** es el plazo de reposición, en días (`plazo_dias`): Argentina 5,5 y España 39 (mediana observada).
 - **El nivel de servicio de 95 % es un criterio y no el resultado de una optimización**, porque el costo del quiebre no
-  puede estimarse con el registro. **Poisson es un supuesto de simplicidad**, razonable para demanda de unidades sueltas
-  pero no contrastado con los datos.
+  puede estimarse con el registro. Fuera de muestra, con S al 95 %, los títulos intermitentes atendieron el 93 % de la demanda
+  desde Argentina y el 84 % desde España: el 95 % es la probabilidad de no agotarse en el ciclo, no la parte de la demanda
+  que se atiende.
 
 ### 9.8 Pedido por embarque y dónde comprar (`pedido.sugerir`)
 
-Los pedidos se hacen en **embarques programados** por origen, no cada vez que un título baja de un punto. El próximo
-embarque de un origen es la fecha de su última llegada registrada en «Importaciones» (país real de compra) más T meses. Si
-ese país no tiene llegadas en «Importaciones», se usa la última importación del registro, atribuida al origen del título.
+Los pedidos se hacen en **embarques programados** por origen, no cada vez que un título baja de un punto:
+
+- **Argentina**: en febrero y en agosto (`meses_embarque`), el de agosto junto con el pedido anual de calendarios, para que su
+  costo fijo se pague una sola vez. El próximo pedido es el siguiente febrero o agosto, no la última llegada más T. El mes en
+  curso cuenta mientras su embarque no haya llegado.
+- **España**: cada 6 meses desde su última llegada registrada en «Importaciones». Si no tiene llegadas ahí, se usa la última
+  importación del registro, atribuida al origen del título.
 
 **T y L observados** (`importaciones.efectivos`), solo como aviso comparativo:
 ```
@@ -578,15 +594,15 @@ T observado = mediana de los días entre fechas de llegada distintas del país, 
 L observado = mediana de (fecha de llegada − fecha de pedido), en las filas que tienen ambas                (÷ 30 → meses)
 ```
 S y la fecha del próximo embarque usan **siempre** los T y L de la política de la memoria (`config/parametros.yml`: Argentina
-12 meses y 5,5 días, España 8,5 meses y 7 días). Lo observado se muestra cuando hay **3 o más embarques** con datos del país,
-por ejemplo «Política: cada 12 meses. Observado: cada 3 meses (4 embarques) · plazo 5,5 días. Observado: 6 días (3
+6 meses, en febrero y agosto, y 5,5 días, España 6 meses y 39 días). Lo observado se muestra cuando hay **3 o más embarques** con datos del país,
+por ejemplo «Política: cada 6 meses (febrero y agosto). Observado: cada 3 meses (4 embarques) · plazo 5,5 días. Observado: 6 días (3
 embarques)». Se ve en «Análisis técnico» (columna `t_y_l`), en «Esta semana», en «Pedido sugerido» y en el panel. Si lo
 observado se aleja de la política, quien mantiene el sistema decide si actualiza `parametros.yml`.
 
 Costos por ejemplar del libro i comprado en el país o, con la fila de Configuración (o, edición):
 ```
 neto_USDᵢ     = precio_listaᵢ / 1,19 / tipo_cambio
-FOBᵢ,o        = neto_USDᵢ × «FOB / precio neto»            → lo que se paga, cuenta para el mínimo de embarque
+FOBᵢ,o        = neto_USDᵢ × «FOB / precio neto»            → lo que se le paga a la editorial
 Costoᵢ,o      = neto_USDᵢ × «Costo en bodega / precio neto» → puesto en bodega, decide dónde comprar
 ```
 La memoria mide estos factores por origen en su sección 4.1.5 (economía del negocio) y los usa en 4.2.5 para valorizar
@@ -617,14 +633,11 @@ El costo fijo de cada envío es la celda amarilla de «Pedido sugerido» que **a
 cada combinación, la planilla y el panel recalculan el Total al instante al cambiarlo. Se elige la combinación de menor
 Total (empate: menos envíos).
 
-**Mínimo de embarque.** Si Σ FOB de un origen es menor que `minimo_embarque_usd` (700), el envío no se arma solo: la hoja
-avisa «El envío a [origen] no alcanza el mínimo FOB de US$ 700». **Cómo completarlo, o si esperar al siguiente embarque, lo
-decide Roberto.** Ya no hay castigos
-numéricos de postergar ni de adelantar, porque la memoria no los respalda.
+**El pedido que toca se pide aunque sea chico**: el costo fijo del envío ya está en la elección de T (memoria 4.2.5). El embarque
+tampoco se completa solo ni tiene castigos numéricos de postergar o adelantar.
 
 Resultados: líneas «Ahora» (se piden en el embarque) y «Próximo embarque» (lo que espera), con el motivo («Se vende y queda
-poco», «Reponer lo vendido», «Temporada», «conviene Argentina: US$ … contra …»), y el resumen por país (Pedir ahora / Acumular /
-Sin pedido) con la fecha del próximo embarque.
+poco», «Reponer lo vendido», «Temporada», «conviene Argentina: US$ … contra …»), y el resumen por país (Pedir en el embarque / Sin pedido) con la fecha del próximo pedido, los libros y su valor FOB.
 
 ### 9.9 Avisos, indicadores y conteo
 
@@ -639,7 +652,6 @@ Sin pedido) con la fecha del próximo embarque.
 | Bajas sin venta anotada | Bajas de bodega deducidas hoy sin fila en «Ventas» (cuando ya se usa Ventas) |
 | Solicitud del canal | Título C o D con una solicitud del canal web recién anotada: pasa a B en el próximo cálculo |
 | Se vende más rápido | Clase Intermitente, Regular o Esporádica cuyo ritmo de los últimos 3 meses es al menos 2 veces el de los 18 anteriores, con 3 o más unidades netas en esos 3 meses: «Se vende más rápido que antes: revisa si conviene pedir más que el nivel objetivo». No cambia S |
-| Mínimo de embarque | Un origen con Σ FOB bajo el mínimo en el próximo embarque |
 
 Otros indicadores: `cobertura = Bodega / ritmo mensual` (meses), `valor_bodega = Bodega × precio_lista`, y por categoría los
 títulos, ejemplares y valor a precio de venta. De «Ventas», últimos 12 meses: unidades vendidas, porcentaje de unidades con
@@ -672,9 +684,9 @@ vigencia». Las fechas salen de las columnas «vigente desde» de la pestaña Co
 |---|---|---|---|
 | `nivel_servicio` | 0,95 | 9.7 | **Criterio** de la memoria, no optimización |
 | `alfa_suavizado` | 0,15 | 9.6 | **Supuesto abierto** (rango 0,05 a 0,20) |
-| `origenes[].intervalo_embarque_meses` (T) | Argentina 12 y España 8,5 | 9.7, 9.8 | Análisis de lote por embarque (tasa 15 %, rango 10 % a 20 %) |
-| `origenes[].plazo_dias` (L) | Argentina 5,5 y España 7 | 9.7 | Plazo de reposición de la casa de origen |
-| `origenes[].minimo_embarque_usd` | 700 | 9.8 | Mínimo económico del embarque |
+| `origenes[].intervalo_embarque_meses` (T) | 6 y 6 | 4.2.5 | Ecuación (12) y mínimo arrepentimiento en 108 escenarios |
+| `origenes[].meses_embarque` | Argentina [2, 8] | 4.2.5 | El embarque de agosto viaja con los calendarios |
+| `origenes[].plazo_dias` (L) | Argentina 5,5 y España 39 | 9.7 | Argentina declarado y observado; España, mediana de 5 envíos entre factura y llegada |
 
 **Constantes de la memoria** (`inventario/config.py`, cada una con su cita):
 
@@ -703,14 +715,15 @@ ejemplo, no los reales). Demanda de los últimos 21 meses:
 | Clase | k = 9 meses con demanda, que son 3 o más | **Intermitente** (ADI = 21/9 = 2,33 y CV² = 0,195 solo informativos) |
 | Categoría | Clase Intermitente | **A** |
 | Pronóstico | SBA con α = 0,15 | **λ = 0,66 ejemplares/mes** |
-| Horizonte | T = 8,5 meses (España) más L = 7/30 de mes | 8,73 meses |
-| Media de Poisson | 0,66 × 8,73 | 5,75 |
-| Nivel objetivo | percentil 95 de Poisson de media 5,75 | **S = 10** |
-| Pedido | Bodega 3, En camino 0, Sugerido = 10 − 3 | **pedir 7 en el próximo embarque** |
+| Horizonte | T = 6 meses (España) más L = 39/30 de mes | 7,3 meses |
+| Venta esperada | 0,66 × 7,3 | 4,82 ejemplares |
+| Pedidos | 9 pedidos registrados de 1, 3, 2, 1, 2, 1, 3, 1 y 2 ejemplares: tamaño medio 1,78 | 4,82 / 1,78 = 2,71 pedidos esperados |
+| Nivel objetivo | percentil 95 del modelo compuesto (Panjer) | **S = 11** (con Poisson de ejemplares serían 9) |
+| Pedido | Bodega 3, En camino 0, Sugerido = 11 − 3 | **pedir 8 en el próximo embarque** |
 | Costos | neto = 23.800 / 1,19 = $20.000, que son US$ 21,05 | |
 | España | FOB 0,45 es US$ 9,47. Costo en bodega 0,60 es **US$ 12,63** | |
 | Vía Argentina | FOB 0,50 es US$ 10,53. Costo en bodega 0,57 es **US$ 12,00** | Más barato puesto en bodega |
-| Con T de Argentina | T = 12 meses más 5,5/30: media 0,66 × 12,18 = 8,03, es decir S = 13 | El origen cambia el nivel objetivo |
+| Con T de Argentina | T = 6 meses más 5,5/30: media 0,66 × 6,18 = 4,08, es decir S = 10 | El plazo del origen cambia el nivel objetivo |
 | Decisión | Si el embarque a Argentina ocurre y la combinación cubre todo, el título va ahí. Si no, va a España | Depende de la combinación de menor Total |
 
 ---
@@ -723,8 +736,8 @@ ejemplo, no los reales). Demanda de los últimos 21 meses:
   `localStorage`; «Salir» la borra. Si cambia la contraseña, lo recordado deja de servir y se pide de nuevo.
   Sin `datos.cifrado.json`, muestra `datos.json` (ejemplo).
 - **Esta semana**: «Dónde conviene comprar» (casillas de costo de envío que recalculan en vivo y no se guardan, porque el
-  costo real lo anota Roberto en la planilla), una tarjeta por embarque con la fecha del próximo, la barra hacia el mínimo,
-  la lista con la categoría de cada título, el T y el L de la política con lo observado como comparación y, si no alcanza el mínimo, el aviso «El envío a [origen] no alcanza el mínimo FOB»
+  costo real lo anota Roberto en la planilla), una tarjeta por embarque con la fecha del próximo pedido, cuántos libros hay que pedir y su valor FOB aproximado,
+  la lista con la categoría de cada título y el T y el L de la política con lo observado como comparación
   (botón «Copiar lista para la editorial»), «Qué contar esta semana» con la frecuencia por categoría, y las listas de avisos
   (sin stock, pedidos sin stock, se venden más rápido que antes, pasan a B en el próximo cálculo, fondo C y D con su valor,
   datos por actualizar, consignaciones, temporada).
@@ -760,7 +773,7 @@ ejemplo, no los reales). Demanda de los últimos 21 meses:
 | Cambiar precio, sinopsis o portada; ocultar o destacar un libro; agregar un libro | Sveltia → Libros |
 | Marcar un libro como estacional/coyuntural o fijar su política | Sveltia → Libros → campos «Inventario» |
 | Cambiar textos, WhatsApp, anuncio, categorías | Sveltia → Ajustes / Páginas |
-| Ajustar el modelo (nivel de servicio, α, T, L, mínimo) | `config/parametros.yml`, a mano, solo quien mantiene el sistema |
+| Ajustar el modelo (nivel de servicio, α, T, L, meses de pedido) | `config/parametros.yml`, a mano, solo quien mantiene el sistema |
 | Anotar una venta, una devolución o un pedido que no se pudo atender | Planilla → Ventas |
 | Anotar una llegada, un conteo, una consignación o lo que viene en camino | Planilla → Inventario (amarillo) |
 | Indicar si un libro se compra en ambos países | Planilla → Inventario → «Se compra en» |
@@ -784,7 +797,7 @@ envíos responden al instante.
 - El modelo supone que el futuro se parece a los últimos 21 meses (para los eventos existe la clase Coyuntural).
 - Los dólares dependen de factores de costo estimados por origen.
 - El flete no se calcula por peso: el catálogo no tiene el peso de cada título, así que el costo de cada envío lo anota Roberto.
-- Varios valores son supuestos o criterios y no mediciones: el nivel de servicio de 95 %, el supuesto de Poisson, α = 0,15,
+- Varios valores son supuestos o criterios y no mediciones: el nivel de servicio de 95 %, que los pedidos lleguen como Poisson, α = 0,15,
   y las reglas de reposición de B y de Estacional. Cada uno está marcado como tal en 9.7 a 9.10.
 - El intervalo entre embarques depende de una tasa de costo de capital de 15 % que es de criterio y no medida.
 - Una sola contraseña para el panel: quitar el acceso a una persona exige cambiarla para todos.
@@ -820,10 +833,11 @@ envíos responden al instante.
 | ADI | Average Demand Interval: meses promedio entre meses con venta |
 | CV² | Coeficiente de variación al cuadrado del tamaño de la demanda |
 | SBA | Syntetos–Boylan Approximation: Croston corregido para demanda intermitente |
-| Poisson | Distribución de conteos de eventos independientes. Con ella se calcula el nivel objetivo S (percentil 95) |
+| Poisson | Distribución de conteos de eventos independientes. Describe cuántos pedidos llegan en el modelo compuesto del nivel objetivo S |
+| Modelo compuesto | Venta = suma de pedidos, con el número de pedidos Poisson y el tamaño de cada uno sorteado de los registrados. Con él se calcula S (percentil 95) |
 | Nivel de servicio | Probabilidad de no quedarse sin stock durante el horizonte de protección |
 | S (nivel objetivo) | Nivel de existencias hasta el que se repone en cada embarque |
-| Embarque programado | Importación que se hace cada T meses por origen (12 Argentina y 8,5 España) |
+| Embarque programado | Importación que se hace cada T meses por origen (6 meses en ambos; Argentina en febrero y agosto) |
 | FOB | Valor de la mercadería en origen, sin flete ni impuestos |
 | Costo puesto en bodega | FOB + flete + seguro + impuestos, por ejemplar |
 | Demanda censurada | Demanda no observada porque no había stock |

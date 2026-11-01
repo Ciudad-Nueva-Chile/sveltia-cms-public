@@ -64,7 +64,7 @@ crea la pestaña **Inventario** con las existencias que dan los movimientos carg
   sola del stock en el próximo cálculo (cada hora de lunes a sábado). No hay que restarla también en «Inventario».
 - **Pedido sugerido**: Roberto anota en las celdas amarillas la cotización de cada envío (el flete no se calcula por peso).
   La recomendación de dónde comprar se recalcula al instante, y el próximo cálculo arma la lista con esa opción.
-  Si un embarque no alcanza el mínimo FOB, la hoja lo avisa y Roberto decide cómo completarlo.
+  Cada origen muestra la fecha de su próximo pedido, cuántos libros hay que pedir y su valor FOB aproximado.
 
 ## 4. Cálculo automático cada hora
 
@@ -146,7 +146,7 @@ Lo que depende de quien mantiene el sistema. Si esa persona cambia, hay que tras
 | Contraseña del panel | Secreto `CLAVE_PANEL` | Cambiarla y avisar a quienes usan el panel |
 | Autenticador de Sveltia | Pendiente: OAuth App de GitHub y `sveltia-cms-auth` en Cloudflare Workers | Mientras no exista, se entra con token |
 | Versión de Sveltia | Fija en `package.json` (`@sveltia/cms`) | Se actualiza al aceptar una propuesta de Dependabot que pase las pruebas |
-| Decisiones del modelo | `config/parametros.yml` | Se editan a mano: nivel de servicio, α, T, L y mínimo por país |
+| Decisiones del modelo | `config/parametros.yml` | Se editan a mano: nivel de servicio, α, y T, L y meses fijos de pedido por país |
 
 ## 7. Revisión anual
 

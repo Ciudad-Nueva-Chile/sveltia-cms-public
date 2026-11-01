@@ -6,14 +6,16 @@
 3. Un libro puede comprarse en más de un origen (columna «Se compra en»). Para cada origen hay dos valores por
    ejemplar (pestaña Configuración, según origen de compra y edición del libro):
      - costo puesto en bodega: decide dónde conviene comprar;
-     - valor FOB: es lo que se le paga a la editorial y lo que cuenta para el mínimo de embarque.
+     - valor FOB: es lo que se le paga a la editorial.
 4. Se comparan las combinaciones de envíos que cubren TODAS las necesidades (Todo a España, Todo a Argentina,
    Dividir). En cada una, cada libro va al origen con menor costo puesto en bodega entre los que envían:
        Total = Σ cantidad × costo puesto en bodega + Σ costo fijo de cada envío que se hace
    El costo fijo de cada envío lo anota Roberto en «Pedido sugerido» (cotización real). El código no calcula el flete
    por peso, porque el catálogo no tiene el peso de cada título. Se elige el menor Total (empate: menos envíos).
-5. Mínimo de embarque: si un envío no llega a `minimo_embarque_usd` FOB, no se completa solo: se avisa y Roberto
-   decide cómo completarlo. No hay castigos numéricos de postergar ni de adelantar.
+5. El pedido que toca se pide aunque sea chico: el costo fijo del embarque ya está en el cálculo de T (memoria 4.2.5).
+6. Fecha del próximo pedido: con meses fijos (`meses_embarque`; Argentina, febrero y agosto, junto con los calendarios), el
+   siguiente de esos meses; el mes en curso cuenta mientras no haya llegado su embarque. Sin meses fijos (España), la
+   última llegada de «Importaciones» más T.
 """
 from __future__ import annotations
 
@@ -82,6 +84,14 @@ def nombre_combinacion(envia: list[str]) -> str:
     return "Dividir: " + " y ".join(envia) + f" ({len(envia)} envíos)"
 
 
+def proximo_mes_fijo(meses: list[int], fecha_corte: pd.Timestamp, ultima=None) -> pd.Timestamp:
+    """Primer día del próximo mes de pedido. Si hoy es un mes de pedido y su embarque todavía no llega, es este mes."""
+    inicio = pd.Timestamp(fecha_corte.year, fecha_corte.month, 1)
+    if fecha_corte.month in meses and (ultima is None or pd.Timestamp(ultima) < inicio):
+        return inicio
+    return min(c for c in (pd.Timestamp(fecha_corte.year + a, m, 1) for a in (0, 1) for m in meses) if c > fecha_corte)
+
+
 def proximos_embarques(mov: pd.DataFrame, catalogo: pd.DataFrame, p: Parametros, fecha_corte: pd.Timestamp,
                        ultimas_llegadas: dict | None = None, intervalos: dict | None = None) -> dict:
     """{origen: (fecha de la última importación o None, fecha del próximo embarque)} para los orígenes configurados.
@@ -104,7 +114,10 @@ def proximos_embarques(mov: pd.DataFrame, catalogo: pd.DataFrame, p: Parametros,
             fechas = imp.loc[imp["origen"] == pais, "fecha"]
             ultima = fechas.max() if len(fechas) else None
         T = intervalos.get(o.nombre, p.intervalo_meses(o.nombre))
-        if ultima is None:
+        meses = sorted(int(m) for m in (getattr(o, "meses_embarque", None) or []))
+        if meses:
+            proximo = proximo_mes_fijo(meses, fecha_corte, ultima)
+        elif ultima is None:
             proximo = fecha_corte
         else:
             proximo = ultima + pd.Timedelta(days=round(T * 30.44))
@@ -207,26 +220,18 @@ def sugerir(titulos: pd.DataFrame, costos: pd.DataFrame, p: Parametros, fecha_co
         k = eur_por_usd(l["origen"])
         l["subtotal_eur"] = "" if math.isnan(k) or l["subtotal_usd"] == "" else round(l["subtotal_usd"] * k, 2)
 
-    # Resumen por origen, con aviso de mínimo
+    # Resumen por origen
     resumen = []
     for o in origenes:
         lineas_o = [l for l in filas if l["origen"] == o]
         if o not in configurados and not lineas_o:
             continue
         ultima, proximo = embarques.get(o, (None, fecha_corte))
-        minimo = p.origen(o).minimo_embarque_usd
         total = round(sum(l["subtotal_usd"] or 0 for l in lineas_o), 2)
-        if not lineas_o:
-            estado = "Sin pedido"
-        elif total >= minimo:
-            estado = "Pedir en el embarque"
-        else:
-            estado = "Bajo el mínimo"
+        estado = "Pedir en el embarque" if lineas_o else "Sin pedido"
         resumen.append({"origen": o, "estado": estado, "titulos": len(lineas_o), "unidades": sum(l["cantidad"] for l in lineas_o),
-                        "total_usd": total, "minimo_usd": minimo,
+                        "total_usd": total,
                         "total_eur": "" if math.isnan(eur_por_usd(o)) else round(total * eur_por_usd(o), 2),
-                        "minimo_eur": "" if math.isnan(eur_por_usd(o)) else round(minimo * eur_por_usd(o), 2),
-                        "falta_usd": round(max(0.0, minimo - total), 2) if lineas_o else 0.0,
                         "ultima_importacion": ultima.date().isoformat() if ultima is not None else "",
                         "proximo_embarque": proximo.date().isoformat(), "intervalo_meses": p.intervalo_meses(o),
                         "costos_configurados": bool((costos["origen"] == o).any())})

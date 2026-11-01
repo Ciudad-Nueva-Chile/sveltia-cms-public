@@ -52,25 +52,14 @@
   // =====================================================================
   // ESTA SEMANA
   // =====================================================================
-  // España factura en euros: «€ 2.150 (US$ 2.333)»; Argentina, solo en dólares
-  function montoPedido(p, clave) {
-    var usd = "US$ " + fmt.format(Math.round(p[clave + "_usd"]));
-    var eur = p[clave + "_eur"];
-    return eur !== "" && eur != null && !isNaN(eur) ? "€ " + fmt.format(Math.round(eur)) + " (" + usd + ")" : usd;
-  }
-
   function pintarPedidos() {
     var S = D.semana;
     $("#pedidos").innerHTML = S.pedidos.map(function (p) {
       var lineas = D.pedido.filter(function (l) { return l.origen === p.origen; });
-      var escala = Math.max(p.total_usd, p.minimo_usd) || 1;
-      var icono = { ok: "✓", esperar: "…", nada: "–" }[p.tono];
+      var icono = { ok: "✓", nada: "–" }[p.tono];
       return '<article class="pedido pedido-' + p.tono + '">' +
         '<div class="pedido-cabecera"><span class="pedido-icono" aria-hidden="true">' + icono + '</span><div>' +
           "<h2>" + esc(p.titulo) + "</h2><p>" + esc(p.detalle) + "</p>" + (p.t_y_l ? '<p class="nota">' + esc(p.t_y_l) + "</p>" : "") + "</div></div>" +
-        (p.minimo_usd && lineas.length ? '<div class="barra-minimo" role="img" aria-label="US$ ' + fmt.format(Math.round(p.total_usd)) + " de un mínimo de US$ " + fmt.format(p.minimo_usd) + '">' +
-          '<span style="width:' + (p.total_usd / escala * 100) + '%"></span><i style="left:' + (p.minimo_usd / escala * 100) + '%"></i></div>' +
-          '<div class="barra-texto"><span>' + montoPedido(p, "total") + ' FOB</span><span>mínimo ' + montoPedido(p, "minimo") + "</span></div>" : "") +
         (lineas.length ?
           '<ul class="lista-pedido">' + lineas.map(function (l) {
             var espera = l.cuando && l.cuando !== "Ahora";
@@ -315,7 +304,7 @@
     if (t.tasa_mensual > 0) partes.push("Se vende <b>" + esc(t.se_vende) + "</b> según SBA.");
     var r = "Qué hacer: <b>" + esc(t.que_hacer.toLowerCase()) + "</b>";
     if (t.politica === "Reponer") {
-      r += ". Nivel objetivo S = <b>" + t.nivel_objetivo + "</b> (Poisson al 95 % para " + coma(t.intervalo_meses) + " meses entre embarques más el plazo). Hoy hay " +
+      r += ". Nivel objetivo S = <b>" + t.nivel_objetivo + "</b> (modelo compuesto al 95 % para " + coma(t.intervalo_meses) + " meses entre embarques más el plazo). Hoy hay " +
         t.bodega + (t.transito ? " y vienen " + t.transito : "") + ".";
     } else if (t.politica === "Reponer lo vendido") {
       r += ". Vendió " + t.vendido_desde_importacion + " desde el último embarque" + (t.transito ? " y vienen " + t.transito : "") + ".";
@@ -333,7 +322,8 @@
       ["ADI (informativo)", t.adi === "" || t.adi == null ? "Sin dato" : coma(t.adi)],
       ["CV² (informativo)", t.cv2 === "" || t.cv2 == null ? "Sin dato" : coma(t.cv2)],
       ["λ SBA (por mes)", coma(t.tasa_mensual)], ["T + L (meses)", coma(Math.round((t.intervalo_meses + t.plazo_meses) * 100) / 100)],
-      ["Nivel objetivo S", t.politica === "Reponer" ? t.nivel_objetivo : "No aplica"], ["Política", t.politica],
+      ["Nivel objetivo S", t.politica === "Reponer" ? t.nivel_objetivo : "No aplica"],
+      ["Stock de seguridad", t.politica === "Reponer" ? coma(t.stock_seguridad) : "No aplica"], ["Política", t.politica],
       ["T y L usados", t.t_y_l || ""], ["Meses de historia del pronóstico", t.meses_pronostico || "No aplica"],
     ];
     $("#detalle-contenido").innerHTML =

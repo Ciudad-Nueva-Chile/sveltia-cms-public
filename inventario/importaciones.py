@@ -136,7 +136,11 @@ def efectivos(i: pd.DataFrame, p) -> dict:
         T, L = p.intervalo_meses(o.nombre), p.plazo_meses(o.nombre)
         hay_T = m["T_meses"] is not None and m["embarques_T"] >= MINIMO_EMBARQUES
         hay_L = m["L_meses"] is not None and m["embarques_L"] >= MINIMO_EMBARQUES
-        texto_T = f"Política: cada {_num(T)} meses" + (
+        MESES = ("", "enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre",
+                 "noviembre", "diciembre")
+        fijos = sorted(int(x) for x in (getattr(o, "meses_embarque", None) or []))
+        en_meses = f" ({' y '.join(MESES[x] for x in fijos)})" if fijos else ""
+        texto_T = f"Política: cada {_num(T)} meses{en_meses}" + (
             f". Observado: cada {_num(m['T_meses'])} meses ({m['embarques_T']} embarques)" if hay_T else "")
         texto_L = f"plazo {_num(L * DIAS_POR_MES)} días" + (
             f". Observado: {_num(m['L_meses'] * DIAS_POR_MES)} días ({m['embarques_L']} embarques)" if hay_L else "")

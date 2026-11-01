@@ -55,7 +55,7 @@ NOTAS_INVENTARIO = {
     "en_camino": "AUTOMÁTICA si el libro tiene filas sin fecha de llegada en «Importaciones»: es la suma de lo que está en camino "
                  "allí. Para los demás libros, anota aquí lo pedido a la editorial que todavía no llega.",
     "notas": "Lo que quieras recordar de este libro.",
-    "compra_en": "Dónde se puede comprar este libro. Si está en ambas editoriales, el cálculo elige la que conviene según el costo puesto en bodega y el mínimo de cada envío.",
+    "compra_en": "Dónde se puede comprar este libro. Si está en ambas editoriales, el cálculo elige la que conviene según el costo puesto en bodega y el costo de cada envío.",
     "actualizado": "Se completa sola: el día en que cambió por última vez alguna cantidad.",
     "precio_lista": "Viene del sitio. Para cambiarlo, edita el libro en el panel de administración (/admin).",
 }

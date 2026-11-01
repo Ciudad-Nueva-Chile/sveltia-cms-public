@@ -1,7 +1,7 @@
 """Parámetros del modelo.
 
 Dos tipos de valores:
-- Decisiones que pueden cambiar (nivel de servicio, α de SBA y, por origen, T, L y mínimo de embarque): se leen de
+- Decisiones que pueden cambiar (nivel de servicio, α de SBA y, por origen, T, L y meses fijos de pedido): se leen de
   config/parametros.yml, que edita a mano solo quien mantiene el sistema.
 - Valores fijos de la memoria del proyecto (sección 4.2.5 y Tabla 4.26): son constantes de este archivo, con su cita.
 """
@@ -48,13 +48,13 @@ MESES_LISTA_PRECIOS = 12    # la lista de precios del sitio (fecha de vigencia e
 @dataclass
 class Origen:
     nombre: str
-    intervalo_embarque_meses: float = 8.5   # T: meses entre embarques (análisis de lote por embarque de la memoria)
-    plazo_dias: float = 7                   # L: plazo de reposición de la casa de origen, en días
-    minimo_embarque_usd: float = 700        # mínimo económico del embarque, a costo FOB
+    intervalo_embarque_meses: float = 6     # T: meses entre embarques (memoria 4.2.5, ecuación 12 y mínimo arrepentimiento)
+    plazo_dias: float = 39                  # L: plazo de reposición observado, en días (memoria 4.1.1)
+    meses_embarque: list | None = None      # meses fijos del pedido (p. ej. [2, 8]); vacío = última llegada + T
 
 
 def _origenes_memoria() -> list[Origen]:
-    return [Origen("España", 8.5, 7, 700), Origen("Argentina", 12, 5.5, 700)]
+    return [Origen("España", 6, 39), Origen("Argentina", 6, 5.5, [2, 8])]
 
 
 @dataclass

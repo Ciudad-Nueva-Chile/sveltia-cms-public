@@ -1,4 +1,6 @@
 import math
+import re
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -6,7 +8,7 @@ import pytest
 from scipy.stats import poisson
 
 from inventario import categorias, demanda, politica, stock
-from inventario.config import Parametros
+from inventario.config import Parametros, cargar_parametros
 from inventario.modelo import calcular, conteo_ciclico
 
 
@@ -52,18 +54,91 @@ def test_sba_sin_demanda_es_cero_y_esporadica_no_se_estima():
     assert demanda.pronosticar(s, "Esporádica", 0.15) == 0
 
 
-# ---------- Nivel objetivo S: Poisson al 95 % con T y L por origen ----------
+# ---------- Nivel objetivo S sin tamaños de pedido: Poisson al 95 % con T y L por origen ----------
 def test_nivel_objetivo_es_el_percentil_de_poisson():
     lam, T, L = 0.66, 8.5, 7 / 30
     assert demanda.nivel_objetivo(lam, T, L, 0.95) == int(poisson.ppf(0.95, lam * (T + L)))
     assert demanda.nivel_objetivo(0, T, L) == 0
 
 
+# ---------- Nivel objetivo S: modelo compuesto (pedidos Poisson × tamaño registrado) ----------
+def test_compuesto_con_pedidos_de_un_ejemplar_es_poisson():
+    for lam, T, L in ((0.66, 6, 39 / 30), (2.3, 6, 5.5 / 30), (0.08, 6, 39 / 30)):
+        assert demanda.nivel_objetivo(lam, T, L, 0.95, [1, 1, 1]) == int(poisson.ppf(0.95, lam * (T + L)))
+
+
+def test_compuesto_exacto_con_pedidos_de_dos():
+    # Un pedido esperado de 2 ejemplares siempre: la venta es 2 × Poisson(1), su percentil 95 es 2 × 3 = 6
+    assert demanda._percentil_compuesto(1.0, [2, 2], 0.95) == 6
+    assert demanda.nivel_objetivo(2 / 6.5, 6, 0.5, 0.95, [2]) == 6
+
+
+def test_compuesto_coincide_con_simulacion_y_supera_a_poisson():
+    rng = np.random.default_rng(0)
+    tamanos = [1, 1, 1, 2, 2, 3, 5, 10]
+    lam, T, L = 1.5, 6, 5.5 / 30
+    S = demanda.nivel_objetivo(lam, T, L, 0.95, tamanos)
+    pedidos = rng.poisson(lam * (T + L) / np.mean(tamanos), 200000)
+    venta = np.array([rng.choice(tamanos, k).sum() if k else 0 for k in pedidos])
+    assert (venta <= S).mean() >= 0.95 and (venta <= S - 1).mean() < 0.95
+    assert S > demanda.nivel_objetivo(lam, T, L, 0.95)
+
+
+def test_compuesto_sin_tamanos_o_con_todos_de_uno_es_la_poisson_simple():
+    for lam, T, L in ((0.66, 6, 39 / 30), (2.3, 6, 5.5 / 30), (0.08, 6, 39 / 30), (12.5, 6, 39 / 30)):
+        poisson_simple = int(poisson.ppf(0.95, lam * (T + L)))
+        assert demanda.nivel_objetivo(lam, T, L, 0.95) == poisson_simple
+        assert demanda.nivel_objetivo(lam, T, L, 0.95, []) == poisson_simple
+        assert demanda.nivel_objetivo(lam, T, L, 0.95, [1, 1, 1, 1]) == poisson_simple
+        # La recursión de Panjer con pedidos de 1 es la misma Poisson
+        assert demanda._percentil_compuesto(lam * (T + L), [1], 0.95) == poisson_simple
+
+
+def test_panjer_coincide_con_la_formula_exacta_de_un_caso_chico():
+    # Pedidos Poisson(1) de 1 o 3 ejemplares con igual probabilidad; P(0) = e⁻¹, P(1) = e⁻¹/2, P(2) = e⁻¹/8, P(3) = ...
+    e = math.exp(-1)
+    p3 = e * (1 / 48 + 1 / 2)          # tres pedidos de 1, o uno de 3
+    assert demanda._percentil_compuesto(1.0, [1, 3], e + e / 2 + e / 8 + p3 - 1e-9) == 3
+    assert demanda._percentil_compuesto(1.0, [1, 3], e + e / 2 + e / 8 + p3 + 1e-9) == 4
+
+
+def test_tamanos_de_pedido_son_las_lineas_de_venta_del_titulo():
+    mov = _mov([("2026-01-05", "a", "venta", 3), ("2026-02-05", "a", "consignacion_liquidada", 2),
+                ("2026-03-05", "a", "venta_perdida", 1), ("2026-04-05", "a", "devolucion_cliente", 2),
+                ("2026-04-06", "a", "consignacion_salida", 9), ("2026-04-07", "a", "importacion", 50),
+                ("2026-05-05", "b", "venta", 1), ("2027-01-01", "a", "venta", 7)])
+    t = demanda.tamanos_de_pedido(mov, pd.Timestamp("2026-08-31"))
+    assert sorted(t["a"]) == [1, 2, 3] and t["b"] == [1]
+
+
+def test_stock_de_seguridad_es_s_menos_la_demanda_del_horizonte():
+    catalogo = _catalogo([{"id": "x", "titulo": "x", "origen": "Argentina", "precio_lista": 1000}])
+    filas = [("2024-12-01", "x", "inventario_inicial", 200)]
+    filas += [(f"2026-0{m}-10", "x", "venta", c) for m, c in ((1, 5), (3, 1), (5, 8), (7, 2))]
+    r = calcular(catalogo, _mov(filas), pd.DataFrame(columns=["id", "cantidad"]), pd.DataFrame(), Parametros(), pd.Timestamp("2026-08-31"))
+    t = r.titulos.set_index("id").loc["x"]
+    media = demanda.demanda_horizonte(demanda.sba(r.series.loc["x"].to_numpy(dtype=float), 0.15), 6, 5.5 / 30)
+    assert t["clase"] == "Intermitente" and t["nivel_objetivo"] == demanda.nivel_objetivo(media / (6 + 5.5 / 30), 6, 5.5 / 30, 0.95, [5, 1, 8, 2])
+    assert t["demanda_horizonte"] == pytest.approx(media, abs=0.05)
+    assert t["stock_seguridad"] == pytest.approx(t["nivel_objetivo"] - media, abs=0.05)
+    assert t["nivel_objetivo"] > int(poisson.ppf(0.95, media))     # los pedidos grandes piden más colchón que la Poisson
+
+
+def test_esporadica_repone_lo_vendido_sin_s_ni_stock_de_seguridad():
+    catalogo = _catalogo([{"id": "b", "titulo": "b", "origen": "España", "precio_lista": 1000}])
+    filas = [("2024-12-01", "b", "inventario_inicial", 5), ("2026-03-10", "b", "venta", 2)]
+    r = calcular(catalogo, _mov(filas), pd.DataFrame(columns=["id", "cantidad"]), pd.DataFrame(), Parametros(), pd.Timestamp("2026-08-31"))
+    t = r.titulos.set_index("id").loc["b"]
+    assert t["categoria_gestion"] == "B" and t["politica"] == "Reponer lo vendido"
+    assert t["nivel_objetivo"] == 0 and t["stock_seguridad"] == "" and t["demanda_horizonte"] == "" and t["sugerido"] == 2
+
+
 def test_t_y_l_por_origen():
     p = Parametros()
-    assert p.intervalo_meses("Argentina") == 12 and p.plazo_meses("Argentina") == pytest.approx(5.5 / 30)
-    assert p.intervalo_meses("España") == 8.5 and p.plazo_meses("España") == pytest.approx(7 / 30)
-    assert p.intervalo_meses("Uruguay") == 8.5          # todo origen distinto de Argentina se trata como España
+    assert p.intervalo_meses("Argentina") == 6 and p.plazo_meses("Argentina") == pytest.approx(5.5 / 30)
+    assert p.intervalo_meses("España") == 6 and p.plazo_meses("España") == pytest.approx(39 / 30)
+    assert p.intervalo_meses("Uruguay") == 6            # todo origen distinto de Argentina se trata como España
+    assert p.origen("Argentina").meses_embarque == [2, 8] and not p.origen("España").meses_embarque
     from inventario.config import HISTORIA_MESES
     assert p.nivel_servicio == 0.95 and HISTORIA_MESES == 21
 
@@ -179,7 +254,7 @@ def test_calculo_completo_categorias_politica_y_s():
     assert t.loc["aa", "clase"] == "Intermitente" and t.loc["aa", "politica"] == "Reponer"
     lam = t.loc["aa", "tasa_mensual"]
     p = Parametros()
-    esperado = int(poisson.ppf(0.95, demanda.sba(r.series.loc["aa"].to_numpy(dtype=float), 0.15) * (8.5 + 7 / 30)))
+    esperado = int(poisson.ppf(0.95, demanda.sba(r.series.loc["aa"].to_numpy(dtype=float), 0.15) * (6 + 39 / 30)))
     assert lam > 0 and t.loc["aa", "nivel_objetivo"] == esperado
     assert t.loc["aa", "sugerido"] == esperado              # bodega 2 − 6 ventas = −4: se avisa y cuenta como 0
     assert "Stock negativo" in t.loc["aa", "alertas"]
@@ -383,25 +458,107 @@ def test_el_costo_fijo_puede_juntar_todo_en_un_solo_pais():
         assert c["total_usd"] == pytest.approx(c["libros_usd"] + c["envio_usd"], abs=0.02)
 
 
-def test_bajo_el_minimo_solo_avisa_sin_completar():
+def test_el_pedido_chico_se_pide_y_la_tarjeta_da_fecha_libros_y_fob():
     from inventario import pedido, lenguaje
-    t = pd.DataFrame([_titulo("arg", "Argentina", 2, 119000)])                   # 80 US$ FOB: bajo el mínimo
+    t = pd.DataFrame([_titulo("arg", "Argentina", 2, 119000)])                   # 80 US$ FOB
     lineas, resumen = pedido.sugerir(t, COSTOS, Parametros(), pd.Timestamp("2026-10-01"))
-    arg = resumen.set_index("origen").loc["Argentina"]
-    assert arg["estado"] == "Bajo el mínimo" and arg["falta_usd"] == pytest.approx(700 - 80, abs=0.1)
-    assert list(lineas["id"]) == ["arg"]                                          # no se completó solo
-    fila = next(o for o in resumen.to_dict("records") if o["origen"] == "Argentina")
-    assert lenguaje.aviso_minimo(fila) == "El envío a Argentina no alcanza el mínimo FOB de US$ 700."
+    arg = next(o for o in resumen.to_dict("records") if o["origen"] == "Argentina")
+    assert arg["estado"] == "Pedir en el embarque" and list(lineas["id"]) == ["arg"]
+    assert not any(k.startswith(("minimo", "falta")) for k in arg)
+    tarjeta = lenguaje.estado_pedido(arg)
+    assert tarjeta["titulo"].startswith("Embarque a Argentina: próximo pedido el ")
+    assert tarjeta["detalle"] == "2 libros por pedir, unos US$ 80 FOB."
+    vacia = lenguaje.estado_pedido(arg | {"unidades": 0, "total_usd": 0})
+    assert vacia["tono"] == "nada" and "no hay libros que pedir" in vacia["detalle"]
+
+
+def test_la_hoja_de_pedido_no_compara_contra_ningun_monto():
+    from inventario import pedido, lenguaje
+    t = pd.DataFrame([_titulo("arg", "Argentina", 2, 119000)])
+    lineas, resumen = pedido.sugerir(t, COSTOS, Parametros(), pd.Timestamp("2026-10-01"), {"España": 100, "Argentina": 100})
+    h = lenguaje.hoja_pedido(lineas, resumen.attrs["combinaciones"], resumen.attrs["envios"], pd.Timestamp("2026-10-01"), por_origen=resumen)
+    assert ["Origen", "Próximo pedido", "Libros por pedir", "US$ FOB", "€ FOB (España)"] in h["filas"]
+    assert ["CONVIENE"] == [f[0] for f in h["filas"] if f and f[0] == "CONVIENE"]        # el comparador sigue
 
 
 def test_proximo_embarque_es_la_ultima_importacion_mas_t():
     from inventario import pedido
     catalogo = _catalogo([{"id": "a", "titulo": "a", "origen": "Argentina", "precio_lista": 1}])
     mov = _mov([("2026-01-15", "a", "importacion", 3)])
-    e = pedido.proximos_embarques(mov, catalogo, Parametros(), pd.Timestamp("2026-10-01"))
+    from inventario.config import Origen
+    p = Parametros(origenes=[Origen("España", 6, 39), Origen("Argentina", 12, 5.5)])
+    e = pedido.proximos_embarques(mov, catalogo, p, pd.Timestamp("2026-10-01"))
     ultima, proximo = e["Argentina"]
     assert ultima == pd.Timestamp("2026-01-15") and proximo.year == 2027 and proximo.month == 1
     assert e["España"][0] is None and e["España"][1] == pd.Timestamp("2026-10-01")  # sin importaciones: vencido
+
+
+def test_argentina_embarca_en_febrero_y_agosto():
+    from inventario import pedido
+    catalogo = _catalogo([{"id": "a", "titulo": "a", "origen": "Argentina", "precio_lista": 1}])
+    casos = (  # última llegada, fecha de cálculo, próximo pedido
+        ("2026-03-03", "2026-11-01", "2027-02-01"),    # no es la última llegada más T (septiembre)
+        ("2026-03-03", "2026-06-30", "2026-08-01"),
+        ("2026-03-03", "2026-08-15", "2026-08-01"),    # agosto en curso y todavía no llega: toca ahora
+        ("2026-08-10", "2026-08-15", "2027-02-01"),    # el de agosto ya llegó
+        ("2026-08-10", "2027-01-31", "2027-02-01"),
+        ("2027-02-20", "2027-03-01", "2027-08-01"),
+    )
+    for llegada, corte, esperado in casos:
+        mov = _mov([(llegada, "a", "importacion", 3)])
+        proximo = pedido.proximos_embarques(mov, catalogo, Parametros(), pd.Timestamp(corte))["Argentina"][1]
+        assert proximo == pd.Timestamp(esperado), (llegada, corte)
+        assert proximo.month in (2, 8) and proximo.day == 1
+    # Sin ninguna importación registrada también cae en febrero o agosto
+    assert pedido.proximos_embarques(_mov([]), catalogo, Parametros(), pd.Timestamp("2026-11-01"))["Argentina"][1] == pd.Timestamp("2027-02-01")
+
+
+def test_espana_pide_cada_6_meses_desde_la_ultima_llegada():
+    from inventario import pedido
+    catalogo = _catalogo([{"id": "e", "titulo": "e", "origen": "España", "precio_lista": 1}])
+    e = pedido.proximos_embarques(_mov([("2026-06-01", "e", "importacion", 3)]), catalogo, Parametros(), pd.Timestamp("2026-11-01"))
+    assert e["España"][0] == pd.Timestamp("2026-06-01") and e["España"][1] == pd.Timestamp("2026-12-01")
+
+
+def test_t_y_l_de_la_politica_vigente_con_observado_como_comparacion():
+    from inventario import importaciones
+    p = cargar_parametros()
+    assert (p.intervalo_meses("España"), p.intervalo_meses("Argentina")) == (6, 6)
+    assert p.origen("España").plazo_dias == 39 and p.origen("Argentina").plazo_dias == 5.5
+    assert p.origen("Argentina").meses_embarque == [2, 8] and p.nivel_servicio == 0.95 and p.alfa_suavizado == 0.15
+    tres = importaciones.efectivos(_embarques("Argentina", ["2026-01-10", "2026-04-10", "2026-07-10"]), p)["Argentina"]
+    assert tres["texto_T"] == "Política: cada 6 meses (febrero y agosto). Observado: cada 3 meses (3 embarques)"
+
+
+def test_los_calendarios_se_piden_a_argentina():
+    """El pedido anual de calendarios viaja con el embarque de agosto a Argentina (memoria 4.2.5)."""
+    from inventario.fuentes import catalogo_desde_sitio
+    cat = catalogo_desde_sitio(Path(__file__).resolve().parent.parent / "src" / "libros")
+    estacionales = cat[cat["clase_manual"] == "Estacional"]
+    assert len(estacionales) and set(estacionales["origen"]) == {"Argentina"}
+
+
+# ---------- Sin mínimo de embarque en ninguna parte del repositorio ----------
+def test_no_queda_referencia_al_monto_minimo_de_embarque():
+    """Busca «700» y «mínimo» en todo lo que escribe el proyecto. Solo se aceptan usos que no tienen que ver con embarques."""
+    raiz = Path(__file__).resolve().parent.parent
+    permitidos_700 = re.compile(r'font-weight:\s*700|width="700"|700px')
+    permitidos_minimo = re.compile(
+        r"mínimo arrepentimiento|menor arrepentimiento|m[ií]nimo de 21 meses|m[ií]nimo 21 meses|mínimo la ventana|Datos mínimos|Stock mínimo|"
+        r"MINIMO_EMBARQUES|ACELERACION_MINIMO|\bminimo\b.*(float|unidades|recientes)|ultimos >= minimo|`minimo` unidades|min-",
+        re.I)
+    fuera = {"node_modules", "_site", ".git", ".venv", "salida", "__pycache__", "libros", "datos_ejemplo", "portadas", ".claude"}
+    malos = []
+    for f in raiz.rglob("*"):
+        if (not f.is_file() or fuera & set(f.relative_to(raiz).parts) or f.name in ("package-lock.json", "sveltia-cms.js", "indice_ciudadnueva.json", "datos.json")
+                or f.suffix not in (".py", ".yml", ".yaml", ".md", ".js", ".mjs", ".html", ".css", ".njk", ".json", ".txt") or f.name == "test_modelo.py"):
+            continue
+        for n, linea in enumerate(f.read_text(encoding="utf-8", errors="ignore").splitlines(), 1):
+            if re.search(r"(?<![\d.,#-])700(?![\d.,])", linea) and not permitidos_700.search(linea):
+                malos.append(f"{f.name}:{n}: {linea.strip()[:90]}")
+            if re.search(r"m[ií]nimo|minimum", linea, re.I) and not permitidos_minimo.search(linea):
+                malos.append(f"{f.name}:{n}: {linea.strip()[:90]}")
+    assert not malos, "\n".join(malos)
 
 
 # ---------- Pestaña «Ventas» ----------
@@ -562,7 +719,8 @@ def _embarques(pais, llegadas, plazo=7):
 
 def test_t_y_l_observados_con_2_3_y_5_embarques_solo_comparan():
     from inventario import importaciones
-    p = Parametros()
+    from inventario.config import Origen
+    p = Parametros(origenes=[Origen("España", 8.5, 7), Origen("Argentina", 12, 5.5)])
     dos = importaciones.efectivos(_embarques("España", ["2026-01-10", "2026-04-10"]), p)["España"]
     assert dos["T"] == 8.5 and dos["texto_T"] == "Política: cada 8,5 meses"            # con 2 embarques no se muestra
     tres = importaciones.efectivos(_embarques("España", ["2026-01-10", "2026-04-10", "2026-07-10"], plazo=9), p)["España"]
@@ -606,7 +764,8 @@ def test_aviso_de_aceleracion_en_el_calculo():
     r = calcular(catalogo, _mov(filas), pd.DataFrame(columns=["id", "cantidad"]), pd.DataFrame(), Parametros(), pd.Timestamp("2026-08-31"))
     t = r.titulos.set_index("id")
     assert bool(t.loc["x", "acelera"]) and "Se vende más rápido que antes" in t.loc["x", "alertas"]
-    assert t.loc["x", "nivel_objetivo"] == demanda.nivel_objetivo(t.loc["x", "tasa_mensual"], 8.5, 7 / 30)   # S no cambia
+    assert t.loc["x", "nivel_objetivo"] == demanda.nivel_objetivo(t.loc["x", "tasa_mensual"], 6, 39 / 30, 0.95,
+                                                                  [1, 1, 1, 1, 2, 2, 2])   # S no cambia
 
 
 # ---------- Disponibilidad en el sitio ----------
@@ -651,3 +810,4 @@ def test_filas_de_libros_eliminados_sin_stock_se_borran():
                         "notas": ["", "", "", "", "ojo"], "fila_planilla": [2, 3, 4, 5, 6]})
     # CN-0001 sigue en el catálogo; CN-0777 tiene stock y CN-0888 una nota: se quedan (los avisa la revisión)
     assert filas_sobrantes(inv, {"CN-0001"}) == [3, 4]
+

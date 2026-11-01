@@ -5,23 +5,27 @@
 # costo de cada envío viven en la planilla privada.
 
 # Nivel de servicio: CRITERIO de la memoria (sección 4.2.5), no resultado de una optimización, porque el costo del quiebre
-# no puede estimarse con el registro. Es el percentil de la distribución de Poisson con que se calcula el nivel objetivo S.
+# no puede estimarse con el registro. Es el percentil de la venta en T + L (modelo compuesto: pedidos Poisson por tamaño de
+# pedido registrado, inventario/demanda.py) con que se calcula el nivel objetivo S.
 nivel_servicio: 0.95
 
 # α de SBA: SUPUESTO ABIERTO, dentro del rango 0,05 a 0,20 evaluado por Syntetos, Boylan y Croston (2005) (memoria, 4.1.4).
 alfa_suavizado: 0.15
 
 # Embarques por origen (memoria, sección 4.2.5). Todo origen distinto de Argentina se trata como España.
-# intervalo_embarque_meses (T): del análisis de tamaño de lote por embarque, con una tasa de costo de capital de 15 % anual
-#   (rango de 10 % a 20 %). Si esa tasa cambia, T se recalcula fuera del código y se anota aquí.
-# plazo_dias (L): plazo de reposición de la casa de origen (la memoria indica 5 a 7 días).
-# minimo_embarque_usd: mínimo económico del embarque, a costo FOB.
+# intervalo_embarque_meses (T): sale de la ecuación (12) de la memoria, costo fijo del embarque contra costo de mantener
+#   existencias, elegido por mínimo arrepentimiento en 108 escenarios (forma de la demanda, nivel de servicio, costo fijo,
+#   tasa de capital y títulos que se reponen). Resultado: 6 meses desde ambos orígenes. Si se repite el cálculo, anotar aquí.
+# meses_embarque: meses fijos en que toca el pedido. Argentina en febrero y agosto, para que el de agosto viaje junto con
+#   el pedido anual de calendarios (debe llegar antes de septiembre) y su costo fijo se pague una sola vez: el próximo es
+#   el siguiente febrero o agosto. Sin meses_embarque (España), el próximo es la última llegada de «Importaciones» más T.
+# plazo_dias (L): plazo de reposición. Argentina 5,5 días (declarado y observado). España 39 días: mediana observada de
+#   5 envíos entre la factura y la llegada (20 a 85 días), en vez de los 7 declarados.
 origenes:
   - nombre: España
-    intervalo_embarque_meses: 8.5
-    plazo_dias: 7
-    minimo_embarque_usd: 700
+    intervalo_embarque_meses: 6
+    plazo_dias: 39
   - nombre: Argentina
-    intervalo_embarque_meses: 12
+    intervalo_embarque_meses: 6
+    meses_embarque: [2, 8]
     plazo_dias: 5.5
-    minimo_embarque_usd: 700

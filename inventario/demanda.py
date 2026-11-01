@@ -14,11 +14,16 @@ Estacional y Coyuntural se marcan a mano en el catálogo y mandan sobre lo calcu
 ADI y CV² (Syntetos, Boylan y Croston, 2005) quedan como indicadores informativos.
 
 Pronóstico: SBA (Croston corregido por Syntetos y Boylan), solo para Intermitente y Regular.
-Nivel objetivo: percentil `nivel_servicio` de una Poisson con media λ × (T + L).
+Nivel objetivo: percentil `nivel_servicio` de la venta en T + L con un modelo compuesto (memoria, sección 4.2.5): los
+pedidos llegan como una Poisson de media λ × (T + L) / tamaño medio, y cada pedido trae un número de ejemplares que se
+sortea de los tamaños de pedido registrados (Teunter, Syntetos y Babai, 2010). Las librerías piden varios ejemplares de una
+vez, y una Poisson de ejemplares sueltos subestima ese riesgo. Sin tamaños registrados, o con todos de 1, el modelo es esa
+misma Poisson. Stock de seguridad = S − λ × (T + L).
 """
 from __future__ import annotations
 
 import math
+from collections import Counter
 
 import numpy as np
 import pandas as pd
@@ -118,9 +123,46 @@ def acelera(serie: np.ndarray, recientes: int = 3, previos: int = 18, factor: fl
     return ultimos >= minimo and ultimos / recientes >= factor * ritmo_antes
 
 
-def nivel_objetivo(tasa_mensual: float, intervalo_meses: float, plazo_meses: float, nivel: float = 0.95) -> int:
-    """S = percentil `nivel` de una Poisson con media λ × (T + L)."""
-    media = tasa_mensual * (intervalo_meses + plazo_meses)
+def tamanos_de_pedido(mov: pd.DataFrame, fecha_corte: pd.Timestamp) -> dict[str, list[float]]:
+    """Ejemplares de cada línea de venta (factura, factura de consignación y venta perdida) hasta la fecha de cálculo, por
+    título. Son los tamaños de pedido con que se arma el modelo compuesto."""
+    tipos = [t for t, signo in TIPOS_VENTA_NETA.items() if signo > 0]
+    m = mov[mov["tipo"].isin(tipos) & (mov["fecha"] <= fecha_corte) & (mov["cantidad"] > 0)]
+    return {k: g.astype(float).tolist() for k, g in m.groupby("id")["cantidad"]}
+
+
+def _percentil_compuesto(pedidos_esperados: float, tamanos: list[float], nivel: float) -> int:
+    """Menor n con P(venta ≤ n) ≥ nivel, si los pedidos son Poisson(pedidos_esperados) y cada uno trae un tamaño sorteado de
+    `tamanos`. Recursión de Panjer: exacta, sin simulación."""
+    cuenta = Counter(int(round(x)) for x in tamanos if x >= 1)
+    total = sum(cuenta.values())
+    prob = {j: c / total for j, c in cuenta.items()}
+    g = [math.exp(-pedidos_esperados)]
+    acumulada = g[0]
+    n = 0
+    while acumulada < nivel - 1e-12 and n < 100000:
+        n += 1
+        g_n = pedidos_esperados / n * sum(j * p_j * g[n - j] for j, p_j in prob.items() if j <= n)
+        g.append(g_n)
+        acumulada += g_n
+    return n
+
+
+def demanda_horizonte(tasa_mensual: float, intervalo_meses: float, plazo_meses: float) -> float:
+    """Demanda esperada del horizonte: λ × (T + L). El stock de seguridad es S menos esta cantidad."""
+    return tasa_mensual * (intervalo_meses + plazo_meses)
+
+
+def nivel_objetivo(tasa_mensual: float, intervalo_meses: float, plazo_meses: float, nivel: float = 0.95,
+                   tamanos: list[float] | None = None) -> int:
+    """S = percentil `nivel` de la demanda en T + L, cuya media es λ × (T + L).
+
+    Con `tamanos` (ejemplares de cada línea de venta del título), modelo compuesto: pedidos Poisson de media
+    λ (T + L) / tamaño medio y tamaño sorteado de los registrados. Sin tamaños, o con todos de 1, es la Poisson simple."""
+    media = demanda_horizonte(tasa_mensual, intervalo_meses, plazo_meses)
     if media <= 0:
         return 0
-    return int(poisson.ppf(nivel, media))
+    validos = [x for x in (tamanos or []) if x >= 1]
+    if not validos or all(int(round(x)) == 1 for x in validos):
+        return int(poisson.ppf(nivel, media))
+    return _percentil_compuesto(media / (sum(validos) / len(validos)), validos, nivel)

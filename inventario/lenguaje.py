@@ -173,7 +173,7 @@ def que_incluye(c: dict) -> str:
 def hoja_pedido(lineas: pd.DataFrame, combinaciones: list[dict], envios: dict, fecha_corte, sep: str = ",",
                 por_origen: pd.DataFrame | None = None) -> dict:
     """«Pedido sugerido»: arriba, dónde conviene comprar (con el costo de cada envío editable y la recomendación
-    recalculada por fórmulas); al medio, el estado de cada embarque con el aviso de mínimo;
+    recalculada por fórmulas); al medio, el próximo pedido de cada origen con cuántos libros y su valor FOB;
     abajo, la lista de qué pedir.
 
     Devuelve las filas y su formato: celdas editables, filas en negrita y formatos numéricos (índices desde 0).
@@ -205,13 +205,11 @@ def hoja_pedido(lineas: pd.DataFrame, combinaciones: list[dict], envios: dict, f
             filas.append(["", "Solo hay una combinación que cubre todo lo que hay que pedir: varios títulos se compran en un solo país."])
     else:
         filas.append(["", "No hay nada que pedir en los próximos embarques."])
-    filas += [[""], ["2. EMBARQUES"], ["Origen", "Estado", "Próximo embarque", "US$ FOB", "Mínimo US$", "Falta US$", "€ FOB (España)"]]
+    registros = por_origen.to_dict("records") if por_origen is not None and len(por_origen) else []
+    filas += [[""], ["2. EMBARQUES"], ["Origen", "Próximo pedido", "Libros por pedir", "US$ FOB", "€ FOB (España)"]]
     negritas_extra = [len(filas) - 1]
-    for o in (por_origen.to_dict("records") if por_origen is not None and len(por_origen) else []):
-        filas.append([o["origen"], o["estado"], fecha(o["proximo_embarque"]), o["total_usd"], o["minimo_usd"], o["falta_usd"],
-                      o.get("total_eur", "")])
-        if o["estado"] == "Bajo el mínimo":
-            filas.append(["", aviso_minimo(o)])
+    for o in registros:
+        filas.append([o["origen"], fecha(o["proximo_embarque"]), int(o["unidades"]), o["total_usd"], o.get("total_eur", "")])
     filas += [[""], ["3. QUÉ PEDIR"]]
     tabla = pedido(lineas)
     tabla = tabla[["Cuándo", "Comprar en", "Cantidad", "Título", "Código", "US$ aprox.", "€ aprox.", "Por qué", "Categoría"]]
@@ -227,29 +225,19 @@ def hoja_pedido(lineas: pd.DataFrame, combinaciones: list[dict], envios: dict, f
     }
 
 
-def monto(o, clave: str = "total") -> str:
+def monto(o) -> str:
     """«US$ 2.333», o para España «€ 2.150 (US$ 2.333)»."""
-    usd = f"US$ {miles(o[clave + '_usd'])}"
-    eur = o.get(clave + "_eur", "")
+    usd = f"US$ {miles(o['total_usd'])}"
+    eur = o.get("total_eur", "")
     return f"€ {miles(eur)} ({usd})" if eur not in ("", None) and not pd.isna(eur) else usd
 
 
-def aviso_minimo(o) -> str:
-    return f"El envío a {o['origen']} no alcanza el mínimo FOB de {monto(o, 'minimo')}."
-
-
 def estado_pedido(o) -> dict:
-    """Frase corta y tono (ok / esperar / nada) para un origen."""
-    proximo = fecha(o.get("proximo_embarque", ""))
-    if str(o.get("estado", "")).startswith("Pedir"):
-        return {"tono": "ok", "titulo": f"Embarque a {o['origen']}: listo para pedir",
-                "detalle": f"{o['unidades']} libros, unos {monto(o)} FOB (el mínimo es {monto(o, 'minimo')}). Próximo embarque: {proximo}."}
-    if str(o.get("estado", "")).startswith("Bajo"):
-        return {"tono": "esperar", "titulo": f"Embarque a {o['origen']}: no alcanza el mínimo",
-                "detalle": f"{aviso_minimo(o)} Hay {o['unidades']} libros por pedir ({monto(o)} FOB). "
-                           f"Roberto decide cómo completarlo. Próximo embarque: {proximo}."}
-    return {"tono": "nada", "titulo": f"Embarque a {o['origen']}: nada que pedir",
-            "detalle": f"Los títulos que se reponen están sobre su nivel. Próximo embarque: {proximo}."}
+    """Frase corta y tono (ok / nada) para un origen: fecha del próximo pedido, cuántos libros y su valor FOB."""
+    titulo = f"Embarque a {o['origen']}: próximo pedido el {fecha(o.get('proximo_embarque', ''))}"
+    if o.get("unidades"):
+        return {"tono": "ok", "titulo": titulo, "detalle": f"{int(o['unidades'])} libros por pedir, unos {monto(o)} FOB."}
+    return {"tono": "nada", "titulo": titulo, "detalle": "Por ahora no hay libros que pedir: los títulos que se reponen están sobre su nivel."}
 
 
 def esta_semana(t: pd.DataFrame, por_origen: pd.DataFrame, lineas: pd.DataFrame, fecha_corte, errores: list[str],
@@ -270,10 +258,9 @@ def esta_semana(t: pd.DataFrame, por_origen: pd.DataFrame, lineas: pd.DataFrame,
     conteo = conteo or {}
     return {
         "fecha": pd.Timestamp(fecha_corte).date().isoformat(),
-        "pedidos": [estado_pedido(o) | {"origen": o["origen"], "total_usd": o["total_usd"], "minimo_usd": o["minimo_usd"],
-                                        "total_eur": o.get("total_eur", ""), "minimo_eur": o.get("minimo_eur", ""),
+        "pedidos": [estado_pedido(o) | {"origen": o["origen"], "total_usd": o["total_usd"], "total_eur": o.get("total_eur", ""),
                                         "unidades": int(o["unidades"]), "proximo_embarque": o["proximo_embarque"],
-                                        "falta_usd": o["falta_usd"], "t_y_l": o.get("t_y_l", "")}
+                                        "t_y_l": o.get("t_y_l", "")}
                      for o in por_origen.to_dict("records")],
         "sin_stock": [{"id": r.id, "titulo": r.titulo, "se_vende": ritmo(r.tasa_mensual),
                        "en_camino": int(r.transito)} for r in quiebres.itertuples()],

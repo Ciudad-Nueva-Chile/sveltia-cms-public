@@ -152,6 +152,9 @@ def calcular(catalogo: pd.DataFrame, movimientos: pd.DataFrame, transito: pd.Dat
     temp_ini, temp_fin = politica.ultima_temporada(fecha_corte)
     mes_temporada = politica.es_mes_de_pedido_temporada(fecha_corte)
 
+    # Tamaños de pedido de cada título para el modelo compuesto del nivel objetivo (toda la historia registrada)
+    tamanos = demanda.tamanos_de_pedido(mov, fecha_corte)
+
     filas = []
     for fila in catalogo.itertuples(index=False):
         s = serie.loc[fila.id].to_numpy(dtype=float)
@@ -172,7 +175,8 @@ def calcular(catalogo: pd.DataFrame, movimientos: pd.DataFrame, transito: pd.Dat
         # S usa el T y el L del país de la edición del libro (origen editorial), aunque el comparador elija el otro país
         pais_t = importaciones_mod.pais(fila.origen)
         T, L = tl[pais_t]["T"], tl[pais_t]["L"]
-        S = demanda.nivel_objetivo(tasa, T, L, p.nivel_servicio) if pol == "Reponer" else 0
+        S = demanda.nivel_objetivo(tasa, T, L, p.nivel_servicio, tamanos.get(fila.id)) if pol == "Reponer" else 0
+        media_h = demanda.demanda_horizonte(tasa, T, L) if pol == "Reponer" else None
         posicion = max(bodega, 0) + transito_i   # un stock negativo es un error de datos (se avisa): no infla el pedido
 
         desde = ultima_imp.get(fila.id, inicio_ventana)
@@ -224,6 +228,8 @@ def calcular(catalogo: pd.DataFrame, movimientos: pd.DataFrame, transito: pd.Dat
             "meses_pronostico": meses_pronostico if clase in demanda.CLASES_CON_TASA else "",
             "intervalo_meses": round(T, 2), "plazo_meses": round(L, 3), "t_y_l": tl[pais_t]["texto_T"] + " · " + tl[pais_t]["texto_L"],
             "nivel_objetivo": int(S),
+            "demanda_horizonte": round(media_h, 1) if media_h is not None else "",
+            "stock_seguridad": round(S - media_h, 1) if media_h is not None else "",
             "politica": pol, "sugerido": int(sugerido), "vendido_desde_importacion": int(vendido_desde),
             "temporada_unidades": temporada_u, "reclasificar": reclasificar, "acelera": se_acelera,
             "cobertura_meses": round(cobertura, 1) if math.isfinite(cobertura) else "∞",
@@ -274,6 +280,8 @@ def _resumen(t: pd.DataFrame, categorias: pd.DataFrame, por_origen: pd.DataFrame
         ("Títulos A sin existencias", int(((t["categoria_gestion"] == "A") & (t["bodega"] <= 0)).sum())),
         ("Títulos con quiebre (se reponen y están en cero)", int(t["alertas"].str.contains("Quiebre").sum())),
         ("Nivel objetivo S, suma (A que se reponen)", int(t.loc[t["politica"] == "Reponer", "nivel_objetivo"].sum())),
+        ("Stock de seguridad, suma (S − demanda del horizonte)",
+         round(float(pd.to_numeric(t.loc[t["politica"] == "Reponer", "stock_seguridad"], errors="coerce").sum()), 1)),
         ("Títulos bajo su nivel objetivo", int(((t["politica"] == "Reponer") & (t["sugerido"] > 0)).sum())),
         ("Nivel de servicio (criterio)", f"{p.nivel_servicio:.0%}"),
     ]
@@ -287,7 +295,7 @@ def _resumen(t: pd.DataFrame, categorias: pd.DataFrame, por_origen: pd.DataFrame
         filas.append((f"Política: {pol}", int(n)))
     for o in por_origen.itertuples():
         filas.append((f"Embarque {o.origen}", f"{o.estado}, próximo el {o.proximo_embarque}: {o.unidades} unidades, "
-                                              f"US$ {o.total_usd:,.0f} (mínimo US$ {o.minimo_usd:,.0f})"))
+                                              f"US$ {o.total_usd:,.0f} FOB"))
     if ventas:
         filas += [
             ("Ventas anotadas: unidades (12 meses)", ventas["unidades_vendidas"]),

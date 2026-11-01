@@ -93,10 +93,6 @@ h2 { font-size: 1.3rem; margin: 0 0 4px; }
 .estado-pedir { color: var(--bien); }
 .estado-acumular { color: var(--atencion); }
 .estado-nada { color: var(--texto-2); }
-.barra-minimo { margin: 14px 0 6px; height: 10px; background: var(--grilla); border-radius: 5px; position: relative; overflow: visible; }
-.barra-minimo span { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 5px; background: var(--barra-llena); max-width: 100%; }
-.barra-minimo i { position: absolute; top: -4px; bottom: -4px; width: 2px; background: var(--acento); }
-.barra-texto { display: flex; justify-content: space-between; font-size: .82rem; color: var(--texto-2); font-variant-numeric: tabular-nums; }
 .lineas { width: 100%; border-collapse: collapse; margin-top: 14px; font-size: .86rem; }
 .lineas th { text-align: left; font-weight: 600; color: var(--texto-3); font-size: .74rem; text-transform: uppercase; letter-spacing: .06em; padding: 6px 6px; border-bottom: 1px solid var(--borde); }
 .lineas td { padding: 7px 6px; border-bottom: 1px solid var(--grilla); vertical-align: top; }
@@ -186,13 +182,11 @@ figcaption { display: flex; justify-content: space-between; align-items: baselin
 .pedidos { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 16px; margin-bottom: 20px; }
 .pedido { background: var(--superficie); border: 1px solid var(--borde); border-radius: var(--radio); padding: 20px; border-top: 5px solid var(--texto-3); }
 .pedido-ok { border-top-color: var(--bien); }
-.pedido-esperar { border-top-color: var(--atencion); }
 .pedido-cabecera { display: flex; gap: 14px; align-items: flex-start; }
 .pedido-cabecera h2 { font-size: 1.2rem; margin: 0 0 4px; }
 .pedido-cabecera p { margin: 0; color: var(--texto-2); font-size: .92rem; }
 .pedido-icono { flex-shrink: 0; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; color: #fff; background: var(--texto-3); }
 .pedido-ok .pedido-icono { background: var(--bien); }
-.pedido-esperar .pedido-icono { background: var(--atencion); }
 .lista-pedido { list-style: none; margin: 16px 0 12px; padding: 0; max-height: 340px; overflow-y: auto; border-top: 1px solid var(--grilla); }
 .lista-pedido li { display: flex; gap: 12px; padding: 8px 2px; border-bottom: 1px solid var(--grilla); font-size: .9rem; }
 .lista-pedido .cant { min-width: 28px; font-weight: 700; font-variant-numeric: tabular-nums; text-align: right; }
