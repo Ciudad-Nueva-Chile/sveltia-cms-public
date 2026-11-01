@@ -438,7 +438,7 @@ def test_libro_en_ambas_va_al_mas_barato_si_la_combinacion_cubre_todo():
     ])
     lineas, resumen = pedido.sugerir(t, COSTOS, Parametros(), pd.Timestamp("2026-10-01"))
     combos = resumen.attrs["combinaciones"]
-    assert [c["nombre"] for c in combos] == ["Dividir: España y Argentina (2 envíos)"]   # la única que cubre todo
+    assert [c["nombre"] for c in combos] == ["Dividir: desde España y Argentina (2 envíos)"]   # la única que cubre todo
     assert lineas.set_index("id").loc["x", "origen"] == "Argentina"
     assert resumen.attrs["ahorro_usd"] == pytest.approx(5 * 15, abs=0.1)
     assert "castigo_usd" not in combos[0]
@@ -466,7 +466,7 @@ def test_el_pedido_chico_se_pide_y_la_tarjeta_da_fecha_libros_y_fob():
     assert arg["estado"] == "Pedir en el embarque" and list(lineas["id"]) == ["arg"]
     assert not any(k.startswith(("minimo", "falta")) for k in arg)
     tarjeta = lenguaje.estado_pedido(arg)
-    assert tarjeta["titulo"].startswith("Embarque a Argentina: próximo pedido el ")
+    assert tarjeta["titulo"].startswith("Embarque desde Argentina: próximo pedido el ")
     assert tarjeta["detalle"] == "2 libros por pedir, unos US$ 80 FOB."
     vacia = lenguaje.estado_pedido(arg | {"unidades": 0, "total_usd": 0})
     assert vacia["tono"] == "nada" and "no hay libros que pedir" in vacia["detalle"]
@@ -534,11 +534,26 @@ def test_t_y_l_de_la_politica_vigente_con_observado_como_comparacion():
 
 
 def test_los_calendarios_se_piden_a_argentina():
-    """El pedido anual de calendarios viaja con el embarque de agosto a Argentina (memoria 4.2.5)."""
+    """El pedido anual de calendarios viaja con el embarque de agosto desde Argentina (memoria 4.2.5)."""
     from inventario.fuentes import catalogo_desde_sitio
     cat = catalogo_desde_sitio(Path(__file__).resolve().parent.parent / "src" / "libros")
     estacionales = cat[cat["clase_manual"] == "Estacional"]
     assert len(estacionales) and set(estacionales["origen"]) == {"Argentina"}
+
+
+def test_los_libros_vienen_desde_el_origen_no_van_hacia_el():
+    """Son importaciones: «Embarque desde España», nunca «Embarque a España». Busca en el código, el panel, los textos y Sveltia."""
+    from inventario.pedido import nombre_combinacion
+    assert nombre_combinacion(["España"]) == "Todo desde España"
+    assert nombre_combinacion(["España", "Argentina"]) == "Dividir: desde España y Argentina (2 envíos)"
+    raiz = Path(__file__).resolve().parent.parent
+    mal = re.compile(r"(embarques?|env[ií]os?|pedidos?|todo) a (españa|argentina|las editoriales|\{)|llega a (españa|argentina)", re.I)
+    malos = []
+    for carpeta in ("inventario", "panel", "docs", "admin", "src/_includes", "src/paginas", "src/_data"):
+        for f in (raiz / carpeta).rglob("*"):
+            if f.is_file() and f.suffix in (".py", ".js", ".html", ".md", ".yml", ".njk", ".json") and f.name not in ("sveltia-cms.js", "datos.json"):
+                malos += [f"{f.name}:{n}" for n, l in enumerate(f.read_text(encoding="utf-8", errors="ignore").splitlines(), 1) if mal.search(l)]
+    assert not malos, malos
 
 
 # ---------- Sin mínimo de embarque en ninguna parte del repositorio ----------
@@ -626,9 +641,9 @@ def test_venta_mayor_que_el_stock_queda_en_cero_y_avisa():
 
 def test_hoja_pedido_formulas_con_separador_de_la_planilla():
     from inventario import lenguaje
-    combos = [{"nombre": "Todo a España", "envia": ["España"], "elegida": True, "valida": True, "libros_ahora": 3,
+    combos = [{"nombre": "Todo desde España", "envia": ["España"], "elegida": True, "valida": True, "libros_ahora": 3,
                "libros_usd": 100.0, "envio_usd": 0.0, "total_usd": 100.0},
-              {"nombre": "Dividir: España y Argentina (2 envíos)", "envia": ["España", "Argentina"], "elegida": False,
+              {"nombre": "Dividir: desde España y Argentina (2 envíos)", "envia": ["España", "Argentina"], "elegida": False,
                "valida": True, "libros_ahora": 3, "libros_usd": 90.0, "envio_usd": 0.0, "total_usd": 90.0}]
     h = lenguaje.hoja_pedido(pd.DataFrame(), combos, {"España": 50, "Argentina": 0}, "2026-10-05", sep=";")
     filas = h["filas"]

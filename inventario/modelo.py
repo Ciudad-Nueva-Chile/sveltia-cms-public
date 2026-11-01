@@ -294,7 +294,7 @@ def _resumen(t: pd.DataFrame, categorias: pd.DataFrame, por_origen: pd.DataFrame
     for pol, n in t["politica"].value_counts().items():
         filas.append((f"Política: {pol}", int(n)))
     for o in por_origen.itertuples():
-        filas.append((f"Embarque {o.origen}", f"{o.estado}, próximo el {o.proximo_embarque}: {o.unidades} unidades, "
+        filas.append((f"Embarque desde {o.origen}", f"{o.estado}, próximo el {o.proximo_embarque}: {o.unidades} unidades, "
                                               f"US$ {o.total_usd:,.0f} FOB"))
     if ventas:
         filas += [

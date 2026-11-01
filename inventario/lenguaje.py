@@ -167,7 +167,7 @@ def _letra(i: int) -> str:
 
 
 def que_incluye(c: dict) -> str:
-    return f"{c['libros_ahora']} libros, " + (f"un envío a {c['envia'][0]}" if len(c["envia"]) == 1 else f"{len(c['envia'])} envíos")
+    return f"{c['libros_ahora']} libros, " + (f"un envío desde {c['envia'][0]}" if len(c["envia"]) == 1 else f"{len(c['envia'])} envíos")
 
 
 def hoja_pedido(lineas: pd.DataFrame, combinaciones: list[dict], envios: dict, fecha_corte, sep: str = ",",
@@ -239,7 +239,7 @@ def monto(o) -> str:
 
 def estado_pedido(o) -> dict:
     """Frase corta y tono (ok / nada) para un origen: fecha del próximo pedido, cuántos libros y su valor FOB."""
-    titulo = f"Embarque a {o['origen']}: próximo pedido el {fecha(o.get('proximo_embarque', ''))}"
+    titulo = f"Embarque desde {o['origen']}: próximo pedido el {fecha(o.get('proximo_embarque', ''))}"
     if o.get("unidades"):
         return {"tono": "ok", "titulo": titulo, "detalle": f"{int(o['unidades'])} libros por pedir, unos {monto(o)} FOB."}
     return {"tono": "nada", "titulo": titulo, "detalle": "Por ahora no hay libros que pedir: los títulos que se reponen están sobre su nivel."}
@@ -305,7 +305,7 @@ def es_titulo_seccion(texto: str) -> bool:
 def hoja_esta_semana(s: dict) -> pd.DataFrame:
     """La misma información de esta_semana() como una tabla de dos columnas para la planilla."""
     filas = [("", "")]
-    filas.append(("1. EMBARQUES A LAS EDITORIALES", ""))
+    filas.append(("1. EMBARQUES DESDE LAS EDITORIALES", ""))
     for p in s["pedidos"]:
         filas.append((p["titulo"], p["detalle"]))
     elegida = next((c for c in s.get("combinaciones", []) if c["elegida"]), None)
@@ -314,7 +314,7 @@ def hoja_esta_semana(s: dict) -> pd.DataFrame:
     if s.get("ahorro_usd", 0) > 0:
         filas.append(("Dónde comprar", f"Comprar cada libro en la editorial que conviene ahorra unos US$ {miles(s['ahorro_usd'])} frente a comprarlo en su propia editorial."))
     for o, v in (s.get("tl") or {}).items():
-        filas.append((f"Embarques de {o}", f"{v['texto_T']} · {v['texto_L']}"))
+        filas.append((f"Embarques desde {o}", f"{v['texto_T']} · {v['texto_L']}"))
     filas.append(("", "El detalle de qué pedir está en «Pedido sugerido»."))
     filas += [("", ""), (f"2. SE VENDEN Y ESTÁN SIN STOCK ({len(s['sin_stock'])})", "Títulos A que se reponen y están en cero")]
     for r in s["sin_stock"][:25]:

@@ -313,7 +313,7 @@ política de embarques con lo observado en «Importaciones» como comparación.
 
 1. **Dónde conviene comprar**: fila «Costo de cada envío (US$)» con una celda amarilla por país, que **Roberto anota**
    con la cotización real de cada envío (el código no calcula el flete por peso, porque el catálogo no tiene el peso de
-   cada título). Una tabla compara las combinaciones que cubren todo lo que hay que pedir (Todo a España, Todo a
+   cada título). Una tabla compara las combinaciones que cubren todo lo que hay que pedir (Todo desde España, Todo desde
    Argentina, Dividir) con Libros, Envíos y Total. Envíos y Total son **fórmulas** y la fila **CONVIENE** usa
    `INDICE(…; COINCIDIR(MIN(…); …; 0))`, de modo que la recomendación cambia **al instante** al editar un costo de envío.
 2. **Embarques**: por origen, la fecha del próximo pedido, cuántos libros hay que pedir y su valor FOB aproximado (en US$, y
@@ -624,9 +624,9 @@ que vence en los próximos 30 días se pide «Ahora».
 **Necesidades de un embarque:** las líneas de la política (9.7) con Sugerido > 0, en A y B.
 
 **Dónde comprar.** Cada título que se vende en ambos orígenes va al origen con menor Costoᵢ,o entre los que envían. Se
-comparan las combinaciones de envíos que **cubren todas las necesidades** (Todo a España, Todo a Argentina, Dividir):
+comparan las combinaciones de envíos que **cubren todas las necesidades** (Todo desde España, Todo desde Argentina, Dividir):
 ```
-Total(E) = Σ necesidades × Costoᵢ,o  +  Σ_{o que envía} costo fijo del envío a o
+Total(E) = Σ necesidades × Costoᵢ,o  +  Σ_{o que envía} costo fijo del envío desde o
 ```
 El costo fijo de cada envío es la celda amarilla de «Pedido sugerido» que **anota Roberto** con la cotización real. El código
 **no calcula el flete por peso**: el catálogo no tiene el peso de cada título. Como el costo fijo no cambia qué libros van en
@@ -724,7 +724,7 @@ ejemplo, no los reales). Demanda de los últimos 21 meses:
 | España | FOB 0,45 es US$ 9,47. Costo en bodega 0,60 es **US$ 12,63** | |
 | Vía Argentina | FOB 0,50 es US$ 10,53. Costo en bodega 0,57 es **US$ 12,00** | Más barato puesto en bodega |
 | Con T de Argentina | T = 6 meses más 5,5/30: media 0,66 × 6,18 = 4,08, es decir S = 10 | El plazo del origen cambia el nivel objetivo |
-| Decisión | Si el embarque a Argentina ocurre y la combinación cubre todo, el título va ahí. Si no, va a España | Depende de la combinación de menor Total |
+| Decisión | Si el embarque desde Argentina ocurre y la combinación cubre todo, el título se compra allá. Si no, se compra en España | Depende de la combinación de menor Total |
 
 ---
 

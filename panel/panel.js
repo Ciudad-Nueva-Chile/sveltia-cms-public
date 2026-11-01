@@ -101,7 +101,7 @@
     $("#comparacion").innerHTML = '<article class="tarjeta comparacion"><header><h2>Dónde conviene comprar</h2>' +
       "<p>Anota la cotización de cada envío (courier, despacho y trámites) y la recomendación se recalcula al instante. El flete no se calcula por peso.</p></header>" +
       '<div class="envios">' + origenes.map(function (o) {
-        return "<label>Envío a " + esc(o) + ' <span>US$</span><input type="number" min="0" step="10" inputmode="decimal" data-origen="' + esc(o) + '" value="' + (+S.envios[o] || 0) + '"></label>';
+        return "<label>Envío desde " + esc(o) + ' <span>US$</span><input type="number" min="0" step="10" inputmode="decimal" data-origen="' + esc(o) + '" value="' + (+S.envios[o] || 0) + '"></label>';
       }).join("") + "</div>" +
       '<div class="tabla-envoltura" style="border:0"><table class="tabla-comp"><thead><tr><th>Opción</th><th>Qué incluye</th><th class="num">Libros</th><th class="num">Envíos</th><th class="num">Total</th></tr></thead><tbody></tbody></table></div>' +
       '<p class="veredicto" aria-live="polite"></p>' +

@@ -7,7 +7,7 @@
    ejemplar (pestaña Configuración, según origen de compra y edición del libro):
      - costo puesto en bodega: decide dónde conviene comprar;
      - valor FOB: es lo que se le paga a la editorial.
-4. Se comparan las combinaciones de envíos que cubren TODAS las necesidades (Todo a España, Todo a Argentina,
+4. Se comparan las combinaciones de envíos que cubren TODAS las necesidades (Todo desde España, Todo desde Argentina,
    Dividir). En cada una, cada libro va al origen con menor costo puesto en bodega entre los que envían:
        Total = Σ cantidad × costo puesto en bodega + Σ costo fijo de cada envío que se hace
    El costo fijo de cada envío lo anota Roberto en «Pedido sugerido» (cotización real). El código no calcula el flete
@@ -80,8 +80,8 @@ def _usd(v: float) -> str:
 
 def nombre_combinacion(envia: list[str]) -> str:
     if len(envia) == 1:
-        return f"Todo a {envia[0]}"
-    return "Dividir: " + " y ".join(envia) + f" ({len(envia)} envíos)"
+        return f"Todo desde {envia[0]}"
+    return "Dividir: desde " + " y ".join(envia) + f" ({len(envia)} envíos)"
 
 
 def proximo_mes_fijo(meses: list[int], fecha_corte: pd.Timestamp, ultima=None) -> pd.Timestamp:
