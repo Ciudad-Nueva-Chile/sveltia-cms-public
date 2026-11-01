@@ -738,7 +738,7 @@ ejemplo, no los reales). Demanda de los últimos 21 meses:
 | España | FOB 0,45 es **US$ 9,47**. Costo en bodega 0,60 es US$ 12,63 | |
 | Vía Argentina | FOB 0,50 es **US$ 10,53**. Costo en bodega 0,57 es US$ 12,00 | El comparador usa FOB: España, US$ 9,47 |
 | Con T de Argentina | T = 3 meses más 5,5/30: media 0,66 × 3,18 = 2,10, es decir S = 6 | El plazo del origen cambia el nivel objetivo |
-| Decisión | Por valor FOB conviene España. Si no se hace ese envío y la combinación cubre todo, el título se compra en Argentina | Depende de la combinación de menor Total, con el envío estimado por peso |
+| Decisión | Por valor FOB conviene comprar desde España. Si no se hace ese envío y la combinación cubre todo, el título se compra en Argentina | Depende de la combinación de menor Total, con el envío estimado por peso |
 
 ---
 
