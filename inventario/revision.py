@@ -128,6 +128,8 @@ def configuracion(costos: pd.DataFrame, origenes: list[str]) -> list[str]:
                 r.append(f"{nombre}: «{texto}» = {v:g} parece fuera de rango (suele estar entre 0,3 y 0,8)")
         if pd.isna(pd.to_numeric(getattr(x, "tipo_cambio"), errors="coerce")):
             r.append(f"{nombre}: falta «Pesos por dólar»")
+        if x.origen == "España" and pd.isna(pd.to_numeric(getattr(x, "tipo_cambio_eur", None), errors="coerce")):
+            r.append(f"{nombre}: falta «Pesos por euro»; sin él no se puede usar el costo estimado del envío ni mostrar los euros")
     return r
 
 

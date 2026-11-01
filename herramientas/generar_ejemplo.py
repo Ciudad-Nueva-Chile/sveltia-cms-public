@@ -214,11 +214,11 @@ def main():
     # Costos inventados. Un libro español comprado vía Argentina: FOB más alto (menos descuento) pero flete menor.
     # Fechas de vigencia inventadas: el tipo de cambio de España está viejo a propósito, para mostrar el aviso.
     pd.DataFrame([
-        {"origen": "España", "edicion": "", "fob_sobre_precio_neto": 0.45, "costo_sobre_precio_neto": 0.60, "tipo_cambio": 950,
+        {"origen": "España", "edicion": "", "fob_sobre_precio_neto": 0.45, "costo_sobre_precio_neto": 0.60, "tipo_cambio": 950, "tipo_cambio_eur": 1050,
          "tc_desde": "2026-01-15", "factores_desde": "2026-03-01"},
-        {"origen": "Argentina", "edicion": "Argentina", "fob_sobre_precio_neto": 0.40, "costo_sobre_precio_neto": 0.50, "tipo_cambio": 950,
+        {"origen": "Argentina", "edicion": "Argentina", "fob_sobre_precio_neto": 0.40, "costo_sobre_precio_neto": 0.50, "tipo_cambio": 950, "tipo_cambio_eur": 1050,
          "tc_desde": "2026-08-01", "factores_desde": "2026-03-01"},
-        {"origen": "Argentina", "edicion": "España", "fob_sobre_precio_neto": 0.50, "costo_sobre_precio_neto": 0.57, "tipo_cambio": 950,
+        {"origen": "Argentina", "edicion": "España", "fob_sobre_precio_neto": 0.50, "costo_sobre_precio_neto": 0.57, "tipo_cambio": 950, "tipo_cambio_eur": 1050,
          "tc_desde": "2026-08-01", "factores_desde": ""},
     ]).to_csv(SALIDA / "Costos.csv", index=False)
     print(f"{len(catalogo)} títulos, {len(movimientos)} movimientos, {len(ventas)} filas de ventas, "

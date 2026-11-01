@@ -51,10 +51,12 @@ class Origen:
     intervalo_embarque_meses: float = 6     # T: meses entre embarques (memoria 4.2.5, ecuación 12 y mínimo arrepentimiento)
     plazo_dias: float = 39                  # L: plazo de reposición observado, en días (memoria 4.1.1)
     meses_embarque: list | None = None      # meses fijos del pedido (p. ej. [2, 8]); vacío = última llegada + T
+    costo_envio_estimado: float = 0         # costo fijo de un envío (memoria 4.2.5), si Roberto no anotó una cotización
+    moneda_envio: str = "USD"               # moneda de ese costo: USD o EUR
 
 
 def _origenes_memoria() -> list[Origen]:
-    return [Origen("España", 6, 39), Origen("Argentina", 6, 5.5, [2, 8])]
+    return [Origen("España", 6, 39, None, 55.6, "EUR"), Origen("Argentina", 6, 5.5, [2, 8], 40.8, "USD")]
 
 
 @dataclass

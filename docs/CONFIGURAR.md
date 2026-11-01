@@ -64,6 +64,7 @@ crea la pestaña **Inventario** con las existencias que dan los movimientos carg
   sola del stock en el próximo cálculo (cada hora de lunes a sábado). No hay que restarla también en «Inventario».
 - **Pedido sugerido**: Roberto anota en las celdas amarillas la cotización de cada envío (el flete no se calcula por peso).
   La recomendación de dónde comprar se recalcula al instante, y el próximo cálculo arma la lista con esa opción.
+  Si una celda queda vacía o en 0 se usa el costo estimado, y la hoja dice «costo estimado» o «cotización anotada».
   Cada origen muestra la fecha de su próximo pedido, cuántos libros hay que pedir y su valor FOB aproximado.
 
 ## 4. Cálculo automático cada hora

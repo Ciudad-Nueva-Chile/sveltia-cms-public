@@ -10,8 +10,9 @@
 4. Se comparan las combinaciones de envíos que cubren TODAS las necesidades (Todo desde España, Todo desde Argentina,
    Dividir). En cada una, cada libro va al origen con menor costo puesto en bodega entre los que envían:
        Total = Σ cantidad × costo puesto en bodega + Σ costo fijo de cada envío que se hace
-   El costo fijo de cada envío lo anota Roberto en «Pedido sugerido» (cotización real). El código no calcula el flete
-   por peso, porque el catálogo no tiene el peso de cada título. Se elige el menor Total (empate: menos envíos).
+   El costo fijo de cada envío lo anota Roberto en «Pedido sugerido» (cotización real). Si la celda está vacía o en 0 se
+   usa el costo estimado de `config/parametros.yml` (memoria 4.2.5). El código no calcula el flete por peso, porque el
+   catálogo no tiene el peso de cada título. Se elige el menor Total (empate: menos envíos).
 5. El pedido que toca se pide aunque sea chico: el costo fijo del embarque ya está en el cálculo de T (memoria 4.2.5).
 6. Fecha del próximo pedido: con meses fijos (`meses_embarque`; Argentina, febrero y agosto, junto con los calendarios), el
    siguiente de esos meses; el mes en curso cuenta mientras no haya llegado su embarque. Sin meses fijos (España), la
@@ -26,10 +27,12 @@ import pandas as pd
 
 from .categorias import IVA
 from .config import Parametros
+from .stock import llegadas_reales
 
 SEPARADORES = (" o ", ",", "/", " y ")
 EDICION_GENERAL = {"", "todas"}
 NAN = math.nan
+COTIZACION, ESTIMADO = "cotización anotada", "costo estimado"
 DIAS_ANTICIPACION = 30   # un embarque que vence en los próximos 30 días se pide ahora
 
 
@@ -103,7 +106,8 @@ def proximos_embarques(mov: pd.DataFrame, catalogo: pd.DataFrame, p: Parametros,
     ultimas_llegadas = ultimas_llegadas or {}
     intervalos = intervalos or {}
     origen_de = catalogo.drop_duplicates("id").set_index("id")["origen"]
-    imp = mov[(mov["tipo"] == "importacion") & (mov["fecha"] <= fecha_corte)].copy()
+    imp = llegadas_reales(mov)
+    imp = imp[imp["fecha"] <= fecha_corte].copy()
     imp["origen"] = imp["id"].map(origen_de).map(lambda o: "Argentina" if o == "Argentina" else "España")
     salida = {}
     for o in p.origenes:
@@ -130,14 +134,37 @@ def sugerir(titulos: pd.DataFrame, costos: pd.DataFrame, p: Parametros, fecha_co
     """Devuelve (líneas del pedido, resumen por origen).
 
     titulos: una fila por título con sugerido, politica, categoria_gestion, tasa_mensual, unidades_ventana, precio_lista.
-    envios: costo fijo de cada envío en dólares, por origen (vacío = 0).
+    envios: cotización anotada de cada envío en dólares, por origen. Vacía o en 0, se usa el costo estimado del origen.
     embarques: salida de proximos_embarques(); sin ella, todos los embarques se consideran vencidos.
-    El resumen trae en .attrs: combinaciones, envios y ahorro.
+    El resumen trae en .attrs: combinaciones, envios (el costo que se usó), envios_anotados, envios_estimados,
+    envios_fuente («cotización anotada» o «costo estimado») y ahorro.
     """
-    envios = {o: float(v or 0) for o, v in (envios or {}).items()}
+    anotados = {o: float(v or 0) for o, v in (envios or {}).items()}
     embarques = embarques or {o.nombre: (None, fecha_corte) for o in p.origenes}
     if not len(costos):
         costos = pd.DataFrame(columns=["origen", "edicion", "fob_sobre_precio_neto", "costo_sobre_precio_neto", "tipo_cambio"])
+
+    # Pesos por dólar / pesos por euro de «Configuración»: para mostrar España en € y convertir su costo de envío
+    def eur_por_usd(o: str) -> float:
+        if "tipo_cambio_eur" not in costos:
+            return NAN
+        f = costos[costos["origen"] == o]
+        tc = pd.to_numeric(f["tipo_cambio"], errors="coerce").dropna()
+        te = pd.to_numeric(f["tipo_cambio_eur"], errors="coerce").dropna()
+        return float(tc.iloc[0] / te.iloc[0]) if len(tc) and len(te) and te.iloc[0] else NAN
+
+    def estimado_usd(o: str) -> float:
+        origen = p.origen(o)
+        monto = float(origen.costo_envio_estimado or 0)
+        if origen.moneda_envio != "EUR":
+            return monto
+        k = eur_por_usd(o)
+        return 0.0 if math.isnan(k) or not k else round(monto / k, 2)     # sin tipo de cambio no se puede convertir
+
+    estimados = {o.nombre: estimado_usd(o.nombre) for o in p.origenes}
+    for o in anotados:
+        estimados.setdefault(o, estimado_usd(o))
+    envios = {o: (anotados.get(o, 0.0) or estimados[o]) for o in estimados}
     configurados = [o.nombre for o in p.origenes]
 
     def opciones(f) -> dict:
@@ -207,17 +234,12 @@ def sugerir(titulos: pd.DataFrame, costos: pd.DataFrame, p: Parametros, fecha_co
                       "costo_unitario_usd": "" if math.isnan(valor) else round(valor, 2),
                       "subtotal_usd": "" if math.isnan(valor) else round(valor * cant, 2)})
 
-    # España factura en euros: sus montos también en € (pesos por dólar / pesos por euro de «Configuración»)
-    def eur_por_usd(o: str) -> float:
-        if o != "España" or "tipo_cambio_eur" not in costos:
-            return NAN
-        f = costos[costos["origen"] == o]
-        tc = pd.to_numeric(f["tipo_cambio"], errors="coerce").dropna()
-        te = pd.to_numeric(f["tipo_cambio_eur"], errors="coerce").dropna()
-        return float(tc.iloc[0] / te.iloc[0]) if len(tc) and len(te) and te.iloc[0] else NAN
+    # España factura en euros: sus montos también en €
+    def eur_de(o: str) -> float:
+        return eur_por_usd(o) if o == "España" else NAN
 
     for l in filas:
-        k = eur_por_usd(l["origen"])
+        k = eur_de(l["origen"])
         l["subtotal_eur"] = "" if math.isnan(k) or l["subtotal_usd"] == "" else round(l["subtotal_usd"] * k, 2)
 
     # Resumen por origen
@@ -231,7 +253,7 @@ def sugerir(titulos: pd.DataFrame, costos: pd.DataFrame, p: Parametros, fecha_co
         estado = "Pedir en el embarque" if lineas_o else "Sin pedido"
         resumen.append({"origen": o, "estado": estado, "titulos": len(lineas_o), "unidades": sum(l["cantidad"] for l in lineas_o),
                         "total_usd": total,
-                        "total_eur": "" if math.isnan(eur_por_usd(o)) else round(total * eur_por_usd(o), 2),
+                        "total_eur": "" if math.isnan(eur_de(o)) else round(total * eur_de(o), 2),
                         "ultima_importacion": ultima.date().isoformat() if ultima is not None else "",
                         "proximo_embarque": proximo.date().isoformat(), "intervalo_meses": p.intervalo_meses(o),
                         "costos_configurados": bool((costos["origen"] == o).any())})
@@ -239,6 +261,10 @@ def sugerir(titulos: pd.DataFrame, costos: pd.DataFrame, p: Parametros, fecha_co
     resumen.attrs["ahorro_usd"] = round(ahorro, 2)
     resumen.attrs["envios"] = {o: envios.get(o, 0.0) for o in origenes if o in configurados or o in envios
                                or any(o in e["envia"] for e in combinaciones)}
+    usados = list(resumen.attrs["envios"])
+    resumen.attrs["envios_anotados"] = {o: anotados.get(o, 0.0) for o in usados}
+    resumen.attrs["envios_estimados"] = {o: estimados.get(o, 0.0) for o in usados}
+    resumen.attrs["envios_fuente"] = {o: COTIZACION if anotados.get(o, 0.0) > 0 else ESTIMADO for o in usados}
     resumen.attrs["combinaciones"] = [{
         "nombre": nombre_combinacion(e["envia"]), "envia": e["envia"], "elegida": e is mejor, "valida": True,
         "libros_ahora": sum(l[1] for l in e["lineas"]), "libros_usd": round(e["libros"], 2),

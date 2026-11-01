@@ -99,9 +99,11 @@
     if (!C.length) { $("#comparacion").innerHTML = ""; return; }
     var origenes = Object.keys(S.envios || {});
     $("#comparacion").innerHTML = '<article class="tarjeta comparacion"><header><h2>Desde dónde conviene comprar</h2>' +
-      "<p>Anota la cotización de cada envío (courier, despacho y trámites) y la recomendación se recalcula al instante. El flete no se calcula por peso.</p></header>" +
+      "<p>Anota la cotización de cada envío (courier, despacho y trámites) y la recomendación se recalcula al instante. Vacía o en 0, se usa el costo estimado. El flete no se calcula por peso.</p></header>" +
       '<div class="envios">' + origenes.map(function (o) {
-        return "<label>Envío desde " + esc(o) + ' <span>US$</span><input type="number" min="0" step="10" inputmode="decimal" data-origen="' + esc(o) + '" value="' + (+S.envios[o] || 0) + '"></label>';
+        var anotado = +(S.envios_anotados || {})[o] || 0, estimado = +(S.envios_estimados || {})[o] || 0;
+        return "<label>Envío desde " + esc(o) + ' <span>US$</span><input type="number" min="0" step="10" inputmode="decimal" data-origen="' + esc(o) +
+          '" data-estimado="' + estimado + '" placeholder="' + coma(estimado) + '" value="' + (anotado || "") + '"><small class="fuente-envio"></small></label>';
       }).join("") + "</div>" +
       '<div class="tabla-envoltura" style="border:0"><table class="tabla-comp"><thead><tr><th>Opción</th><th>Qué incluye</th><th class="num">Libros</th><th class="num">Envíos</th><th class="num">Total</th></tr></thead><tbody></tbody></table></div>' +
       '<p class="veredicto" aria-live="polite"></p>' +
@@ -111,7 +113,11 @@
     var inputs = $("#comparacion").querySelectorAll("input[data-origen]");
     function recalcular() {
       var costo = {};
-      inputs.forEach(function (i) { costo[i.dataset.origen] = Math.max(0, parseFloat(i.value) || 0); });
+      inputs.forEach(function (i) {
+        var anotado = Math.max(0, parseFloat(i.value) || 0);
+        costo[i.dataset.origen] = anotado || (+i.dataset.estimado || 0);
+        i.parentNode.querySelector(".fuente-envio").textContent = anotado ? "cotización anotada" : "costo estimado";
+      });
       var filas = C.map(function (c) {
         var envio = c.envia.reduce(function (s, o) { return s + (costo[o] || 0); }, 0);
         return { c: c, envio: envio, total: c.libros_usd + envio };
@@ -183,7 +189,7 @@
         dato: function (r) { return r.unidades + " ejemplares · " + r.dias + " días"; } }),
       tarjetaLista({ titulo: "Productos de temporada", tono: "info", items: S.temporada,
         bajada: "Un pedido al año que debe llegar antes de septiembre, con la cantidad de la última temporada.",
-        dato: function (r) { return "vendió " + r.vendio + " la última temporada" + (r.pedir ? " · pedir " + r.pedir : ""); } }),
+        dato: function (r) { return r.sin_historia ? "ficha nueva sin ventas ni «Reemplaza a»: indica en Sveltia a qué ficha reemplaza" : "vendió " + r.vendio + " la última temporada" + (r.pedir ? " · pedir " + r.pedir : ""); } }),
     ].join("") + (S.errores.length ? '<article class="lista lista-atencion"><header><h2>Revisar en la planilla</h2></header><ul>' +
       S.errores.map(function (e) { return '<li><span class="li-titulo">' + esc(e) + "</span></li>"; }).join("") + "</ul></article>" : "");
 
@@ -363,6 +369,19 @@
       }).join("") + "</tbody></table>";
   }
 
+  // Por qué no coincide con «Se venden y están sin stock», que solo cuenta los A que se reponen hasta su nivel objetivo
+  function notaASinExistencias() {
+    var cero = D.titulos.filter(function (t) { return t.categoria_gestion === "A" && t.bodega <= 0; });
+    var reponen = cero.filter(function (t) { return t.politica === "Reponer"; }).length;
+    var otros = cero.length - reponen;
+    if (!otros) return "";
+    var est = cero.filter(function (t) { return t.clase === "Estacional"; }).length, coy = cero.filter(function (t) { return t.clase === "Coyuntural"; }).length;
+    function n(c, sing, plur) { return c + " " + (c === 1 ? sing : plur); }
+    var tipos = [est ? n(est, "estacional", "estacionales") : "", coy ? n(coy, "coyuntural", "coyunturales") : ""].filter(Boolean).join(" y ");
+    return reponen + " están en «Se venden y están sin stock»; " + (otros === 1 ? "el otro" : "los otros " + otros) + " (" + tipos + ") no se " +
+      (otros === 1 ? "repone" : "reponen") + " por nivel objetivo.";
+  }
+
   function pintarTiles() {
     var tiles = [
       ["Ejemplares en bodega", fmt.format(valor("Ejemplares en bodega"))],
@@ -370,7 +389,7 @@
       ["Ejemplares en consignación", fmt.format(valor("Ejemplares en consignación"))],
       ["Títulos en cero", fmt.format(valor("Títulos en cero")) + " de " + fmt.format(valor("Títulos en catálogo"))],
       ["Títulos A / B / C / D / sin categoría", valor("Títulos A / B / C / D / sin categoría")],
-      ["Títulos A sin existencias", fmt.format(valor("Títulos A sin existencias"))],
+      ["Títulos A sin existencias", fmt.format(valor("Títulos A sin existencias")), notaASinExistencias()],
       ["Nivel objetivo S, suma", fmt.format(valor("Nivel objetivo S, suma (A que se reponen)"))],
       ["Nivel de servicio (criterio)", valor("Nivel de servicio (criterio)")],
     ];
@@ -381,7 +400,8 @@
       tiles.push(["Ejemplares pedidos que no había (12 meses)", fmt.format(V.unidades_perdidas)]);
     }
     $("#tiles").innerHTML = tiles.map(function (t) {
-      return '<div class="tile"><div class="tile-valor">' + esc(t[1]) + '</div><div class="tile-titulo">' + esc(t[0]) + "</div></div>";
+      return '<div class="tile"><div class="tile-valor">' + esc(t[1]) + '</div><div class="tile-titulo">' + esc(t[0]) + "</div>" +
+        (t[2] ? '<div class="tile-nota">' + esc(t[2]) + "</div>" : "") + "</div>";
     }).join("");
   }
 

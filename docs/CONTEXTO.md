@@ -132,6 +132,7 @@ Reglas que ordenan todo:
   destacado: false                 # true: aparece en la portada
   inventario_tipo: ""              # Estacional / Coyuntural (para el modelo)
   inventario_decision: ""          # política manual (para el modelo)
+  inventario_reemplaza: ""         # temporada: código de la ficha del año anterior
   ```
 
 - **Campos calculados** (`src/libros/libros.11tydata.js`): `titulo_visible` (sin la sigla), `sigla` («BP 46»),
@@ -312,7 +313,7 @@ política de embarques con lo observado en «Importaciones» como comparación.
 **Pedido sugerido** — tres bloques:
 
 1. **Desde dónde conviene comprar**: fila «Costo de cada envío (US$)» con una celda amarilla por país, que **Roberto anota**
-   con la cotización real de cada envío (el código no calcula el flete por peso, porque el catálogo no tiene el peso de
+   con la cotización real de cada envío (si queda vacía o en 0, las filas de abajo usan el costo estimado y lo dicen) (el código no calcula el flete por peso, porque el catálogo no tiene el peso de
    cada título). Una tabla compara las combinaciones que cubren todo lo que hay que pedir (Todo desde España, Todo desde
    Argentina, Dividir) con Libros, Envíos y Total. Envíos y Total son **fórmulas** y la fila **CONVIENE** usa
    `INDICE(…; COINCIDIR(MIN(…); …; 0))`, de modo que la recomendación cambia **al instante** al editar un costo de envío.
@@ -536,7 +537,7 @@ La política se asigna por categoría. La «decisión manual» de Sveltia manda 
 | A Intermitente o Regular | **Reponer** | Hasta el nivel objetivo S |
 | A Estacional | **Temporada** | Un pedido anual que debe llegar antes de septiembre. Cantidad de la última temporada completa |
 | A Coyuntural | **No reponer** | Se atiende por reacción |
-| B | **Reponer lo vendido** | Unidades netas vendidas desde el último movimiento de importación del título, menos lo que ya viene en camino. Sin stock de seguridad |
+| B | **Reponer lo vendido** | Unidades netas vendidas desde el embarque anterior, es decir, la última llegada registrada del origen donde se compra (o la del propio título, si es más reciente), menos lo que ya viene en camino. Corregir «Inventario» no cuenta como llegada. Sin stock de seguridad |
 | C y D | **No reponer** | El sistema solo los muestra con su valor |
 | Sin categoría | **A pedido** | No se mantiene stock |
 
@@ -565,9 +566,12 @@ por el mismo capital (memoria 4.2.5): en Argentina el 44 % de las líneas de ven
 Un stock negativo es un error de datos: se avisa («Stock negativo») y cuenta como 0, para no inflar el pedido.
 
 **Reglas por confirmar con Andrés** (marcadas así en `politica.py`):
-- B sin ninguna importación registrada: cuenta lo vendido desde el inicio de la ventana.
+- B sin ninguna llegada registrada del origen ni del título: cuenta lo vendido desde el inicio de la ventana.
 - Estacional: «Pedir» entre junio y agosto, hasta la venta neta de la última temporada completa (septiembre a marzo), menos
   la posición. El resto del año solo se avisa.
+- Estacional con ficha nueva cada año (ANGELES 2026 → ANGELES 2027): en Sveltia, el campo «Reemplaza a (código)» liga la ficha
+  nueva con la anterior. El pedido usa la venta de la última temporada de ambas y la ficha anterior deja de pedirse. Una ficha
+  de temporada sin ventas ni reemplazo avisa «Temporada sin historia», y un reemplazo cuyo código no tiene ventas también avisa.
 - **T** es el intervalo entre embarques del origen, en meses (`intervalo_embarque_meses`): 6 meses en ambos orígenes, y Argentina en febrero y agosto (`meses_embarque`). Todo origen
   distinto de Argentina se trata como España. Estos valores salen del modelo de reposición coordinada de la memoria (sección 4.2.5, ecuación 12, mínimo arrepentimiento en 108 escenarios)
   (sección 4.2.5), con tasa de costo de capital de 15 % anual dentro de un rango de 10 % a 20 %. Si esa tasa cambia, hay
@@ -628,7 +632,9 @@ comparan las combinaciones de envíos que **cubren todas las necesidades** (Todo
 ```
 Total(E) = Σ necesidades × Costoᵢ,o  +  Σ_{o que envía} costo fijo del envío desde o
 ```
-El costo fijo de cada envío es la celda amarilla de «Pedido sugerido» que **anota Roberto** con la cotización real. El código
+El costo fijo de cada envío es la celda amarilla de «Pedido sugerido» que **anota Roberto** con la cotización real («cotización
+anotada»). Vacía o en 0, se usa el **costo estimado** de la memoria (4.2.5), en `config/parametros.yml`: US$ 40,8 desde Argentina
+y € 55,6 desde España, convertido con el tipo de cambio de «Configuración». La planilla y el panel dicen cuál se usó. El código
 **no calcula el flete por peso**: el catálogo no tiene el peso de cada título. Como el costo fijo no cambia qué libros van en
 cada combinación, la planilla y el panel recalculan el Total al instante al cambiarlo. Se elige la combinación de menor
 Total (empate: menos envíos).
@@ -686,6 +692,7 @@ vigencia». Las fechas salen de las columnas «vigente desde» de la pestaña Co
 | `alfa_suavizado` | 0,15 | 9.6 | **Supuesto abierto** (rango 0,05 a 0,20) |
 | `origenes[].intervalo_embarque_meses` (T) | 6 y 6 | 4.2.5 | Ecuación (12) y mínimo arrepentimiento en 108 escenarios |
 | `origenes[].meses_embarque` | Argentina [2, 8] | 4.2.5 | El embarque de agosto viaja con los calendarios |
+| `origenes[].costo_envio_estimado`, `moneda_envio` | Argentina 40,8 USD y España 55,6 EUR | 4.2.5 | Regresión del flete y el seguro contra el peso. Se usa si no hay cotización anotada |
 | `origenes[].plazo_dias` (L) | Argentina 5,5 y España 39 | 9.7 | Argentina declarado y observado; España, mediana de 5 envíos entre factura y llegada |
 
 **Constantes de la memoria** (`inventario/config.py`, cada una con su cita):
@@ -701,7 +708,7 @@ vigencia». Las fechas salen de las columnas «vigente desde» de la pestaña Co
 
 
 En la planilla (porque son sensibles o cambian seguido): factores de costo y tipo de cambio (Configuración) y
-costo fijo de cada envío (Pedido sugerido). **Los valores reales no se escriben en este repositorio**: los carga Andrés en la
+cotización de cada envío (Pedido sugerido). **Esos valores reales no se escriben en este repositorio**: los carga Andrés en la
 planilla privada a partir de las mediciones de la memoria.
 
 ### 9.11 Ejemplo completo con un libro (datos sintéticos)
@@ -772,6 +779,7 @@ ejemplo, no los reales). Demanda de los últimos 21 meses:
 |---|---|
 | Cambiar precio, sinopsis o portada; ocultar o destacar un libro; agregar un libro | Sveltia → Libros |
 | Marcar un libro como estacional/coyuntural o fijar su política | Sveltia → Libros → campos «Inventario» |
+| Ligar el calendario nuevo con el del año anterior | Sveltia → Libros → «Reemplaza a (código)» |
 | Cambiar textos, WhatsApp, anuncio, categorías | Sveltia → Ajustes / Páginas |
 | Ajustar el modelo (nivel de servicio, α, T, L, meses de pedido) | `config/parametros.yml`, a mano, solo quien mantiene el sistema |
 | Anotar una venta, una devolución o un pedido que no se pudo atender | Planilla → Ventas |

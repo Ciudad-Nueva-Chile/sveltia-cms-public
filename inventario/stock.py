@@ -32,6 +32,15 @@ TIPOS_VENTA = {"venta": +1, "consignacion_liquidada": +1, "devolucion_cliente": 
 TIPOS_VENTA_NETA = {**TIPOS_VENTA, "venta_perdida": +1}
 
 
+DOCUMENTO_CAMBIO = "Cambio en Inventario"     # movimientos deducidos de una corrección en la pestaña «Inventario»
+
+
+def llegadas_reales(mov: pd.DataFrame) -> pd.DataFrame:
+    """Importaciones de verdad: sin las subidas de bodega que se deducen de corregir «Inventario» (un conteo no es un embarque)."""
+    imp = mov[mov["tipo"] == "importacion"]
+    return imp[imp["documento"].astype(str) != DOCUMENTO_CAMBIO] if "documento" in imp else imp
+
+
 def validar(mov: pd.DataFrame, catalogo: pd.DataFrame, avisar_huerfanos: bool = True) -> list[str]:
     """Problemas de datos que conviene corregir en la planilla. No detienen el cálculo."""
     errores = []

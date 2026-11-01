@@ -21,11 +21,18 @@ alfa_suavizado: 0.15
 #   el siguiente febrero o agosto. Sin meses_embarque (España), el próximo es la última llegada de «Importaciones» más T.
 # plazo_dias (L): plazo de reposición. Argentina 5,5 días (declarado y observado). España 39 días: mediana observada de
 #   5 envíos entre la factura y la llegada (20 a 85 días), en vez de los 7 declarados.
+# costo_envio_estimado y moneda_envio: costo fijo de un envío estimado en la memoria (sección 4.2.5, regresión del flete y el
+#   seguro contra el peso). El comparador lo usa cuando la celda amarilla de «Pedido sugerido» está vacía o en 0. Los euros se
+#   convierten con el tipo de cambio de «Configuración». Una cotización anotada siempre manda.
 origenes:
   - nombre: España
     intervalo_embarque_meses: 6
     plazo_dias: 39
+    costo_envio_estimado: 55.6
+    moneda_envio: EUR
   - nombre: Argentina
     intervalo_embarque_meses: 6
     meses_embarque: [2, 8]
     plazo_dias: 5.5
+    costo_envio_estimado: 40.8
+    moneda_envio: USD

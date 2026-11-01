@@ -147,13 +147,31 @@ def calcular(catalogo: pd.DataFrame, movimientos: pd.DataFrame, transito: pd.Dat
     con_guia = set(en_ventana.loc[en_ventana["tipo"] == "consignacion_salida", "id"])
     vendido = mov[mov["tipo"].isin(stock.TIPOS_VENTA) & (mov["fecha"] <= fecha_corte)].copy()
     vendido["u"] = vendido["cantidad"] * vendido["tipo"].map(stock.TIPOS_VENTA)
-    ultima_imp = mov[(mov["tipo"] == "importacion") & (mov["fecha"] <= fecha_corte)].groupby("id")["fecha"].max()
+    llegadas_reales = stock.llegadas_reales(mov)
+    ultima_imp = llegadas_reales[llegadas_reales["fecha"] <= fecha_corte].groupby("id")["fecha"].max()
     tl = importaciones_mod.efectivos(importaciones, p)   # T y L de la política, con lo observado en «Importaciones» como comparación
     temp_ini, temp_fin = politica.ultima_temporada(fecha_corte)
     mes_temporada = politica.es_mes_de_pedido_temporada(fecha_corte)
 
     # Tamaños de pedido de cada título para el modelo compuesto del nivel objetivo (toda la historia registrada)
     tamanos = demanda.tamanos_de_pedido(mov, fecha_corte)
+
+    # Próximo embarque y última llegada de cada origen. B repone lo vendido desde esa llegada, el embarque anterior.
+    embarques = pedido.proximos_embarques(mov, catalogo, p, fecha_corte, importaciones_mod.ultimas_llegadas(importaciones),
+                                          {o: v["T"] for o, v in tl.items()})
+
+    # Fichas de temporada que reemplazan a la del año anterior («Reemplaza a» en Sveltia)
+    reemplaza = {f.id: str(getattr(f, "reemplaza", "") or "").strip() for f in catalogo.itertuples(index=False)}
+    reemplaza = {k: v for k, v in reemplaza.items() if v and v != k}
+    reemplazado_por = {v: k for k, v in reemplaza.items()}
+
+    def anteriores(id_: str) -> list[str]:
+        """Las fichas anteriores de un título, de la más reciente a la más antigua (ANGELES 2027 → 2026 → 2025)."""
+        cadena = []
+        while id_ in reemplaza and reemplaza[id_] not in cadena:
+            id_ = reemplaza[id_]
+            cadena.append(id_)
+        return cadena
 
     filas = []
     for fila in catalogo.itertuples(index=False):
@@ -179,15 +197,25 @@ def calcular(catalogo: pd.DataFrame, movimientos: pd.DataFrame, transito: pd.Dat
         media_h = demanda.demanda_horizonte(tasa, T, L) if pol == "Reponer" else None
         posicion = max(bodega, 0) + transito_i   # un stock negativo es un error de datos (se avisa): no infla el pedido
 
-        desde = ultima_imp.get(fila.id, inicio_ventana)
+        # B: lo vendido desde el embarque anterior, es decir, la última llegada del origen donde se compra (o la del propio
+        # título si es más reciente). Si no hay ninguna registrada, desde el inicio de la ventana.
+        opciones = pedido.opciones_compra(getattr(fila, "compra_en", ""), fila.origen)
+        pais_compra = importaciones_mod.pais(opciones[0]) if len(opciones) == 1 else pais_t
+        llegadas = [x for x in (embarques.get(pais_compra, (None,))[0], ultima_imp.get(fila.id)) if x is not None]
+        desde = max(llegadas) if llegadas else inicio_ventana
         v_id = vendido[vendido["id"] == fila.id]
         vendido_desde = float(v_id.loc[v_id["fecha"] > desde, "u"].sum())
-        temporada_u = int(v_id.loc[(v_id["fecha"] >= temp_ini) & (v_id["fecha"] <= temp_fin), "u"].sum())
+        # Temporada: la venta de la ficha y de las que reemplaza
+        anteriores_id = anteriores(fila.id)
+        v_titulo = vendido[vendido["id"].isin([fila.id] + anteriores_id)]
+        temporada_u = int(v_titulo.loc[(v_titulo["fecha"] >= temp_ini) & (v_titulo["fecha"] <= temp_fin), "u"].sum())
+        reemplazada = reemplazado_por.get(fila.id, "")
+        temporada_sin_historia = pol == "Temporada" and not reemplazada and not anteriores_id and v_titulo.empty
         if pol == "Reponer":
             sugerido = max(0, S - posicion)
         elif pol == "Reponer lo vendido":
             sugerido = politica.reponer_lo_vendido(vendido_desde, transito_i)
-        elif pol == "Temporada" and mes_temporada:
+        elif pol == "Temporada" and mes_temporada and not reemplazada:
             sugerido = max(0, temporada_u - posicion)
         else:
             sugerido = 0
@@ -204,7 +232,15 @@ def calcular(catalogo: pd.DataFrame, movimientos: pd.DataFrame, transito: pd.Dat
         elif pol == "Reponer" and sugerido > 0:
             alertas.append("Bajo el nivel objetivo")
         if pol == "Temporada":
-            alertas.append(f"Temporada: pedir entre junio y agosto ({temporada_u} vendidos la última temporada)")
+            if reemplazada:
+                alertas.append(f"Temporada: reemplazada por {reemplazada}, ya no se pide")
+            elif temporada_sin_historia:
+                alertas.append("Temporada sin historia: ficha nueva sin ventas ni «Reemplaza a». Indica en Sveltia a qué ficha reemplaza, o el pedido sale en 0")
+            elif anteriores_id and v_titulo.empty:
+                alertas.append(f"Temporada: la ficha que reemplaza ({anteriores_id[0]}) no tiene ventas registradas. Revisa el código en «Reemplaza a»")
+            else:
+                alertas.append(f"Temporada: pedir entre junio y agosto ({temporada_u} vendidos la última temporada"
+                               + (f", con {anteriores_id[0]}" if anteriores_id else "") + ")")
         if reclasificar:
             alertas.append("Título C o D con solicitud del canal: pasa a B en el próximo cálculo")
         se_acelera = clase in ("Intermitente", "Regular", "Esporádica") and demanda.acelera(
@@ -231,7 +267,8 @@ def calcular(catalogo: pd.DataFrame, movimientos: pd.DataFrame, transito: pd.Dat
             "demanda_horizonte": round(media_h, 1) if media_h is not None else "",
             "stock_seguridad": round(S - media_h, 1) if media_h is not None else "",
             "politica": pol, "sugerido": int(sugerido), "vendido_desde_importacion": int(vendido_desde),
-            "temporada_unidades": temporada_u, "reclasificar": reclasificar, "acelera": se_acelera,
+            "temporada_unidades": temporada_u, "reemplaza": reemplaza.get(fila.id, ""), "reemplazado_por": reemplazada,
+            "temporada_sin_historia": bool(temporada_sin_historia), "reclasificar": reclasificar, "acelera": se_acelera,
             "cobertura_meses": round(cobertura, 1) if math.isfinite(cobertura) else "∞",
             "ultima_salida": ultima_salida.date().isoformat() if not pd.isna(ultima_salida) else "",
             "meses_sin_salida": round(meses_sin, 1) if not math.isnan(meses_sin) else "",
@@ -241,8 +278,6 @@ def calcular(catalogo: pd.DataFrame, movimientos: pd.DataFrame, transito: pd.Dat
         })
 
     titulos = pd.DataFrame(filas)
-    embarques = pedido.proximos_embarques(mov, catalogo, p, fecha_corte, importaciones_mod.ultimas_llegadas(importaciones),
-                                          {o: v["T"] for o, v in tl.items()})
     lineas, por_origen = pedido.sugerir(titulos, costos, p, fecha_corte, envios, embarques)
     if len(por_origen):
         por_origen["intervalo_meses"] = por_origen["origen"].map(lambda o: round(tl[o]["T"], 2) if o in tl else None)

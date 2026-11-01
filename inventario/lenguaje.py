@@ -151,7 +151,9 @@ def pedido(lineas: pd.DataFrame) -> pd.DataFrame:
     }).sort_values(["Cuándo", "Comprar en", "Título"])
 
 
+AVISO_SIN_HISTORIA = "Ficha nueva sin ventas ni «Reemplaza a»: indica en Sveltia a qué ficha reemplaza, o el pedido sale en 0"
 ETIQUETA_ENVIO = "Costo de cada envío (US$)"
+ETIQUETA_ESTIMADO = "Costo estimado (US$)"
 
 
 def formula(texto: str, sep: str = ",") -> str:
@@ -171,7 +173,7 @@ def que_incluye(c: dict) -> str:
 
 
 def hoja_pedido(lineas: pd.DataFrame, combinaciones: list[dict], envios: dict, fecha_corte, sep: str = ",",
-                por_origen: pd.DataFrame | None = None) -> dict:
+                por_origen: pd.DataFrame | None = None, anotados: dict | None = None, estimados: dict | None = None) -> dict:
     """«Pedido sugerido»: arriba, desde dónde conviene comprar (con el costo de cada envío editable y la recomendación
     recalculada por fórmulas); al medio, el próximo pedido de cada origen con cuántos libros y su valor FOB;
     abajo, la lista de qué pedir.
@@ -179,14 +181,21 @@ def hoja_pedido(lineas: pd.DataFrame, combinaciones: list[dict], envios: dict, f
     Devuelve las filas y su formato: celdas editables, filas en negrita y formatos numéricos (índices desde 0).
     """
     origenes = list(envios)
+    anotados = anotados if anotados is not None else envios
+    estimados = estimados or {}
     filas = [["PEDIDO SUGERIDO", f"Calculado con los datos al {fecha(fecha_corte)}"], [""],
              ["1. DESDE DÓNDE CONVIENE COMPRAR"],
-             ["Anota la cotización de cada envío (courier, despacho y trámites, en dólares). El flete no se calcula por peso. La recomendación de abajo se recalcula al instante."],
+             ["Anota la cotización de cada envío (courier, despacho y trámites, en dólares). Vacía o en 0, se usa el costo estimado. El flete no se calcula por peso. La recomendación de abajo se recalcula al instante."],
              [""] + [f"Desde {o}" for o in origenes],
-             [ETIQUETA_ENVIO] + [envios[o] for o in origenes], [""],
+             [ETIQUETA_ENVIO] + [anotados.get(o, 0) or "" for o in origenes],
+             [ETIQUETA_ESTIMADO] + [estimados.get(o, 0) for o in origenes],
+             ["Costo que se usa (US$)"] + [formula(f"=IF(N({_letra(1 + i)}6)>0,{_letra(1 + i)}6,{_letra(1 + i)}7)", sep) for i in range(len(origenes))],
+             ["De dónde sale"] + [formula(f'=IF(N({_letra(1 + i)}6)>0,"cotización anotada","costo estimado")', sep) for i in range(len(origenes))],
+             [""],
              ["Opción", "Qué incluye", "Libros (US$)", "Envíos (US$)", "Total (US$)"]]
-    fila_envio = 6  # número de fila (desde 1) del costo de cada envío
-    celda = {o: f"{_letra(1 + i)}{fila_envio}" for i, o in enumerate(origenes)}
+    fila_envio = 6  # número de fila (desde 1) de la cotización; la 8 es el costo que se usa
+    celda = {o: f"{_letra(1 + i)}8" for i, o in enumerate(origenes)}
+    fila_opciones = len(filas) - 1
     primera = len(filas) + 1
     for c in combinaciones:
         r = len(filas) + 1
@@ -221,8 +230,8 @@ def hoja_pedido(lineas: pd.DataFrame, combinaciones: list[dict], envios: dict, f
     return {
         "filas": filas,
         "editables": [(fila_envio - 1, 1 + i) for i in range(len(origenes))],
-        "negritas": [4, 7, encabezado] + negritas_extra,
-        "formatos": [(fila_envio - 1, fila_envio, 1, 1 + len(origenes), "#,##0"),
+        "negritas": [4, fila_opciones, encabezado] + negritas_extra,
+        "formatos": [(fila_envio - 1, fila_envio + 2, 1, 1 + len(origenes), "#,##0.0"),
                      (primera - 1, ultima, 2, 5, "#,##0"),
                      # Formato explícito: la planilla conserva el de lo que hubo antes en la celda (una fecha, por ejemplo)
                      (primer_embarque, fin_embarques, 2, 3, "0"), (primer_embarque, fin_embarques, 3, 5, "#,##0"),
@@ -245,6 +254,13 @@ def estado_pedido(o) -> dict:
     return {"tono": "nada", "titulo": titulo, "detalle": "Por ahora no hay libros que pedir: los títulos que se reponen están sobre su nivel."}
 
 
+def _fuente_envios(combinacion: dict, s: dict) -> str:
+    """« (desde España: costo estimado; desde Argentina: cotización anotada)»."""
+    fuente = s.get("envios_fuente", {})
+    partes = [f"desde {o}: {fuente[o]}" for o in combinacion.get("envia", []) if o in fuente]
+    return f" ({'; '.join(partes)})" if partes else ""
+
+
 def esta_semana(t: pd.DataFrame, por_origen: pd.DataFrame, lineas: pd.DataFrame, fecha_corte, errores: list[str],
                 perdidas: list | None = None, sin_anotar: list | None = None, conteo: dict | None = None,
                 caducidad: list | None = None, tl: dict | None = None) -> dict:
@@ -257,6 +273,8 @@ def esta_semana(t: pd.DataFrame, por_origen: pd.DataFrame, lineas: pd.DataFrame,
     quiebres = t[t["alertas"].str.contains("Quiebre", na=False)]
     consig = t[t["alertas"].str.contains("Consignación abierta", na=False)].sort_values("dias_consignacion", ascending=False)
     temporada = t[t["politica"] == "Temporada"]
+    if "reemplazado_por" in t:                 # la ficha reemplazada ya no se pide: la lista muestra la nueva
+        temporada = temporada[temporada["reemplazado_por"].astype(str) == ""]
     reclasificar = t[t["reclasificar"].astype(bool)]
     acelera = t[t["acelera"].astype(bool)] if "acelera" in t else t.iloc[0:0]
     fondo = t[t["categoria_gestion"].isin(["C", "D"])].sort_values("valor_bodega", ascending=False)
@@ -275,7 +293,8 @@ def esta_semana(t: pd.DataFrame, por_origen: pd.DataFrame, lineas: pd.DataFrame,
         "valor_dd": int(fondo.loc[fondo["categoria_gestion"] == "D", "valor_bodega"].sum()),
         "consignaciones": [{"id": r.id, "titulo": r.titulo, "unidades": int(r.consignacion),
                             "dias": int(r.dias_consignacion)} for r in consig.itertuples()],
-        "temporada": [{"id": r.id, "titulo": r.titulo, "vendio": int(r.temporada_unidades), "pedir": int(r.sugerido)}
+        "temporada": [{"id": r.id, "titulo": r.titulo, "vendio": int(r.temporada_unidades), "pedir": int(r.sugerido),
+                       "sin_historia": bool(getattr(r, "temporada_sin_historia", False))}
                       for r in temporada.itertuples()],
         "reclasificar": [{"id": r.id, "titulo": r.titulo, "categoria": r.categoria_gestion} for r in reclasificar.itertuples()],
         "acelera": [{"id": r.id, "titulo": r.titulo, "categoria": r.categoria_gestion, "clase": r.clase} for r in acelera.itertuples()],
@@ -285,6 +304,9 @@ def esta_semana(t: pd.DataFrame, por_origen: pd.DataFrame, lineas: pd.DataFrame,
         "ahorro_usd": float(por_origen.attrs.get("ahorro_usd", 0.0)),
         "combinaciones": [c | {"incluye": que_incluye(c)} for c in por_origen.attrs.get("combinaciones", [])],
         "envios": por_origen.attrs.get("envios", {}),
+        "envios_anotados": por_origen.attrs.get("envios_anotados", {}),
+        "envios_estimados": por_origen.attrs.get("envios_estimados", {}),
+        "envios_fuente": por_origen.attrs.get("envios_fuente", {}),
         "caducidad": caducidad or [],
         "tl": tl or {},
         "perdidas": perdidas or [],
@@ -310,7 +332,8 @@ def hoja_esta_semana(s: dict) -> pd.DataFrame:
         filas.append((p["titulo"], p["detalle"]))
     elegida = next((c for c in s.get("combinaciones", []) if c["elegida"]), None)
     if elegida and len(s["combinaciones"]) > 1:
-        filas.append(("Conviene", f"{elegida['nombre']}: unos US$ {miles(elegida['total_usd'])} contando los envíos. La comparación está en «Pedido sugerido»."))
+        filas.append(("Conviene", f"{elegida['nombre']}: unos US$ {miles(elegida['total_usd'])} contando los envíos"
+                      + _fuente_envios(elegida, s) + ". La comparación está en «Pedido sugerido»."))
     if s.get("ahorro_usd", 0) > 0:
         filas.append(("Dónde comprar", f"Comprar cada libro en la editorial que conviene ahorra unos US$ {miles(s['ahorro_usd'])} frente a comprarlo en su propia editorial."))
     for o, v in (s.get("tl") or {}).items():
@@ -352,7 +375,8 @@ def hoja_esta_semana(s: dict) -> pd.DataFrame:
     if s["temporada"]:
         filas += [("", ""), ("6. PRODUCTOS DE TEMPORADA", "Un pedido al año que debe llegar antes de septiembre")]
         for r in s["temporada"]:
-            filas.append((r["titulo"], f"vendió {r['vendio']} la última temporada" + (f" · pedir {r['pedir']}" if r["pedir"] else "")))
+            filas.append((r["titulo"], AVISO_SIN_HISTORIA if r.get("sin_historia") else
+                           f"vendió {r['vendio']} la última temporada" + (f" · pedir {r['pedir']}" if r["pedir"] else "")))
     if s.get("caducidad"):
         filas += [("", ""), (f"DATOS POR ACTUALIZAR ({len(s['caducidad'])})", "Tipo de cambio y factores en Configuración. Lista de precios en Sveltia")]
         filas += [("", a) for a in s["caducidad"]]

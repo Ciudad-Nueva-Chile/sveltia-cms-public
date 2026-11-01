@@ -569,6 +569,132 @@ def test_los_libros_vienen_desde_el_origen_no_van_hacia_el():
     assert not malos, malos
 
 
+# ---------- Costo de envío: cotización anotada o costo estimado de la memoria ----------
+COSTOS_EUR = COSTOS.assign(tipo_cambio_eur=1100)
+
+
+def test_sin_cotizacion_se_usa_el_costo_estimado_con_el_euro_convertido():
+    from inventario import pedido
+    t = pd.DataFrame([_titulo("esp", "España", 1, 119000), _titulo("arg", "Argentina", 1, 119000)])
+    for envios in (None, {}, {"España": 0, "Argentina": ""}):
+        _, r = pedido.sugerir(t, COSTOS_EUR, Parametros(), pd.Timestamp("2026-10-01"), envios)
+        assert r.attrs["envios"]["Argentina"] == 40.8
+        assert r.attrs["envios"]["España"] == pytest.approx(55.6 * 1100 / 1000, abs=0.01)     # € a US$
+        assert r.attrs["envios_fuente"] == {"España": "costo estimado", "Argentina": "costo estimado"}
+        c = r.attrs["combinaciones"][0]
+        assert c["envio_usd"] == pytest.approx(40.8 + 55.6 * 1.1, abs=0.02)
+
+
+def test_la_cotizacion_anotada_manda_sobre_el_estimado():
+    from inventario import pedido
+    t = pd.DataFrame([_titulo("esp", "España", 1, 119000), _titulo("arg", "Argentina", 1, 119000)])
+    _, r = pedido.sugerir(t, COSTOS_EUR, Parametros(), pd.Timestamp("2026-10-01"), {"España": 100, "Argentina": 0})
+    assert r.attrs["envios"] == {"España": 100, "Argentina": 40.8}
+    assert r.attrs["envios_fuente"] == {"España": "cotización anotada", "Argentina": "costo estimado"}
+    assert r.attrs["envios_anotados"] == {"España": 100, "Argentina": 0}
+
+
+def test_el_costo_estimado_viene_de_los_parametros():
+    p = cargar_parametros()
+    assert (p.origen("Argentina").costo_envio_estimado, p.origen("Argentina").moneda_envio) == (40.8, "USD")
+    assert (p.origen("España").costo_envio_estimado, p.origen("España").moneda_envio) == (55.6, "EUR")
+
+
+# ---------- B: lo vendido desde el embarque anterior del origen ----------
+def _sin_transito():
+    return pd.DataFrame(columns=["id", "cantidad"])
+
+
+def test_b_cuenta_desde_la_ultima_llegada_del_origen_no_desde_el_inicio():
+    catalogo = _catalogo([{"id": "b1", "titulo": "b1", "origen": "España", "precio_lista": 1000},
+                          {"id": "b2", "titulo": "b2", "origen": "España", "precio_lista": 1000},
+                          {"id": "otro", "titulo": "otro", "origen": "España", "precio_lista": 1000},
+                          {"id": "arg", "titulo": "arg", "origen": "Argentina", "precio_lista": 1000}])
+    mov = _mov([("2024-12-01", "b1", "inventario_inicial", 9), ("2024-12-01", "b2", "inventario_inicial", 9),
+                ("2024-12-01", "arg", "inventario_inicial", 9),
+                ("2025-03-10", "b1", "venta", 4),                     # antes de la última llegada de España: ya se repuso
+                ("2026-07-10", "b2", "venta", 2),                     # después
+                ("2026-06-01", "otro", "importacion", 5),             # la última llegada de España es de OTRO título
+                ("2026-03-10", "arg", "venta", 3)])                   # Argentina no tiene llegadas: desde el inicio de la ventana
+    t = calcular(catalogo, mov, _sin_transito(), pd.DataFrame(), Parametros(), pd.Timestamp("2026-08-31")).titulos.set_index("id")
+    assert t.loc["b1", "politica"] == "Reponer lo vendido" and t.loc["b1", "sugerido"] == 0
+    assert t.loc["b2", "sugerido"] == 2
+    assert t.loc["arg", "sugerido"] == 3
+
+
+def test_corregir_inventario_no_cuenta_como_llegada():
+    catalogo = _catalogo([{"id": "b", "titulo": "b", "origen": "España", "precio_lista": 1000},
+                          {"id": "otro", "titulo": "otro", "origen": "España", "precio_lista": 1000}])
+    mov = _mov([("2024-12-01", "b", "inventario_inicial", 9), ("2026-06-01", "otro", "importacion", 5),
+                ("2026-07-10", "b", "venta", 2)])
+    corregido = pd.concat([mov, _mov([("2026-08-20", "b", "importacion", 3)]).assign(documento="Cambio en Inventario")], ignore_index=True)
+    t = calcular(catalogo, corregido, _sin_transito(), pd.DataFrame(), Parametros(), pd.Timestamp("2026-08-31")).titulos.set_index("id")
+    assert t.loc["b", "sugerido"] == 2                # el conteo del 20-08 no es un embarque: lo vendido el 10-07 sigue contando
+    from inventario import pedido
+    solo_cambio = _mov([("2026-08-20", "b", "importacion", 3)]).assign(documento="Cambio en Inventario")
+    assert pedido.proximos_embarques(solo_cambio, catalogo, Parametros(), pd.Timestamp("2026-08-31"))["España"][0] is None
+
+
+def test_b_usa_la_llegada_del_propio_titulo_si_es_mas_reciente():
+    catalogo = _catalogo([{"id": "x", "titulo": "x", "origen": "España", "precio_lista": 1000, "compra_en": "Argentina"},
+                          {"id": "e", "titulo": "e", "origen": "España", "precio_lista": 1000}])
+    mov = _mov([("2024-12-01", "x", "inventario_inicial", 9), ("2026-01-10", "e", "importacion", 5),
+                ("2026-02-10", "x", "venta", 2), ("2026-05-10", "x", "importacion", 4), ("2026-07-10", "x", "venta", 1)])
+    t = calcular(catalogo, mov, _sin_transito(), pd.DataFrame(), Parametros(), pd.Timestamp("2026-08-31")).titulos.set_index("id")
+    assert t.loc["x", "vendido_desde_importacion"] == 1
+
+
+# ---------- Temporada: una ficha nueva cada año ----------
+def _calendarios(reemplaza="CN-0299", con_anterior=True):
+    filas = [{"id": "CN-0900", "titulo": "ANGELES 2027", "origen": "Argentina", "precio_lista": 1000, "clase_manual": "Estacional",
+              "reemplaza": reemplaza}]
+    if con_anterior:
+        filas.append({"id": "CN-0299", "titulo": "ANGELES 2026", "origen": "Argentina", "precio_lista": 1000,
+                      "clase_manual": "Estacional", "reemplaza": ""})
+    return _catalogo(filas)
+
+
+VENTA_CALENDARIO = [("2026-01-05", "CN-0299", "venta", 40), ("2026-03-05", "CN-0299", "venta", 10)]
+
+
+def test_ficha_nueva_de_temporada_usa_la_venta_de_la_que_reemplaza():
+    r = calcular(_calendarios(), _mov(VENTA_CALENDARIO), _sin_transito(), pd.DataFrame(), Parametros(), pd.Timestamp("2026-07-15"))
+    t = r.titulos.set_index("id")
+    assert t.loc["CN-0900", "temporada_unidades"] == 50 and t.loc["CN-0900", "sugerido"] == 50
+    assert "50 vendidos la última temporada, con CN-0299" in t.loc["CN-0900", "alertas"]
+    # La ficha anterior deja de pedirse: el pedido no se duplica
+    assert t.loc["CN-0299", "sugerido"] == 0 and "reemplazada por CN-0900" in t.loc["CN-0299", "alertas"]
+    assert list(r.pedido["id"]) == ["CN-0900"]
+
+
+def test_el_reemplazo_sirve_aunque_la_ficha_anterior_ya_no_este_en_el_catalogo():
+    t = calcular(_calendarios(con_anterior=False), _mov(VENTA_CALENDARIO), _sin_transito(), pd.DataFrame(), Parametros(),
+                 pd.Timestamp("2026-07-15")).titulos.set_index("id")
+    assert t.loc["CN-0900", "sugerido"] == 50
+
+
+def test_ficha_de_temporada_sin_historia_ni_reemplazo_lo_avisa():
+    from inventario import lenguaje
+    r = calcular(_calendarios(reemplaza="", con_anterior=False), _mov([("2026-01-05", "z", "venta", 1)]), _sin_transito(),
+                 pd.DataFrame(), Parametros(), pd.Timestamp("2026-07-15"))
+    t = r.titulos.set_index("id").loc["CN-0900"]
+    assert "Temporada sin historia" in t["alertas"] and t["sugerido"] == 0 and bool(t["temporada_sin_historia"])
+    s = lenguaje.esta_semana(r.titulos, r.pedido_resumen, r.pedido, r.fecha_corte, [])
+    assert s["temporada"][0]["sin_historia"] is True
+
+
+def test_reemplazo_con_un_codigo_sin_ventas_lo_avisa():
+    t = calcular(_calendarios(reemplaza="CN-7777", con_anterior=False), _mov(VENTA_CALENDARIO), _sin_transito(), pd.DataFrame(),
+                 Parametros(), pd.Timestamp("2026-07-15")).titulos.set_index("id").loc["CN-0900"]
+    assert "CN-7777" in t["alertas"] and "Revisa el código" in t["alertas"] and t["sugerido"] == 0
+
+
+def test_el_catalogo_lee_el_campo_reemplaza(tmp_path):
+    from inventario.fuentes import catalogo_desde_sitio
+    (tmp_path / "a.md").write_text("---\nid_catalogo: CN-0900\nisbn: '1'\ntitulo: A\ninventario_reemplaza: 'cn-0299 · ANGELES 2026'\n---\n", encoding="utf-8")
+    assert catalogo_desde_sitio(tmp_path).iloc[0]["reemplaza"] == "CN-0299"
+
+
 # ---------- Sin mínimo de embarque en ninguna parte del repositorio ----------
 def test_no_queda_referencia_al_monto_minimo_de_embarque():
     """Busca «700» y «mínimo» en todo lo que escribe el proyecto. Solo se aceptan usos que no tienen que ver con embarques."""
@@ -658,11 +784,16 @@ def test_hoja_pedido_formulas_con_separador_de_la_planilla():
                "libros_usd": 100.0, "envio_usd": 0.0, "total_usd": 100.0},
               {"nombre": "Dividir: desde España y desde Argentina (2 envíos)", "envia": ["España", "Argentina"], "elegida": False,
                "valida": True, "libros_ahora": 3, "libros_usd": 90.0, "envio_usd": 0.0, "total_usd": 90.0}]
-    h = lenguaje.hoja_pedido(pd.DataFrame(), combos, {"España": 50, "Argentina": 0}, "2026-10-05", sep=";")
+    h = lenguaje.hoja_pedido(pd.DataFrame(), combos, {"España": 50, "Argentina": 40.8}, "2026-10-05", sep=";",
+                             anotados={"España": 50, "Argentina": 0}, estimados={"España": 62.1, "Argentina": 40.8})
     filas = h["filas"]
-    assert filas[5][:3] == [lenguaje.ETIQUETA_ENVIO, 50, 0]
-    assert filas[8][3] == "=B6" and filas[8][4] == "=C9+D9"
-    assert filas[9][3] == "=B6+C6"
+    assert filas[4][1:3] == ["Desde España", "Desde Argentina"]
+    assert filas[5][:3] == [lenguaje.ETIQUETA_ENVIO, 50, ""]              # sin cotización, la celda amarilla queda vacía
+    assert filas[6][:3] == [lenguaje.ETIQUETA_ESTIMADO, 62.1, 40.8]
+    assert filas[7][1] == "=IF(N(B6)>0;B6;B7)" and filas[7][2] == "=IF(N(C6)>0;C6;C7)"
+    assert filas[8][1] == '=IF(N(B6)>0;"cotización anotada";"costo estimado")'
+    assert filas[11][3] == "=B8" and filas[11][4] == "=C12+D12"
+    assert filas[12][3] == "=B8+C8"
     conviene = next(f for f in filas if f[0] == "CONVIENE")[1]
     assert ";" in conviene and "," not in conviene
     assert h["editables"] == [(5, 1), (5, 2)]

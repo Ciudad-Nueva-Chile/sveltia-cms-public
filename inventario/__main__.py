@@ -412,7 +412,8 @@ def ciclo_planilla(fuente: FuenteSheets, catalogo: pd.DataFrame, p, fecha_corte=
     fuente.escribir("Esta semana", hoja_semana, solo_lectura=True, secciones=True, anchos={0: 380, 1: 560},
                     filas_seccion=hoja_semana.attrs["secciones"])
     hp = lenguaje.hoja_pedido(r.pedido, r.pedido_resumen.attrs["combinaciones"], r.pedido_resumen.attrs["envios"],
-                              r.fecha_corte, fuente.separador, r.pedido_resumen)
+                              r.fecha_corte, fuente.separador, r.pedido_resumen,
+                              r.pedido_resumen.attrs["envios_anotados"], r.pedido_resumen.attrs["envios_estimados"])
     fuente.escribir("Pedido", hp["filas"], solo_lectura=True, secciones=True, celdas_editables=hp["editables"],
                     negritas=hp["negritas"], formatos_rango=hp["formatos"],
                     anchos={0: 230, 1: 300, 2: 120, 3: 320, 4: 110, 5: 110, 6: 380, 7: 90})

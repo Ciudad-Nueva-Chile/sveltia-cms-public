@@ -16,6 +16,8 @@ from __future__ import annotations
 
 import pandas as pd
 
+from .stock import DOCUMENTO_CAMBIO
+
 EDITABLES = ["compra_en", "bodega", "consignacion", "en_camino", "notas"]
 COLUMNAS = ["id", "isbn", "titulo", "autor", "origen", "compra_en", "categoria", "categoria_gestion", "precio_lista",
             "bodega", "consignacion", "en_camino", "actualizado", "se_vende", "que_hacer", "notas", "valor"]
@@ -81,7 +83,7 @@ def detectar_cambios(inventario: pd.DataFrame, historial: pd.DataFrame, base: pd
                 movs.append({"fecha": hoy, "id": fila.id, "tipo": tipo, "cantidad": cant})
     fotos = pd.DataFrame(fotos, columns=["fecha", "id"] + CANTIDADES)
     movs = pd.DataFrame(movs, columns=["fecha", "id", "tipo", "cantidad"])
-    movs["documento"] = "Cambio en Inventario"
+    movs["documento"] = DOCUMENTO_CAMBIO
     movs["cliente"] = ""
     return fotos, movs
 

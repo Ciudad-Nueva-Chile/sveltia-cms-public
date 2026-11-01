@@ -80,6 +80,11 @@ collections:
         required: false
         options: ["", "Estacional", "Coyuntural"]
         hint: "Estacional: calendarios y agendas (un pedido al año antes de septiembre). Coyuntural: un acontecimiento que no se repite, como la línea Carlo Acutis (se atiende por reacción). Ambos van a la categoría A. Vacío: la clase la decide el cálculo por meses con venta."
+      - name: inventario_reemplaza
+        label: "Reemplaza a (código)"
+        widget: string
+        required: false
+        hint: "Solo para productos de temporada que cambian de ficha cada año. Escribe el código de la ficha del año anterior (por ejemplo, CN-0299 en ANGELES 2027): el pedido anual usa su venta de la última temporada, y la ficha anterior deja de pedirse."
       - name: inventario_decision
         label: "Inventario: decisión manual"
         widget: select

@@ -10,8 +10,9 @@ La «decisión manual» del catálogo (Sveltia) siempre manda sobre estas reglas
     Sin categoría               A pedido            no se mantiene stock
 
 POR CONFIRMAR CON ANDRÉS:
-- B: cantidad = unidades vendidas desde la última importación del título (o desde el inicio de la ventana si no hay
-  ninguna registrada), menos lo que ya viene en camino.
+- B: cantidad = unidades vendidas desde el embarque anterior, es decir, la última llegada registrada del origen donde se
+  compra (o la del propio título, si es más reciente; sin ninguna, desde el inicio de la ventana), menos lo que ya viene en
+  camino.
 - Estacional: se pide entre junio y agosto, hasta la venta neta de la última temporada completa (septiembre a marzo).
 """
 from __future__ import annotations
