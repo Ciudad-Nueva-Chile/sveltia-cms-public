@@ -144,8 +144,9 @@ def catalogo_desde_sitio(carpeta: Path) -> pd.DataFrame:
             "politica_manual": campo("inventario_decision"),
             "compra_en": "",
             "reemplaza": campo("inventario_reemplaza").split(SEPARADOR_LIBRO)[0].strip().upper(),
+            "peso_kg": pd.to_numeric(campo("peso_kg").replace(",", "."), errors="coerce"),
         })
-    df = pd.DataFrame(filas, columns=COLUMNAS["Catalogo"] + ["autor", "reemplaza"])
+    df = pd.DataFrame(filas, columns=COLUMNAS["Catalogo"] + ["autor", "reemplaza", "peso_kg"])
     df["precio_lista"] = df["precio_lista"].fillna(0)
     return df
 

@@ -99,15 +99,15 @@
     if (!C.length) { $("#comparacion").innerHTML = ""; return; }
     var origenes = Object.keys(S.envios || {});
     $("#comparacion").innerHTML = '<article class="tarjeta comparacion"><header><h2>Desde dónde conviene comprar</h2>' +
-      "<p>Anota la cotización de cada envío (courier, despacho y trámites) y la recomendación se recalcula al instante. Vacía o en 0, se usa el costo estimado. El flete no se calcula por peso.</p></header>" +
+      "<p>Anota la cotización de cada envío (courier, despacho y trámites) y la recomendación se recalcula al instante. Vacía o en 0, se estima por peso, sin IVA, impuestos ni recargos.</p></header>" +
       '<div class="envios">' + origenes.map(function (o) {
         var anotado = +(S.envios_anotados || {})[o] || 0, estimado = +(S.envios_estimados || {})[o] || 0;
         return "<label>Envío desde " + esc(o) + ' <span>US$</span><input type="number" min="0" step="10" inputmode="decimal" data-origen="' + esc(o) +
-          '" data-estimado="' + estimado + '" placeholder="' + coma(estimado) + '" value="' + (anotado || "") + '"><small class="fuente-envio"></small></label>';
+          '" data-peso="' + coma((S.envios_pesos || {})[o] || 0) + '" placeholder="' + coma(estimado) + '" value="' + (anotado || "") + '"><small class="fuente-envio"></small></label>';
       }).join("") + "</div>" +
-      '<div class="tabla-envoltura" style="border:0"><table class="tabla-comp"><thead><tr><th>Opción</th><th>Qué incluye</th><th class="num">Libros</th><th class="num">Envíos</th><th class="num">Total</th></tr></thead><tbody></tbody></table></div>' +
+      '<div class="tabla-envoltura" style="border:0"><table class="tabla-comp"><thead><tr><th>Opción</th><th>Qué incluye</th><th class="num">Libros FOB</th><th class="num">Envíos</th><th class="num">Total</th></tr></thead><tbody></tbody></table></div>' +
       '<p class="veredicto" aria-live="polite"></p>' +
-      '<p class="nota">En US$. «Libros» es el costo puesto en bodega de todo lo que hay que pedir. Solo se comparan las combinaciones que cubren todo. ' +
+      '<p class="nota">En US$. «Libros» es el valor FOB de todo lo que hay que pedir y «Envíos» el costo del envío: el flete se cuenta una sola vez. Solo se comparan las combinaciones que cubren todo. ' +
       (C.length === 1 ? "Hoy hay una sola, porque varios títulos se compran en un solo país. " : "") +
       "Los costos que anotes aquí no se guardan: para que el cálculo los use, anótalos en la planilla (pestaña «Pedido sugerido»).</p></article>";
     var inputs = $("#comparacion").querySelectorAll("input[data-origen]");
@@ -115,11 +115,12 @@
       var costo = {};
       inputs.forEach(function (i) {
         var anotado = Math.max(0, parseFloat(i.value) || 0);
-        costo[i.dataset.origen] = anotado || (+i.dataset.estimado || 0);
-        i.parentNode.querySelector(".fuente-envio").textContent = anotado ? "cotización anotada" : "costo estimado";
+        costo[i.dataset.origen] = anotado;     // 0 = sin cotización: cada combinación usa su propio estimado por peso
+        i.parentNode.querySelector(".fuente-envio").textContent = anotado ? "cotización anotada" :
+          "estimado por peso" + (i.dataset.peso ? " · " + i.dataset.peso + " kg" : "");
       });
       var filas = C.map(function (c) {
-        var envio = c.envia.reduce(function (s, o) { return s + (costo[o] || 0); }, 0);
+        var envio = c.envia.reduce(function (s, o) { return s + (costo[o] || (c.estimados || {})[o] || 0); }, 0);
         return { c: c, envio: envio, total: c.libros_usd + envio };
       });
       var validas = filas.filter(function (f) { return f.c.valida; });

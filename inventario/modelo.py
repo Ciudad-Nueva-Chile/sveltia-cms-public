@@ -255,7 +255,7 @@ def calcular(catalogo: pd.DataFrame, movimientos: pd.DataFrame, transito: pd.Dat
         filas.append({
             "id": fila.id, "isbn": fila.isbn, "titulo": fila.titulo, "origen": fila.origen,
             "compra_en": (getattr(fila, "compra_en", "") if isinstance(getattr(fila, "compra_en", ""), str) else "") or fila.origen,
-            "categoria": fila.categoria, "precio_lista": fila.precio_lista,
+            "categoria": fila.categoria, "precio_lista": fila.precio_lista, "peso_kg": getattr(fila, "peso_kg", ""),
             "bodega": int(bodega), "consignacion": int(e["consignacion"]), "transito": int(transito_i), "posicion": int(posicion),
             "categoria_gestion": categoria, "clase": clase, "meses_con_venta": k,
             "adi": round(adi, 2) if not math.isnan(adi) else "", "cv2": round(cv2, 2) if not math.isnan(cv2) else "",

@@ -48,15 +48,16 @@ MESES_LISTA_PRECIOS = 12    # la lista de precios del sitio (fecha de vigencia e
 @dataclass
 class Origen:
     nombre: str
-    intervalo_embarque_meses: float = 6     # T: meses entre embarques (memoria 4.2.5, ecuación 12 y mínimo arrepentimiento)
+    intervalo_embarque_meses: float = 6     # T: meses entre embarques
     plazo_dias: float = 39                  # L: plazo de reposición observado, en días (memoria 4.1.1)
     meses_embarque: list | None = None      # meses fijos del pedido (p. ej. [2, 8]); vacío = última llegada + T
-    costo_envio_estimado: float = 0         # costo fijo de un envío (memoria 4.2.5), si Roberto no anotó una cotización
-    moneda_envio: str = "USD"               # moneda de ese costo: USD o EUR
+    peso_medio_kg: float = 0                # peso de un ejemplar si la ficha no trae «Peso (kg)»
+    envio: dict | None = None               # costo estimado del envío según su peso: tarifa por tramos o fijo + por kilo
 
 
 def _origenes_memoria() -> list[Origen]:
-    return [Origen("España", 6, 39, None, 55.6, "EUR"), Origen("Argentina", 6, 5.5, [2, 8], 40.8, "USD")]
+    """Los orígenes de config/parametros.yml: un solo lugar para T, L y la tarifa."""
+    return cargar_parametros().origenes
 
 
 @dataclass
@@ -104,7 +105,4 @@ def cargar_parametros(ruta: Path | None = None) -> Parametros:
     campos_origen = Origen.__dataclass_fields__
     origenes = [Origen(**{k: v for k, v in o.items() if k in campos_origen}) for o in datos.pop("origenes", [])] or None
     conocidos = {k: v for k, v in datos.items() if k in Parametros.__dataclass_fields__}
-    p = Parametros(**conocidos)
-    if origenes:
-        p.origenes = origenes
-    return p
+    return Parametros(**conocidos, origenes=origenes or [])

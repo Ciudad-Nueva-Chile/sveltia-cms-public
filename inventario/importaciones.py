@@ -129,7 +129,7 @@ def _num(v: float) -> str:
 
 def efectivos(i: pd.DataFrame, p) -> dict:
     """Por país: los T y L de la política (los que usa el cálculo) y el texto comparativo con lo observado en
-    «Importaciones», por ejemplo «Política: cada 12 meses. Observado: cada 3 meses (4 embarques)»."""
+    «Importaciones», por ejemplo «Política: cada 6 meses. Observado: cada 3 meses (4 embarques)»."""
     salida = {}
     for o in p.origenes:
         m = medir(i, o.nombre)
@@ -139,7 +139,8 @@ def efectivos(i: pd.DataFrame, p) -> dict:
         MESES = ("", "enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre",
                  "noviembre", "diciembre")
         fijos = sorted(int(x) for x in (getattr(o, "meses_embarque", None) or []))
-        en_meses = f" ({' y '.join(MESES[x] for x in fijos)})" if fijos else ""
+        nombres = [MESES[x] for x in fijos]
+        en_meses = f" ({', '.join(nombres[:-1])} y {nombres[-1]})" if len(nombres) > 1 else f" ({nombres[0]})" if nombres else ""
         texto_T = f"Política: cada {_num(T)} meses{en_meses}" + (
             f". Observado: cada {_num(m['T_meses'])} meses ({m['embarques_T']} embarques)" if hay_T else "")
         texto_L = f"plazo {_num(L * DIAS_POR_MES)} días" + (

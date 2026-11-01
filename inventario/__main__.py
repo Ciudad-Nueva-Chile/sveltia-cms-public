@@ -55,7 +55,7 @@ NOTAS_INVENTARIO = {
     "en_camino": "AUTOMÁTICA si el libro tiene filas sin fecha de llegada en «Importaciones»: es la suma de lo que está en camino "
                  "allí. Para los demás libros, anota aquí lo pedido a la editorial que todavía no llega.",
     "notas": "Lo que quieras recordar de este libro.",
-    "compra_en": "Dónde se puede comprar este libro. Si está en ambas editoriales, el cálculo elige la que conviene según el costo puesto en bodega y el costo de cada envío.",
+    "compra_en": "Dónde se puede comprar este libro. Si está en ambas editoriales, el cálculo elige la que conviene según su valor FOB y el costo de cada envío.",
     "actualizado": "Se completa sola: el día en que cambió por última vez alguna cantidad.",
     "precio_lista": "Viene del sitio. Para cambiarlo, edita el libro en el panel de administración (/admin).",
 }
@@ -413,10 +413,11 @@ def ciclo_planilla(fuente: FuenteSheets, catalogo: pd.DataFrame, p, fecha_corte=
                     filas_seccion=hoja_semana.attrs["secciones"])
     hp = lenguaje.hoja_pedido(r.pedido, r.pedido_resumen.attrs["combinaciones"], r.pedido_resumen.attrs["envios"],
                               r.fecha_corte, fuente.separador, r.pedido_resumen,
-                              r.pedido_resumen.attrs["envios_anotados"], r.pedido_resumen.attrs["envios_estimados"])
+                              r.pedido_resumen.attrs["envios_anotados"], r.pedido_resumen.attrs["envios_estimados"],
+                              r.pedido_resumen.attrs["envios_pesos"])
     fuente.escribir("Pedido", hp["filas"], solo_lectura=True, secciones=True, celdas_editables=hp["editables"],
                     negritas=hp["negritas"], formatos_rango=hp["formatos"],
-                    anchos={0: 230, 1: 300, 2: 120, 3: 320, 4: 110, 5: 110, 6: 380, 7: 90})
+                    anchos={0: 230, 1: 300, 2: 120, 3: 320, 4: 110, 5: 130, 6: 380, 7: 90})
     fuente.escribir("Análisis técnico", r.titulos, oculta=True, solo_lectura=True)
     fuente.escribir("Indicadores", r.resumen, oculta=True, solo_lectura=True, anchos={0: 360, 1: 420})
     fuente.ordenar(ORDEN_PESTANAS, visibles=VISIBLES)

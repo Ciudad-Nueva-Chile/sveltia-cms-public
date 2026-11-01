@@ -133,6 +133,7 @@ Reglas que ordenan todo:
   inventario_tipo: ""              # Estacional / Coyuntural (para el modelo)
   inventario_decision: ""          # política manual (para el modelo)
   inventario_reemplaza: ""         # temporada: código de la ficha del año anterior
+  peso_kg: ""                      # peso de un ejemplar; vacío = promedio del origen
   ```
 
 - **Campos calculados** (`src/libros/libros.11tydata.js`): `titulo_visible` (sin la sigla), `sigla` («BP 46»),
@@ -313,8 +314,7 @@ política de embarques con lo observado en «Importaciones» como comparación.
 **Pedido sugerido** — tres bloques:
 
 1. **Desde dónde conviene comprar**: fila «Costo de cada envío (US$)» con una celda amarilla por país, que **Roberto anota**
-   con la cotización real de cada envío (si queda vacía o en 0, las filas de abajo usan el costo estimado y lo dicen) (el código no calcula el flete por peso, porque el catálogo no tiene el peso de
-   cada título). Una tabla compara las combinaciones que cubren todo lo que hay que pedir (Todo desde España, Todo desde
+   con la cotización real de cada envío (si queda vacía o en 0, las filas de abajo la estiman por peso y lo dicen). Una tabla compara las combinaciones que cubren todo lo que hay que pedir (Todo desde España, Todo desde
    Argentina, Dividir) con Libros, Envíos y Total. Envíos y Total son **fórmulas** y la fila **CONVIENE** usa
    `INDICE(…; COINCIDIR(MIN(…); …; 0))`, de modo que la recomendación cambia **al instante** al editar un costo de envío.
 2. **Embarques**: por origen, la fecha del próximo pedido, cuántos libros hay que pedir y su valor FOB aproximado (en US$, y
@@ -353,7 +353,7 @@ inventario/
 ├── demanda.py            serie mensual, clase por meses con demanda, ADI y CV² informativos, pronóstico SBA
 ├── categorias.py         categorías de gestión A, B, C y D
 ├── politica.py           política por categoría y nivel objetivo S (modelo compuesto al 95 %)
-├── pedido.py             pedido por embarque programado y dónde comprar: combinaciones de envíos con costo fijo
+├── pedido.py             pedido por embarque programado y dónde comprar: combinaciones de envíos con costo por peso
 ├── modelo.py             une todo: calcular() → Resultado
 ├── lenguaje.py           todos los textos en lenguaje simple y las hojas armadas
 ├── cifrado.py            AES-256-GCM para los datos del panel
@@ -560,7 +560,7 @@ Sugeridoᵢ = máx(0, S − Posiciónᵢ)                                Posici�
 ```
 Si un título no tiene tamaños registrados, o todos sus pedidos fueron de un ejemplar, el modelo da exactamente lo mismo que
 una Poisson de ejemplares (hay una prueba de esto). «Análisis técnico» muestra `demanda_horizonte` y `stock_seguridad`, y la
-ficha del panel dice «Nivel objetivo S = N (modelo compuesto al 95 % para 6 meses entre embarques más el plazo)». Se eligió porque
+ficha del panel dice «Nivel objetivo S = N (modelo compuesto al 95 % para T meses entre embarques más el plazo: 3 en los libros argentinos, 6 en los españoles)». Se eligió porque
 en una prueba fuera de muestra sobre los 21 meses atendió más demanda que Poisson, binomial negativa y remuestreo de meses
 por el mismo capital (memoria 4.2.5): en Argentina el 44 % de las líneas de venta trae más de un ejemplar.
 Un stock negativo es un error de datos: se avisa («Stock negativo») y cuenta como 0, para no inflar el pedido.
@@ -572,10 +572,8 @@ Un stock negativo es un error de datos: se avisa («Stock negativo») y cuenta c
 - Estacional con ficha nueva cada año (ANGELES 2026 → ANGELES 2027): en Sveltia, el campo «Reemplaza a (código)» liga la ficha
   nueva con la anterior. El pedido usa la venta de la última temporada de ambas y la ficha anterior deja de pedirse. Una ficha
   de temporada sin ventas ni reemplazo avisa «Temporada sin historia», y un reemplazo cuyo código no tiene ventas también avisa.
-- **T** es el intervalo entre embarques del origen, en meses (`intervalo_embarque_meses`): 6 meses en ambos orígenes, y Argentina en febrero y agosto (`meses_embarque`). Todo origen
-  distinto de Argentina se trata como España. Estos valores salen del modelo de reposición coordinada de la memoria (sección 4.2.5, ecuación 12, mínimo arrepentimiento en 108 escenarios)
-  (sección 4.2.5), con tasa de costo de capital de 15 % anual dentro de un rango de 10 % a 20 %. Si esa tasa cambia, hay
-  que recalcularlos fuera del código.
+- **T** es el intervalo entre embarques del origen, en meses (`intervalo_embarque_meses`): 3 meses desde Argentina, en febrero, mayo, agosto y noviembre (`meses_embarque`), y 6 meses desde España. Todo origen
+  distinto de Argentina se trata como España. El de España sale del modelo de reposición coordinada de la memoria (sección 4.2.5, ecuación 12, mínimo arrepentimiento en 108 escenarios), con tasa de costo de capital de 15 % anual dentro de un rango de 10 % a 20 %. El de Argentina es una decisión de noviembre de 2026.
 - **L** es el plazo de reposición, en días (`plazo_dias`): Argentina 5,5 y España 39 (mediana observada).
 - **El nivel de servicio de 95 % es un criterio y no el resultado de una optimización**, porque el costo del quiebre no
   puede estimarse con el registro. Fuera de muestra, con S al 95 %, los títulos intermitentes atendieron el 93 % de la demanda
@@ -586,8 +584,8 @@ Un stock negativo es un error de datos: se avisa («Stock negativo») y cuenta c
 
 Los pedidos se hacen en **embarques programados** por origen, no cada vez que un título baja de un punto:
 
-- **Argentina**: en febrero y en agosto (`meses_embarque`), el de agosto junto con el pedido anual de calendarios, para que su
-  costo fijo se pague una sola vez. El próximo pedido es el siguiente febrero o agosto, no la última llegada más T. El mes en
+- **Argentina**: en febrero, mayo, agosto y noviembre (`meses_embarque`), el de agosto junto con el pedido anual de calendarios, para
+  que el envío se pague una sola vez. El próximo pedido es el siguiente de esos meses, no la última llegada más T. El mes en
   curso cuenta mientras su embarque no haya llegado.
 - **España**: cada 6 meses desde su última llegada registrada en «Importaciones». Si no tiene llegadas ahí, se usa la última
   importación del registro, atribuida al origen del título.
@@ -598,8 +596,8 @@ T observado = mediana de los días entre fechas de llegada distintas del país, 
 L observado = mediana de (fecha de llegada − fecha de pedido), en las filas que tienen ambas                (÷ 30 → meses)
 ```
 S y la fecha del próximo embarque usan **siempre** los T y L de la política de la memoria (`config/parametros.yml`: Argentina
-6 meses, en febrero y agosto, y 5,5 días, España 6 meses y 39 días). Lo observado se muestra cuando hay **3 o más embarques** con datos del país,
-por ejemplo «Política: cada 6 meses (febrero y agosto). Observado: cada 3 meses (4 embarques) · plazo 5,5 días. Observado: 6 días (3
+3 meses, en febrero, mayo, agosto y noviembre, y 5,5 días, España 6 meses y 39 días). Lo observado se muestra cuando hay **3 o más embarques** con datos del país,
+por ejemplo «Política: cada 3 meses (febrero, mayo, agosto y noviembre). Observado: cada 3 meses (4 embarques) · plazo 5,5 días. Observado: 6 días (3
 embarques)». Se ve en «Análisis técnico» (columna `t_y_l`), en «Esta semana», en «Pedido sugerido» y en el panel. Si lo
 observado se aleja de la política, quien mantiene el sistema decide si actualiza `parametros.yml`.
 
@@ -607,7 +605,7 @@ Costos por ejemplar del libro i comprado en el país o, con la fila de Configura
 ```
 neto_USDᵢ     = precio_listaᵢ / 1,19 / tipo_cambio
 FOBᵢ,o        = neto_USDᵢ × «FOB / precio neto»            → lo que se le paga a la editorial
-Costoᵢ,o      = neto_USDᵢ × «Costo en bodega / precio neto» → puesto en bodega, decide dónde comprar
+Costoᵢ,o      = neto_USDᵢ × «Costo en bodega / precio neto» → solo para valorizar: ya trae el flete histórico, no se compara
 ```
 La memoria mide estos factores por origen en su sección 4.1.5 (economía del negocio) y los usa en 4.2.5 para valorizar
 la reposición. **Sus valores reales y el tipo de cambio no se escriben en este repositorio**: viven en la pestaña
@@ -630,16 +628,24 @@ que vence en los próximos 30 días se pide «Ahora».
 **Dónde comprar.** Cada título que se vende en ambos orígenes va al origen con menor Costoᵢ,o entre los que envían. Se
 comparan las combinaciones de envíos que **cubren todas las necesidades** (Todo desde España, Todo desde Argentina, Dividir):
 ```
-Total(E) = Σ necesidades × Costoᵢ,o  +  Σ_{o que envía} costo fijo del envío desde o
+Total(E) = Σ necesidades × FOBᵢ,o  +  Σ_{o que envía} costo del envío desde o
 ```
-El costo fijo de cada envío es la celda amarilla de «Pedido sugerido» que **anota Roberto** con la cotización real («cotización
-anotada»). Vacía o en 0, se usa el **costo estimado** de la memoria (4.2.5), en `config/parametros.yml`: US$ 40,8 desde Argentina
-y € 55,6 desde España, convertido con el tipo de cambio de «Configuración». La planilla y el panel dicen cuál se usó. El código
-**no calcula el flete por peso**: el catálogo no tiene el peso de cada título. Como el costo fijo no cambia qué libros van en
-cada combinación, la planilla y el panel recalculan el Total al instante al cambiarlo. Se elige la combinación de menor
-Total (empate: menos envíos).
+**El flete se cuenta una sola vez**: «Libros» es el valor FOB y «Envíos» el costo del envío. El factor «Costo en bodega / precio
+neto» ya trae el flete histórico, así que no entra en el comparador.
 
-**El pedido que toca se pide aunque sea chico**: el costo fijo del envío ya está en la elección de T (memoria 4.2.5). El embarque
+El costo de cada envío es la celda amarilla de «Pedido sugerido» que **anota Roberto** con la cotización real («cotización
+anotada»). Vacía o en 0, se usa el **estimado por peso**, sin IVA, impuestos ni recargos:
+```
+Pesoₒ    = Σ cantidad × peso      peso = «Peso (kg)» de la ficha o, si no tiene, 0,148 kg desde Argentina y 0,43 kg desde España
+Argentina: tarifa DHL de la Cámara Argentina del Libro (Excel, hoja AR TDExport, Paquetes, Zona 1), peso redondeado hacia arriba a 0,5 kg
+España:    € 55,6 + € 7,96 × Peso (memoria 4.2.5), convertido con el tipo de cambio de «Configuración»
+```
+La tabla está en `config/parametros.yml` con su fuente. Sobre 10 kg se copió la lista de 0,5 en 0,5 kg de la misma hoja, porque su
+tabla de incrementos está redondeada y se aparta del listado hasta en US$ 0,11 a 50 kg. Cada combinación tiene su propio peso, así
+que su estimado va en las columnas de la derecha de la tabla. Se elige la combinación de menor Total (empate: menos envíos). Un envío
+estimado de más de 50 kg o US$ 3.000 FOB se avisa, para pedir cotización.
+
+**El pedido que toca se pide aunque sea chico**: el costo del envío ya está en la elección de T (memoria 4.2.5). El embarque
 tampoco se completa solo ni tiene castigos numéricos de postergar o adelantar.
 
 Resultados: líneas «Ahora» (se piden en el embarque) y «Próximo embarque» (lo que espera), con el motivo («Se vende y queda
@@ -690,9 +696,10 @@ vigencia». Las fechas salen de las columnas «vigente desde» de la pestaña Co
 |---|---|---|---|
 | `nivel_servicio` | 0,95 | 9.7 | **Criterio** de la memoria, no optimización |
 | `alfa_suavizado` | 0,15 | 9.6 | **Supuesto abierto** (rango 0,05 a 0,20) |
-| `origenes[].intervalo_embarque_meses` (T) | 6 y 6 | 4.2.5 | Ecuación (12) y mínimo arrepentimiento en 108 escenarios |
-| `origenes[].meses_embarque` | Argentina [2, 8] | 4.2.5 | El embarque de agosto viaja con los calendarios |
-| `origenes[].costo_envio_estimado`, `moneda_envio` | Argentina 40,8 USD y España 55,6 EUR | 4.2.5 | Regresión del flete y el seguro contra el peso. Se usa si no hay cotización anotada |
+| `origenes[].intervalo_embarque_meses` (T) | España 6 y Argentina 3 | 4.2.5 | España: ecuación (12) y mínimo arrepentimiento en 108 escenarios. Argentina: decisión de noviembre de 2026 |
+| `origenes[].meses_embarque` | Argentina [2, 5, 8, 11] | 4.2.5 | El embarque de agosto viaja con los calendarios |
+| `origenes[].peso_medio_kg` | Argentina 0,148 y España 0,43 | 9.8 | Peso de un ejemplar si la ficha no trae «Peso (kg)» |
+| `origenes[].envio` | Argentina: tarifa DHL de la CAL. España: € 55,6 + € 7,96 por kilo | 9.8 | Costo del envío estimado por peso |
 | `origenes[].plazo_dias` (L) | Argentina 5,5 y España 39 | 9.7 | Argentina declarado y observado; España, mediana de 5 envíos entre factura y llegada |
 
 **Constantes de la memoria** (`inventario/config.py`, cada una con su cita):
@@ -728,10 +735,10 @@ ejemplo, no los reales). Demanda de los últimos 21 meses:
 | Nivel objetivo | percentil 95 del modelo compuesto (Panjer) | **S = 11** (con Poisson de ejemplares serían 9) |
 | Pedido | Bodega 3, En camino 0, Sugerido = 11 − 3 | **pedir 8 en el próximo embarque** |
 | Costos | neto = 23.800 / 1,19 = $20.000, que son US$ 21,05 | |
-| España | FOB 0,45 es US$ 9,47. Costo en bodega 0,60 es **US$ 12,63** | |
-| Vía Argentina | FOB 0,50 es US$ 10,53. Costo en bodega 0,57 es **US$ 12,00** | Más barato puesto en bodega |
-| Con T de Argentina | T = 6 meses más 5,5/30: media 0,66 × 6,18 = 4,08, es decir S = 10 | El plazo del origen cambia el nivel objetivo |
-| Decisión | Si el embarque desde Argentina ocurre y la combinación cubre todo, el título se compra allá. Si no, se compra en España | Depende de la combinación de menor Total |
+| España | FOB 0,45 es **US$ 9,47**. Costo en bodega 0,60 es US$ 12,63 | |
+| Vía Argentina | FOB 0,50 es **US$ 10,53**. Costo en bodega 0,57 es US$ 12,00 | El comparador usa FOB: España, US$ 9,47 |
+| Con T de Argentina | T = 3 meses más 5,5/30: media 0,66 × 3,18 = 2,10, es decir S = 6 | El plazo del origen cambia el nivel objetivo |
+| Decisión | Por valor FOB conviene España. Si no se hace ese envío y la combinación cubre todo, el título se compra en Argentina | Depende de la combinación de menor Total, con el envío estimado por peso |
 
 ---
 
@@ -845,7 +852,7 @@ envíos responden al instante.
 | Modelo compuesto | Venta = suma de pedidos, con el número de pedidos Poisson y el tamaño de cada uno sorteado de los registrados. Con él se calcula S (percentil 95) |
 | Nivel de servicio | Probabilidad de no quedarse sin stock durante el horizonte de protección |
 | S (nivel objetivo) | Nivel de existencias hasta el que se repone en cada embarque |
-| Embarque programado | Importación que se hace cada T meses por origen (6 meses en ambos; Argentina en febrero y agosto) |
+| Embarque programado | Importación que se hace cada T meses por origen (3 meses desde Argentina, en febrero, mayo, agosto y noviembre; 6 desde España) |
 | FOB | Valor de la mercadería en origen, sin flete ni impuestos |
 | Costo puesto en bodega | FOB + flete + seguro + impuestos, por ejemplar |
 | Demanda censurada | Demanda no observada porque no había stock |

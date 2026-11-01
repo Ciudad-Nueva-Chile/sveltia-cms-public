@@ -74,6 +74,7 @@ collections:
       - { name: num_coleccion, label: "N.º dentro de la colección", widget: string, required: false }
       - { name: subcategoria, label: "Subcategoría", widget: string, required: false }
       - { name: body, label: "Sobre el libro (sinopsis)", widget: markdown, required: false, hint: "Opcional. Si la escribes, aparece en la ficha bajo el título «Sobre el libro»." }
+      - { name: peso_kg, label: "Peso (kg)", widget: number, value_type: float, min: 0, step: 0.001, required: false, hint: "Opcional: peso de un ejemplar. Sirve para estimar el costo del envío. Vacío: se usa el promedio (0,148 kg desde Argentina y 0,43 kg desde España)." }
       - name: inventario_tipo
         label: "Inventario: tipo especial"
         widget: select
