@@ -208,8 +208,10 @@ def hoja_pedido(lineas: pd.DataFrame, combinaciones: list[dict], envios: dict, f
     registros = por_origen.to_dict("records") if por_origen is not None and len(por_origen) else []
     filas += [[""], ["2. EMBARQUES"], ["Origen", "Próximo pedido", "Libros por pedir", "US$ FOB", "€ FOB (España)"]]
     negritas_extra = [len(filas) - 1]
+    primer_embarque = len(filas)
     for o in registros:
         filas.append([o["origen"], fecha(o["proximo_embarque"]), int(o["unidades"]), o["total_usd"], o.get("total_eur", "")])
+    fin_embarques = len(filas)
     filas += [[""], ["3. QUÉ PEDIR"]]
     tabla = pedido(lineas)
     tabla = tabla[["Cuándo", "Comprar en", "Cantidad", "Título", "Código", "US$ aprox.", "€ aprox.", "Por qué", "Categoría"]]
@@ -221,7 +223,10 @@ def hoja_pedido(lineas: pd.DataFrame, combinaciones: list[dict], envios: dict, f
         "editables": [(fila_envio - 1, 1 + i) for i in range(len(origenes))],
         "negritas": [4, 7, encabezado] + negritas_extra,
         "formatos": [(fila_envio - 1, fila_envio, 1, 1 + len(origenes), "#,##0"),
-                     (primera - 1, ultima, 2, 5, "#,##0")],
+                     (primera - 1, ultima, 2, 5, "#,##0"),
+                     # Formato explícito: la planilla conserva el de lo que hubo antes en la celda (una fecha, por ejemplo)
+                     (primer_embarque, fin_embarques, 2, 3, "0"), (primer_embarque, fin_embarques, 3, 5, "#,##0"),
+                     (encabezado + 1, len(filas), 2, 3, "0")],
     }
 
 

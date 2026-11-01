@@ -479,6 +479,9 @@ def test_la_hoja_de_pedido_no_compara_contra_ningun_monto():
     h = lenguaje.hoja_pedido(lineas, resumen.attrs["combinaciones"], resumen.attrs["envios"], pd.Timestamp("2026-10-01"), por_origen=resumen)
     assert ["Origen", "Próximo pedido", "Libros por pedir", "US$ FOB", "€ FOB (España)"] in h["filas"]
     assert ["CONVIENE"] == [f[0] for f in h["filas"] if f and f[0] == "CONVIENE"]        # el comparador sigue
+    # «Libros por pedir» lleva formato de número: la celda pudo tener antes una fecha y la planilla conserva ese formato
+    fila = next(i for i, f in enumerate(h["filas"]) if f and f[0] == "Argentina" and len(f) == 5)
+    assert h["filas"][fila][2] == 2 and any(r0 <= fila < r1 and c0 <= 2 < c1 and "yy" not in pat for r0, r1, c0, c1, pat in h["formatos"][2:])
 
 
 def test_proximo_embarque_es_la_ultima_importacion_mas_t():
