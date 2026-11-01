@@ -5,7 +5,7 @@
 2. Las necesidades salen de la política (politica.py): títulos A y B con Sugerido > 0.
 3. Un libro puede comprarse en más de un origen (columna «Se compra en»). Para cada origen hay dos valores por
    ejemplar (pestaña Configuración, según origen de compra y edición del libro):
-     - costo puesto en bodega: decide dónde conviene comprar;
+     - costo puesto en bodega: decide desde dónde conviene comprar;
      - valor FOB: es lo que se le paga a la editorial.
 4. Se comparan las combinaciones de envíos que cubren TODAS las necesidades (Todo desde España, Todo desde Argentina,
    Dividir). En cada una, cada libro va al origen con menor costo puesto en bodega entre los que envían:
@@ -81,7 +81,7 @@ def _usd(v: float) -> str:
 def nombre_combinacion(envia: list[str]) -> str:
     if len(envia) == 1:
         return f"Todo desde {envia[0]}"
-    return "Dividir: desde " + " y ".join(envia) + f" ({len(envia)} envíos)"
+    return "Dividir: " + " y ".join(f"desde {o}" for o in envia) + f" ({len(envia)} envíos)"
 
 
 def proximo_mes_fijo(meses: list[int], fecha_corte: pd.Timestamp, ultima=None) -> pd.Timestamp:
@@ -195,9 +195,9 @@ def sugerir(titulos: pd.DataFrame, costos: pd.DataFrame, p: Parametros, fecha_co
             otra = min(otras, key=lambda k: otras[k][0])
             aqui, alla = _usd(ops[o][0]), _usd(otras[otra][0])
             if ops[o][0] <= otras[otra][0]:
-                motivo += f". Conviene {o}: US$ {aqui} puesto en bodega contra US$ {alla} en {otra}"
+                motivo += f". Conviene desde {o}: US$ {aqui} puesto en bodega contra US$ {alla} desde {otra}"
             else:
-                motivo += f". En {otra} sale más barato (US$ {alla} contra {aqui}), pero la combinación de envíos conviene así"
+                motivo += f". Desde {otra} sale más barato (US$ {alla} contra {aqui}), pero la combinación de envíos conviene así"
         propia = ops.get(f.origen, (NAN, NAN))[0]
         if o != f.origen and not math.isnan(propia) and not math.isnan(ops[o][0]):
             ahorro += (propia - ops[o][0]) * cant

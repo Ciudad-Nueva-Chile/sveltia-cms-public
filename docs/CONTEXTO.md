@@ -311,7 +311,7 @@ política de embarques con lo observado en «Importaciones» como comparación.
 
 **Pedido sugerido** — tres bloques:
 
-1. **Dónde conviene comprar**: fila «Costo de cada envío (US$)» con una celda amarilla por país, que **Roberto anota**
+1. **Desde dónde conviene comprar**: fila «Costo de cada envío (US$)» con una celda amarilla por país, que **Roberto anota**
    con la cotización real de cada envío (el código no calcula el flete por peso, porque el catálogo no tiene el peso de
    cada título). Una tabla compara las combinaciones que cubren todo lo que hay que pedir (Todo desde España, Todo desde
    Argentina, Dividir) con Libros, Envíos y Total. Envíos y Total son **fórmulas** y la fila **CONVIENE** usa
@@ -637,7 +637,7 @@ Total (empate: menos envíos).
 tampoco se completa solo ni tiene castigos numéricos de postergar o adelantar.
 
 Resultados: líneas «Ahora» (se piden en el embarque) y «Próximo embarque» (lo que espera), con el motivo («Se vende y queda
-poco», «Reponer lo vendido», «Temporada», «conviene Argentina: US$ … contra …»), y el resumen por país (Pedir en el embarque / Sin pedido) con la fecha del próximo pedido, los libros y su valor FOB.
+poco», «Reponer lo vendido», «Temporada», «conviene desde Argentina: US$ … contra …»), y el resumen por país (Pedir en el embarque / Sin pedido) con la fecha del próximo pedido, los libros y su valor FOB.
 
 ### 9.9 Avisos, indicadores y conteo
 
@@ -735,7 +735,7 @@ ejemplo, no los reales). Demanda de los últimos 21 meses:
   navegador con Web Crypto. «Recordar en este dispositivo» guarda la **clave derivada** (no la contraseña) en
   `localStorage`; «Salir» la borra. Si cambia la contraseña, lo recordado deja de servir y se pide de nuevo.
   Sin `datos.cifrado.json`, muestra `datos.json` (ejemplo).
-- **Esta semana**: «Dónde conviene comprar» (casillas de costo de envío que recalculan en vivo y no se guardan, porque el
+- **Esta semana**: «Desde dónde conviene comprar» (casillas de costo de envío que recalculan en vivo y no se guardan, porque el
   costo real lo anota Roberto en la planilla), una tarjeta por embarque con la fecha del próximo pedido, cuántos libros hay que pedir y su valor FOB aproximado,
   la lista con la categoría de cada título y el T y el L de la política con lo observado como comparación
   (botón «Copiar lista para la editorial»), «Qué contar esta semana» con la frecuencia por categoría, y las listas de avisos

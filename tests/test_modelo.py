@@ -353,8 +353,8 @@ def test_ritmo_y_motivos():
     assert lenguaje.ritmo(0.5) == "≈1 cada 2 meses"
     assert lenguaje.ritmo(0.05) == "menos de 1 al año"
     assert lenguaje.ritmo(0) == "Sin tasa"
-    assert lenguaje.motivo_simple("Bajo el nivel objetivo S. Conviene Argentina: US$ 5,10 puesto en bodega contra US$ 7,40 en España") == \
-        "Se vende y queda poco. Conviene Argentina: US$ 5,10 puesto en bodega contra US$ 7,40 en España"
+    assert lenguaje.motivo_simple("Bajo el nivel objetivo S. Conviene desde Argentina: US$ 5,10 puesto en bodega contra US$ 7,40 desde España") == \
+        "Se vende y queda poco. Conviene desde Argentina: US$ 5,10 puesto en bodega contra US$ 7,40 desde España"
     assert lenguaje.motivo_simple("Reponer lo vendido desde el embarque anterior") == "Reponer lo vendido"
 
 
@@ -438,7 +438,7 @@ def test_libro_en_ambas_va_al_mas_barato_si_la_combinacion_cubre_todo():
     ])
     lineas, resumen = pedido.sugerir(t, COSTOS, Parametros(), pd.Timestamp("2026-10-01"))
     combos = resumen.attrs["combinaciones"]
-    assert [c["nombre"] for c in combos] == ["Dividir: desde España y Argentina (2 envíos)"]   # la única que cubre todo
+    assert [c["nombre"] for c in combos] == ["Dividir: desde España y desde Argentina (2 envíos)"]   # la única que cubre todo
     assert lineas.set_index("id").loc["x", "origen"] == "Argentina"
     assert resumen.attrs["ahorro_usd"] == pytest.approx(5 * 15, abs=0.1)
     assert "castigo_usd" not in combos[0]
@@ -541,13 +541,26 @@ def test_los_calendarios_se_piden_a_argentina():
     assert len(estacionales) and set(estacionales["origen"]) == {"Argentina"}
 
 
+def test_costo_de_envio_se_lee_con_el_encabezado_desde_origen():
+    from inventario.fuentes import FuenteSheets
+
+    class Hoja:
+        def get_all_values(self, **k):
+            return [["x"], ["", "Desde España", "Desde Argentina"], ["Costo de cada envío (US$)", 180, 120]]
+
+    f = FuenteSheets.__new__(FuenteSheets)
+    f.hoja = lambda nombre: Hoja()
+    assert dict(zip(*(lambda e: (e["origen"], e["costo_usd"]))(f._leer_envios()))) == {"España": 180, "Argentina": 120}
+
+
 def test_los_libros_vienen_desde_el_origen_no_van_hacia_el():
     """Son importaciones: «Embarque desde España», nunca «Embarque a España». Busca en el código, el panel, los textos y Sveltia."""
     from inventario.pedido import nombre_combinacion
     assert nombre_combinacion(["España"]) == "Todo desde España"
-    assert nombre_combinacion(["España", "Argentina"]) == "Dividir: desde España y Argentina (2 envíos)"
+    assert nombre_combinacion(["España", "Argentina"]) == "Dividir: desde España y desde Argentina (2 envíos)"
     raiz = Path(__file__).resolve().parent.parent
-    mal = re.compile(r"(embarques?|env[ií]os?|pedidos?|todo) a (españa|argentina|las editoriales|\{)|llega a (españa|argentina)", re.I)
+    mal = re.compile(r"(embarques?|env[ií]os?|pedidos?|todo) a (españa|argentina|las editoriales|\{)|llega a (españa|argentina)"
+                     r"|conviene (españa|argentina|\{o\})|en \{otra\} sale", re.I)
     malos = []
     for carpeta in ("inventario", "panel", "docs", "admin", "src/_includes", "src/paginas", "src/_data"):
         for f in (raiz / carpeta).rglob("*"):
@@ -643,7 +656,7 @@ def test_hoja_pedido_formulas_con_separador_de_la_planilla():
     from inventario import lenguaje
     combos = [{"nombre": "Todo desde España", "envia": ["España"], "elegida": True, "valida": True, "libros_ahora": 3,
                "libros_usd": 100.0, "envio_usd": 0.0, "total_usd": 100.0},
-              {"nombre": "Dividir: desde España y Argentina (2 envíos)", "envia": ["España", "Argentina"], "elegida": False,
+              {"nombre": "Dividir: desde España y desde Argentina (2 envíos)", "envia": ["España", "Argentina"], "elegida": False,
                "valida": True, "libros_ahora": 3, "libros_usd": 90.0, "envio_usd": 0.0, "total_usd": 90.0}]
     h = lenguaje.hoja_pedido(pd.DataFrame(), combos, {"España": 50, "Argentina": 0}, "2026-10-05", sep=";")
     filas = h["filas"]

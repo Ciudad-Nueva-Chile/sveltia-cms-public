@@ -172,7 +172,7 @@ def que_incluye(c: dict) -> str:
 
 def hoja_pedido(lineas: pd.DataFrame, combinaciones: list[dict], envios: dict, fecha_corte, sep: str = ",",
                 por_origen: pd.DataFrame | None = None) -> dict:
-    """«Pedido sugerido»: arriba, dónde conviene comprar (con el costo de cada envío editable y la recomendación
+    """«Pedido sugerido»: arriba, desde dónde conviene comprar (con el costo de cada envío editable y la recomendación
     recalculada por fórmulas); al medio, el próximo pedido de cada origen con cuántos libros y su valor FOB;
     abajo, la lista de qué pedir.
 
@@ -180,9 +180,9 @@ def hoja_pedido(lineas: pd.DataFrame, combinaciones: list[dict], envios: dict, f
     """
     origenes = list(envios)
     filas = [["PEDIDO SUGERIDO", f"Calculado con los datos al {fecha(fecha_corte)}"], [""],
-             ["1. DÓNDE CONVIENE COMPRAR"],
+             ["1. DESDE DÓNDE CONVIENE COMPRAR"],
              ["Anota la cotización de cada envío (courier, despacho y trámites, en dólares). El flete no se calcula por peso. La recomendación de abajo se recalcula al instante."],
-             [""] + origenes,
+             [""] + [f"Desde {o}" for o in origenes],
              [ETIQUETA_ENVIO] + [envios[o] for o in origenes], [""],
              ["Opción", "Qué incluye", "Libros (US$)", "Envíos (US$)", "Total (US$)"]]
     fila_envio = 6  # número de fila (desde 1) del costo de cada envío

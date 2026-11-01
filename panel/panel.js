@@ -89,7 +89,7 @@
     });
   }
 
-  // ---------- Dónde conviene comprar ----------
+  // ---------- Desde dónde conviene comprar ----------
   // Cada combinación cubre todo lo que hay que pedir y trae el costo de los libros puestos en bodega. El costo fijo de
   // cada envío no cambia qué libros van en cada una, así que la recomendación se puede recalcular aquí al instante.
   function usd(v) { return "US$ " + fmt.format(Math.round(v)); }
@@ -98,7 +98,7 @@
     var S = D.semana, C = S.combinaciones || [];
     if (!C.length) { $("#comparacion").innerHTML = ""; return; }
     var origenes = Object.keys(S.envios || {});
-    $("#comparacion").innerHTML = '<article class="tarjeta comparacion"><header><h2>Dónde conviene comprar</h2>' +
+    $("#comparacion").innerHTML = '<article class="tarjeta comparacion"><header><h2>Desde dónde conviene comprar</h2>' +
       "<p>Anota la cotización de cada envío (courier, despacho y trámites) y la recomendación se recalcula al instante. El flete no se calcula por peso.</p></header>" +
       '<div class="envios">' + origenes.map(function (o) {
         return "<label>Envío desde " + esc(o) + ' <span>US$</span><input type="number" min="0" step="10" inputmode="decimal" data-origen="' + esc(o) + '" value="' + (+S.envios[o] || 0) + '"></label>';

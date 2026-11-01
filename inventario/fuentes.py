@@ -222,7 +222,8 @@ class FuenteSheets:
         for i, fila in enumerate(filas):
             if i and fila and str(fila[0]).strip() == ETIQUETA_ENVIO:
                 origenes = filas[i - 1]
-                datos = [{"origen": str(o).strip(), "costo_usd": v} for o, v in zip(origenes[1:], fila[1:]) if str(o).strip()]
+                datos = [{"origen": re.sub(r"(?i)^desde\s+", "", str(o).strip()), "costo_usd": v}     # «Desde España» → España
+                         for o, v in zip(origenes[1:], fila[1:]) if str(o).strip()]
                 return _normalizar("Envios", pd.DataFrame(datos, columns=COLUMNAS["Envios"]))
         return _normalizar("Envios", pd.DataFrame(columns=COLUMNAS["Envios"]))
 
