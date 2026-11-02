@@ -70,8 +70,16 @@ NOTAS_VENTAS = {
     "estado": "Vendido (o vacío): descuenta del stock. «No había stock»: alguien lo pidió y no había. No mueve stock, "
               "pero cuenta como demanda. «Devolución»: un cliente devolvió el libro.",
     "descontado": "Se completa sola cuando el cálculo descuenta la venta del stock. Si corriges una venta ya descontada, "
-                  "corrige también «En bodega» en «Inventario».",
+                  "corrige también «En bodega» en «Inventario». Las filas «Histórico…» vienen de las facturas y no se descuentan.",
+    "neto": "Solo en ventas históricas: el neto de la factura, sin IVA. «Total cobrado» sale de aquí, porque el precio de lista cambió desde entonces.",
 }
+
+
+def _formula_total_ventas(f) -> str:
+    """«Total cobrado»: lo facturado con IVA si la fila trae «Neto facturado $»; si no, cantidad × precio de lista − descuento."""
+    return f('={"Total cobrado";ARRAYFORMULA(IF(M2:M<>"",ROUND(M2:M*1.19*IF(G2:G="Devolución",-1,1),0),'
+             'IF((C2:C="")+(D2:D="")+(G2:G="No había stock"),"",'
+             'IFERROR(ROUND(D2:D*J2:J*(1-IF(E2:E>1,E2:E/100,E2:E))*IF(G2:G="Devolución",-1,1),0),""))))}')
 
 
 def hoja_ventas(sep: str, filas: list | None = None) -> list:
@@ -82,8 +90,7 @@ def hoja_ventas(sep: str, filas: list | None = None) -> list:
     buscar = "IFERROR(VLOOKUP(C2:C,'Lista de libros'!A:C,{col},FALSE),\"\")"
     cabecera[8] = f('={"ISBN";ARRAYFORMULA(IF(C2:C="","",' + buscar.format(col=2) + '))}')
     cabecera[9] = f('={"Precio de lista";ARRAYFORMULA(IF(C2:C="","",' + buscar.format(col=3) + '))}')
-    cabecera[10] = f('={"Total cobrado";ARRAYFORMULA(IF((C2:C="")+(D2:D="")+(G2:G="No había stock"),"",'
-                     'IFERROR(ROUND(D2:D*J2:J*(1-IF(E2:E>1,E2:E/100,E2:E))*IF(G2:G="Devolución",-1,1),0),"")))}')
+    cabecera[10] = _formula_total_ventas(f)
     return [cabecera] + (filas or [])
 
 
@@ -93,7 +100,7 @@ def preparar_ventas(fuente: FuenteSheets, filas: list | None = None) -> None:
     fuente.escribir("Ventas", hoja_ventas(fuente.separador, filas), solo_lectura=True, filtro=True,
                     editables=[idx[c] for c in ventas_mod.EDITABLES], filas_minimas=1000,
                     formatos={idx["fecha"]: "dd-mm-yyyy", idx["descuento"]: '0"%"', idx["precio_lista"]: '"$"#,##0',
-                              idx["total"]: '"$"#,##0'},
+                              idx["total"]: '"$"#,##0', idx["neto"]: '"$"#,##0'},
                     notas={idx[c]: t for c, t in NOTAS_VENTAS.items()},
                     listas={idx["canal"]: ventas_mod.CANALES, idx["estado"]: ventas_mod.ESTADOS},
                     listas_rango={idx["id"]: "='Lista de libros'!A2:A"},
@@ -103,7 +110,7 @@ def preparar_ventas(fuente: FuenteSheets, filas: list | None = None) -> None:
                                                "Solo el número: 10 para 10 %. Vacío si no hubo descuento.")},
                     anchos={idx["fecha"]: 95, idx["documento"]: 115, idx["id"]: 340, idx["cantidad"]: 75, idx["descuento"]: 100,
                             idx["canal"]: 170, idx["estado"]: 120, idx["notas"]: 200, idx["isbn"]: 115,
-                            idx["precio_lista"]: 105, idx["total"]: 110, idx["descontado"]: 230})
+                            idx["precio_lista"]: 105, idx["total"]: 110, idx["descontado"]: 230, idx["neto"]: 120})
 
 
 NOTAS_IMPORTACIONES = {

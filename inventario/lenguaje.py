@@ -39,7 +39,7 @@ ENCABEZADOS = {
     "EnTransito": {"id": "Código", "cantidad": "Cantidad", "origen": "Origen", "fecha_estimada": "Llega aprox."},
     "Ventas": {"fecha": "Fecha", "documento": "Pedido o boleta", "id": "Libro", "cantidad": "Cantidad",
                "descuento": "Descuento (%)", "canal": "Canal", "estado": "Estado", "notas": "Notas", "isbn": "ISBN",
-               "precio_lista": "Precio de lista", "total": "Total cobrado", "descontado": "Descontado del stock"},
+               "precio_lista": "Precio de lista", "total": "Total cobrado", "descontado": "Descontado del stock", "neto": "Neto facturado $"},
     "ListaLibros": {"libro": "Libro", "isbn": "ISBN", "precio_lista": "Precio de lista"},
     "Importaciones": {"fecha_pedido": "Fecha de pedido", "fecha_llegada": "Fecha de llegada", "pais": "País de compra",
                       "documento": "N° de factura o DIN", "id": "Libro", "cantidad": "Cantidad", "fob_usd": "FOB total US$",

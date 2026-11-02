@@ -274,8 +274,14 @@ lo avisa. Su historia en el registro de movimientos se conserva.
 | **Estado** | `estado` | Roberto | Vendido (o vacío), No había stock, Devolución |
 | **Notas** | `notas` | Roberto | Libre |
 | ISBN, Precio de lista | `isbn`, `precio_lista` | Fórmula | `BUSCARV` sobre «Lista de libros» |
-| Total cobrado | `total` | Fórmula | `cantidad × precio × (1 − descuento)`; negativo en devoluciones; vacío si «No había stock» |
-| Descontado del stock | `descontado` | Auto | Cuándo el cálculo descontó la venta («Descontado el …», «Ya estaba descontado a mano …», «Anotada … (no mueve stock)», «Revisar: …») |
+| Total cobrado | `total` | Fórmula | Con «Neto facturado $»: ese neto con IVA. Si no: `cantidad × precio × (1 − descuento)`. Negativo en devoluciones; vacío si «No había stock» |
+| Descontado del stock | `descontado` | Auto | Cuándo el cálculo descontó la venta («Descontado el …», «Ya estaba descontado a mano …», «Anotada … (no mueve stock)», «Revisar: …») o marca de fila histórica |
+| Neto facturado $ | `neto` | Carga | Solo en ventas históricas: el neto de la factura, sin IVA |
+
+Las ventas históricas vienen de las facturas y notas de crédito y se distinguen por la marca de «Descontado del stock»:
+«Histórico (no descuenta)» entra a la demanda sin mover el stock; «Histórico anterior (no entra al cálculo)» y «Sin ficha en
+el catálogo (no entra al cálculo)» solo se muestran (`ventas.FUERA_DEL_CALCULO`). La revisión de filas no las reclama. Una
+venta está en «Ventas» o en el «Registro de movimientos», nunca en ambas: si no, la demanda se duplica.
 
 **Importaciones** — una fila por libro y embarque, con el estilo de «Ventas».
 

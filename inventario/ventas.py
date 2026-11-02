@@ -2,7 +2,8 @@
 
 Es la fuente de la demanda con detalle: precio, descuento, canal y ventas perdidas. En cada cálculo (cada hora de lunes a sábado en horario de oficina):
 
-1. Convierte todas las filas en movimientos (se releen siempre: si se corrige una fila, se corrige la historia).
+1. Convierte las filas en movimientos (se releen siempre: si se corrige una fila, se corrige la historia), salvo las
+   marcadas como fuera del cálculo en «Descontado del stock».
 2. Descuenta del stock de «Inventario» las filas nuevas y anota en «Descontado del stock» cuándo lo hizo:
        Vendido                     → baja «En bodega»
        Vendido por Consignación    → baja «En consignación» (la librería pagó lo que tenía)
@@ -16,7 +17,7 @@ from __future__ import annotations
 import pandas as pd
 
 COLUMNAS = ["fecha", "documento", "id", "cantidad", "descuento", "canal", "estado", "notas",
-            "isbn", "precio_lista", "total", "descontado"]
+            "isbn", "precio_lista", "total", "descontado", "neto"]
 EDITABLES = ["fecha", "documento", "id", "cantidad", "descuento", "canal", "estado", "notas"]
 
 CANALES = ["Web / WhatsApp", "Local", "Evento o feria", "Librería", "Parroquia o institución", "Consignación (factura)"]
@@ -25,6 +26,12 @@ CANAL_WEB = "Web / WhatsApp"
 VENDIDO, SIN_STOCK, DEVOLUCION = "Vendido", "No había stock", "Devolución"
 ESTADOS = [VENDIDO, SIN_STOCK, DEVOLUCION]
 HISTORICO = "Histórico (no descuenta)"
+# Filas históricas que se muestran pero no entran al cálculo: ventas anteriores a la historia con que se estima la demanda
+# (entrarían a la tasa y a los tamaños de pedido) y productos sin ficha en el catálogo
+ANTERIOR = "Histórico anterior (no entra al cálculo)"
+SIN_FICHA = "Sin ficha en el catálogo (no entra al cálculo)"
+FUERA_DEL_CALCULO = (ANTERIOR, SIN_FICHA)
+MARCAS_HISTORICAS = (HISTORICO, ANTERIOR, SIN_FICHA)
 
 
 def descuento(v) -> float:
@@ -54,6 +61,7 @@ def tipo(fila) -> str:
 def a_movimientos(v: pd.DataFrame, solo_descontadas: bool = False) -> pd.DataFrame:
     """Movimientos para el cálculo. solo_descontadas: las que ya se reflejaron en «Inventario»."""
     v = validas(v)
+    v = v[~v["descontado"].astype(str).str.strip().isin(FUERA_DEL_CALCULO)]
     if solo_descontadas:
         v = v[v["descontado"].astype(str).str.strip() != ""]
     # El canal queda en «cliente»: las solicitudes del canal web reclasifican C y D a B (categorias.py)
@@ -65,6 +73,7 @@ def a_movimientos(v: pd.DataFrame, solo_descontadas: bool = False) -> pd.DataFra
 
 def errores(v: pd.DataFrame, ids: set) -> list[str]:
     e = []
+    v = v[~v["descontado"].astype(str).str.strip().isin(MARCAS_HISTORICAS)]
     llenas = v[(v["id"] != "") | v["fecha"].notna() | (v["cantidad"] > 0)]
     incompletas = len(llenas) - len(validas(llenas))
     if incompletas:

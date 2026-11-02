@@ -7,6 +7,8 @@ from __future__ import annotations
 
 import pandas as pd
 
+from .ventas import MARCAS_HISTORICAS
+
 NOMBRES = {"bodega": "En bodega", "consignacion": "En consignación", "en_camino": "Pedido en camino"}
 MAXIMO = 40          # avisos que se muestran; el resto se resume en una línea
 FACTOR_MIN, FACTOR_MAX = 0.1, 1.5
@@ -32,6 +34,8 @@ def _repetidas(df: pd.DataFrame, claves: list[str], hoja: str, que: str) -> list
 def ventas(v: pd.DataFrame, ids: set, hoy: pd.Timestamp) -> list[str]:
     if v is None or v.empty:
         return []
+    # Las filas históricas vienen de los comprobantes: una línea puede repetirse en una factura y otra no tener ficha
+    v = v[~v["descontado"].astype(str).str.strip().isin(MARCAS_HISTORICAS)]
     r = []
     for x in v.itertuples():
         datos = [_lleno(x.id), pd.notna(x.fecha), _lleno(x.cantidad), _lleno(x.documento)]

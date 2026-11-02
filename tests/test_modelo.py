@@ -753,6 +753,40 @@ def test_el_catalogo_lee_el_campo_reemplaza(tmp_path):
     assert catalogo_desde_sitio(tmp_path).iloc[0]["reemplaza"] == "CN-0299"
 
 
+# ---------- Ventas históricas en la pestaña «Ventas» ----------
+def test_las_filas_fuera_del_calculo_no_generan_movimientos():
+    from inventario import ventas
+    v = _ventas([("2025-03-01", "a", 2, "", "Librería", "Vendido", ventas.HISTORICO),
+                 ("2023-03-01", "a", 90, "", "Librería", "Vendido", ventas.ANTERIOR),
+                 ("2023-04-01", "a", 5, "", "Librería", "Vendido", ventas.SIN_FICHA)])
+    m = ventas.a_movimientos(v)
+    assert list(m["cantidad"]) == [2] and list(m["tipo"]) == ["venta"]
+    assert list(ventas.a_movimientos(v, solo_descontadas=True)["cantidad"]) == [2]
+    v = v[v["descontado"] == ""]
+    assert ventas.validas(v).empty                               # ninguna queda pendiente: no se descuenta del stock
+
+
+def test_una_fila_sin_ficha_no_es_un_error_de_la_hoja():
+    from inventario import ventas
+    v = _ventas([("2023-04-01", "", 5, "", "Librería", "Vendido", ventas.SIN_FICHA)])
+    assert ventas.errores(v, {"a"}) == []
+    assert ventas.errores(v.assign(descontado=""), {"a"})         # sin la marca, sí falta el libro
+
+
+def test_la_revision_no_reclama_por_las_filas_historicas():
+    from inventario import revision, ventas
+    v = pd.DataFrame({"fecha": pd.to_datetime(["2025-03-01", "2025-03-01", "2023-01-01"]), "documento": ["F 1", "F 1", "F 2"],
+                      "id": ["a", "a", ""], "cantidad": [1, 1, 4], "descuento": ["", "", ""],
+                      "descontado": [ventas.HISTORICO, ventas.HISTORICO, ventas.SIN_FICHA], "fila_planilla": [2, 3, 4]})
+    assert revision.ventas(v, {"a"}, pd.Timestamp("2026-11-01")) == []
+
+
+def test_total_cobrado_usa_el_neto_facturado_si_lo_hay():
+    from inventario.__main__ import hoja_ventas
+    cab = hoja_ventas(";")[0]
+    assert cab[12] == "Neto facturado $" and 'IF(M2:M<>"";ROUND(M2:M*1.19*' in cab[10]
+
+
 # ---------- Sin mínimo de embarque en ninguna parte del repositorio ----------
 def test_no_queda_referencia_al_monto_minimo_de_embarque():
     """Busca «700» y «mínimo» en todo lo que escribe el proyecto. Solo se aceptan usos que no tienen que ver con embarques."""

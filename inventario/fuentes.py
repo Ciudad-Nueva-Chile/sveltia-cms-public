@@ -92,6 +92,7 @@ def _normalizar(nombre: str, df: pd.DataFrame) -> pd.DataFrame:
         df["cantidad"] = pd.to_numeric(df["cantidad"], errors="coerce").fillna(0).astype(int)
         for col in ("canal", "estado", "descontado", "documento", "notas"):
             df[col] = df[col].astype(str).str.strip()
+        df["neto"] = pd.to_numeric(df["neto"], errors="coerce")
     if nombre == "Importaciones":
         for col in ("fecha_pedido", "fecha_llegada"):
             df[col] = _fechas(df[col])
