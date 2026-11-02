@@ -77,7 +77,7 @@ NOTAS_VENTAS = {
 
 def _formula_total_ventas(f) -> str:
     """«Total cobrado»: lo facturado con IVA si la fila trae «Neto facturado $»; si no, cantidad × precio de lista − descuento."""
-    return f('={"Total cobrado";ARRAYFORMULA(IF(M2:M<>"",ROUND(M2:M*1.19*IF(G2:G="Devolución",-1,1),0),'
+    return f('={"Total cobrado";ARRAYFORMULA(IF(M2:M<>"",ROUND(M2:M*119/100*IF(G2:G="Devolución",-1,1),0),'
              'IF((C2:C="")+(D2:D="")+(G2:G="No había stock"),"",'
              'IFERROR(ROUND(D2:D*J2:J*(1-IF(E2:E>1,E2:E/100,E2:E))*IF(G2:G="Devolución",-1,1),0),""))))}')
 

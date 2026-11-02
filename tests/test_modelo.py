@@ -784,7 +784,8 @@ def test_la_revision_no_reclama_por_las_filas_historicas():
 def test_total_cobrado_usa_el_neto_facturado_si_lo_hay():
     from inventario.__main__ import hoja_ventas
     cab = hoja_ventas(";")[0]
-    assert cab[12] == "Neto facturado $" and 'IF(M2:M<>"";ROUND(M2:M*1.19*' in cab[10]
+    assert cab[12] == "Neto facturado $" and 'IF(M2:M<>"";ROUND(M2:M*119/100*' in cab[10]
+    assert not re.search(r"\d\.\d", cab[10])                       # en una planilla en español, 1.19 es un error de fórmula
 
 
 # ---------- Sin mínimo de embarque en ninguna parte del repositorio ----------
