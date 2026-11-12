@@ -131,7 +131,7 @@ collections:
           - { name: email, label: "Correo de contacto", widget: string }
           - { name: ciudad, label: "Ciudad", widget: string }
           - { name: fecha_lista, label: "Fecha de vigencia de la lista de precios", widget: datetime, time_format: false, date_format: "DD-MM-YYYY", format: "YYYY-MM-DD", hint: "Actualízala cada vez que cambies precios: se muestra junto a cada precio." }
-          - { name: aviso_prototipo, label: "Aviso al pie (dejar vacío al publicar en serio)", widget: string, required: false }
+          - { name: aviso_prototipo, label: "Aviso al pie (opcional)", widget: string, required: false }
           - name: portada
             label: Portada (inicio)
             widget: object

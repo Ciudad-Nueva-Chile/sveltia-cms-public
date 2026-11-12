@@ -24,9 +24,6 @@
 <body class="{{ clase_body }}">
   <a class="saltar" href="#contenido">Saltar al contenido</a>
 
-  {% if entorno.prueba %}
-  <div class="anuncio anuncio-prueba">Versión de prueba del sitio. Los precios y textos pueden cambiar.</div>
-  {% endif %}
   {% if sitio.anuncio.activo and sitio.anuncio.texto %}
   <div class="anuncio">
     {% if sitio.anuncio.enlace %}<a href="{{ sitio.anuncio.enlace }}">{{ sitio.anuncio.texto }}</a>{% else %}{{ sitio.anuncio.texto }}{% endif %}

@@ -18,7 +18,7 @@ const PATH_PREFIX = process.env.PATH_PREFIX || "/";
 
 export default function (eleventyConfig) {
   eleventyConfig.addPlugin(HtmlBasePlugin);
-  // Versión de prueba: no se indexa en buscadores y muestra un aviso
+  // Fuera del dominio propio (GitHub Pages): no se indexa en buscadores ni publica el mapa del sitio
   eleventyConfig.addGlobalData("entorno", { prueba: PATH_PREFIX !== "/" || Boolean(process.env.SITIO_PRUEBA) });
 
   eleventyConfig.addPassthroughCopy("src/assets");
