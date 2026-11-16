@@ -123,6 +123,17 @@ def acelera(serie: np.ndarray, recientes: int = 3, previos: int = 18, factor: fl
     return ultimos >= minimo and ultimos / recientes >= factor * ritmo_antes
 
 
+def meses_con_venta_recientes(serie: np.ndarray, meses: int = 6) -> int:
+    """Meses con venta neta positiva dentro de los últimos `meses` de la serie mensual."""
+    return int((np.asarray(serie, dtype=float)[-meses:] > 0).sum()) if meses > 0 else 0
+
+
+def evento_persiste(serie: np.ndarray, meses: int = 6, minimo_meses: int = 3) -> bool:
+    """¿Hubo venta neta positiva en `minimo_meses` o más de los últimos `meses`? (aviso para la clase Coyuntural: el evento
+    ya no parece puntual; no cambia la clase, S ni la política)."""
+    return meses_con_venta_recientes(serie, meses) >= minimo_meses
+
+
 def tamanos_de_pedido(mov: pd.DataFrame, fecha_corte: pd.Timestamp) -> dict[str, list[float]]:
     """Ejemplares de cada línea de venta (factura, factura de consignación y venta perdida) hasta la fecha de cálculo, por
     título. Son los tamaños de pedido con que se arma el modelo compuesto."""

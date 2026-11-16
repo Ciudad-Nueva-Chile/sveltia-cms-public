@@ -13,7 +13,8 @@ from . import ventas as ventas_mod
 from . import importaciones as importaciones_mod
 from .config import (CATEGORIAS, CONTEOS_POR_ANIO, CORTE_ADI, CORTE_CV2, DIAS_CONSIGNACION_ANTIGUA,
                      HISTORIA_MESES, MESES_FACTORES, MESES_LISTA_PRECIOS, MESES_TIPO_CAMBIO, Parametros,
-                     ACELERACION_FACTOR, ACELERACION_MESES_PREVIOS, ACELERACION_MESES_RECIENTES, ACELERACION_MINIMO_UNIDADES)
+                     ACELERACION_FACTOR, ACELERACION_MESES_PREVIOS, ACELERACION_MESES_RECIENTES, ACELERACION_MINIMO_UNIDADES,
+                     COYUNTURAL_MESES_CON_VENTA, COYUNTURAL_MESES_REVISION)
 
 
 @dataclass
@@ -35,6 +36,8 @@ class Resultado:
 
 
 AVISO_ACELERACION = "Se vende más rápido que antes: revisa si conviene pedir más que el nivel objetivo"
+AVISO_EVENTO_PERSISTE = ("Sigue vendiéndose: el evento ya no parece puntual. Revisa si conviene quitar la marca Coyuntural "
+                         "en Sveltia para que el título tenga nivel objetivo.")
 
 
 def _meses_entre(desde, hasta: pd.Timestamp) -> float:
@@ -247,6 +250,10 @@ def calcular(catalogo: pd.DataFrame, movimientos: pd.DataFrame, transito: pd.Dat
             s, ACELERACION_MESES_RECIENTES, ACELERACION_MESES_PREVIOS, ACELERACION_FACTOR, ACELERACION_MINIMO_UNIDADES)
         if se_acelera:
             alertas.append(AVISO_ACELERACION)
+        meses_recientes = demanda.meses_con_venta_recientes(s, COYUNTURAL_MESES_REVISION)
+        evento_persiste = clase == "Coyuntural" and demanda.evento_persiste(s, COYUNTURAL_MESES_REVISION, COYUNTURAL_MESES_CON_VENTA)
+        if evento_persiste:
+            alertas.append(AVISO_EVENTO_PERSISTE)
         dias_consig = (fecha_corte - e["consignacion_desde"]).days if not pd.isna(e["consignacion_desde"]) else 0
         if dias_consig >= DIAS_CONSIGNACION_ANTIGUA:
             alertas.append(f"Consignación abierta hace {dias_consig} días")
@@ -269,6 +276,7 @@ def calcular(catalogo: pd.DataFrame, movimientos: pd.DataFrame, transito: pd.Dat
             "politica": pol, "sugerido": int(sugerido), "vendido_desde_importacion": int(vendido_desde),
             "temporada_unidades": temporada_u, "reemplaza": reemplaza.get(fila.id, ""), "reemplazado_por": reemplazada,
             "temporada_sin_historia": bool(temporada_sin_historia), "reclasificar": reclasificar, "acelera": se_acelera,
+            "evento_persiste": evento_persiste, "meses_con_venta_recientes": meses_recientes,
             "cobertura_meses": round(cobertura, 1) if math.isfinite(cobertura) else "∞",
             "ultima_salida": ultima_salida.date().isoformat() if not pd.isna(ultima_salida) else "",
             "meses_sin_salida": round(meses_sin, 1) if not math.isnan(meses_sin) else "",

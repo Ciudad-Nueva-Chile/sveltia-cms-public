@@ -39,6 +39,13 @@ ACELERACION_MESES_PREVIOS = 18
 ACELERACION_FACTOR = 2
 ACELERACION_MINIMO_UNIDADES = 3
 
+# ---------- Aviso de evento que sigue vendiéndose (no cambia la clase, S ni la política) ----------
+# La clase Coyuntural se marca a mano y no tiene nivel objetivo. La memoria (sección 4.2.7) lo describe así: el aviso
+# salta cuando una obra coyuntural registra venta neta positiva en 3 o más de los últimos 6 meses. Quitar la marca en
+# Sveltia lo decide Roberto; el cálculo solo avisa.
+COYUNTURAL_MESES_REVISION = 6
+COYUNTURAL_MESES_CON_VENTA = 3
+
 # ---------- Avisos de caducidad de datos externos ----------
 MESES_TIPO_CAMBIO = 6       # el tipo de cambio de la pestaña Configuración se revisa al menos cada 6 meses
 MESES_FACTORES = 12         # los factores de costo (FOB y costo puesto en bodega) se revisan cada año

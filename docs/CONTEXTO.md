@@ -304,7 +304,7 @@ misma cuadratura que «Ventas»: si ese día Roberto ya subió la bodega a mano,
 llegada cuenta como «Pedido en camino». Con estas filas se miden T y L (9.8).
 
 **Esta semana** — resumen para decidir (solo lectura): pedidos por país y cuál conviene, libros que se venden y
-están sin stock, «Te los pidieron y no había», «Se venden más rápido que antes», «Bajas de stock sin venta anotada»,
+están sin stock, «Te los pidieron y no había», «Se venden más rápido que antes», «Eventos que siguen vendiéndose», «Bajas de stock sin venta anotada»,
 **qué contar esta semana** (sección 9.9), los que pasan a B en el próximo cálculo, los títulos C y D con su valor, datos por
 actualizar, consignaciones de más de un año, productos de temporada, **«Revisar en la planilla»** y cómo anotar. España se
 muestra en € con su equivalente en US$ (la comparación entre países va en US$).
@@ -511,6 +511,11 @@ Se cuenta k, el número de meses de la ventana con demanda neta positiva:
 **Estacional** (calendarios y agendas) y **Coyuntural** (línea Carlo Acutis) se marcan a mano en Sveltia («Inventario: tipo
 especial») y mandan sobre lo calculado. La clase «Puntual» desaparece: se funde en Esporádica.
 
+La marca Coyuntural no se quita sola, así que un título marcado nunca tiene nivel objetivo aunque se siga vendiendo todos
+los meses. Para eso está el aviso «Sigue vendiéndose» (9.9): salta cuando el título tiene venta neta positiva en 3 o más de
+los últimos 6 meses (memoria, sección 4.2.7). El aviso no cambia la clase, S ni la política: Roberto decide si quita la
+marca en Sveltia, y desde el cálculo siguiente el título se clasifica por sus ventas como cualquier otro.
+
 ADI y CV² (Syntetos, Boylan y Croston, 2005) se siguen calculando como indicadores informativos, con los cortes 1,32 y
 0,49 de la literatura:
 ```
@@ -542,7 +547,7 @@ La política se asigna por categoría. La «decisión manual» de Sveltia manda 
 |---|---|---|
 | A Intermitente o Regular | **Reponer** | Hasta el nivel objetivo S |
 | A Estacional | **Temporada** | Un pedido anual que debe llegar antes de septiembre. Cantidad de la última temporada completa |
-| A Coyuntural | **No reponer** | Se atiende por reacción |
+| A Coyuntural | **No reponer** | Se atiende por reacción. Si se sigue vendiendo, sale el aviso «Sigue vendiéndose» (9.9), que no cambia la política |
 | B | **Reponer lo vendido** | Unidades netas vendidas desde el embarque anterior, es decir, la última llegada registrada del origen donde se compra (o la del propio título, si es más reciente), menos lo que ya viene en camino. Corregir «Inventario» no cuenta como llegada. Sin stock de seguridad |
 | C y D | **No reponer** | El sistema solo los muestra con su valor |
 | Sin categoría | **A pedido** | No se mantiene stock |
@@ -670,6 +675,7 @@ poco», «Reponer lo vendido», «Temporada», «conviene desde Argentina: US$ �
 | Bajas sin venta anotada | Bajas de bodega deducidas hoy sin fila en «Ventas» (cuando ya se usa Ventas) |
 | Solicitud del canal | Título C o D con una solicitud del canal web recién anotada: pasa a B en el próximo cálculo |
 | Se vende más rápido | Clase Intermitente, Regular o Esporádica cuyo ritmo de los últimos 3 meses es al menos 2 veces el de los 18 anteriores, con 3 o más unidades netas en esos 3 meses: «Se vende más rápido que antes: revisa si conviene pedir más que el nivel objetivo». No cambia S |
+| Sigue vendiéndose | Clase Coyuntural con venta neta positiva en 3 o más de los últimos 6 meses: «Sigue vendiéndose: el evento ya no parece puntual. Revisa si conviene quitar la marca Coyuntural en Sveltia para que el título tenga nivel objetivo.» No cambia la clase, S ni la política. En «Esta semana» va en la lista «Eventos que siguen vendiéndose», con el código y los meses con venta |
 
 Otros indicadores: `cobertura = Bodega / ritmo mensual` (meses), `valor_bodega = Bodega × precio_lista`, y por categoría los
 títulos, ejemplares y valor a precio de venta. De «Ventas», últimos 12 meses: unidades vendidas, porcentaje de unidades con
@@ -718,6 +724,7 @@ vigencia». Las fechas salen de las columnas «vigente desde» de la pestaña Co
 | `DIAS_CONSIGNACION_ANTIGUA` | 365 | 9.9 | Criterio de operación |
 | `MESES_TIPO_CAMBIO` / `MESES_FACTORES` / `MESES_LISTA_PRECIOS` | 6 / 12 / 12 | 9.9 | Umbrales de los avisos de caducidad |
 | `ACELERACION_MESES_RECIENTES` / `ACELERACION_MESES_PREVIOS` / `ACELERACION_FACTOR` / `ACELERACION_MINIMO_UNIDADES` | 3 / 18 / 2 / 3 | 9.9 | Aviso de aceleración (memoria, sección 4.2.5: el modelo supone que el futuro se parece a la ventana) |
+| `COYUNTURAL_MESES_REVISION` / `COYUNTURAL_MESES_CON_VENTA` | 6 / 3 | 9.9 | Aviso «Sigue vendiéndose» de la clase Coyuntural (memoria, sección 4.2.7). Parámetros técnicos: no están en Sveltia ni en la planilla |
 
 
 En la planilla (porque son sensibles o cambian seguido): factores de costo y tipo de cambio (Configuración) y
@@ -759,7 +766,7 @@ ejemplo, no los reales). Demanda de los últimos 21 meses:
   costo real lo anota Roberto en la planilla), una tarjeta por embarque con la fecha del próximo pedido, cuántos libros hay que pedir y su valor FOB aproximado,
   la lista con la categoría de cada título y el T y el L de la política con lo observado como comparación
   (botón «Copiar lista para la editorial»), «Qué contar esta semana» con la frecuencia por categoría, y las listas de avisos
-  (sin stock, pedidos sin stock, se venden más rápido que antes, pasan a B en el próximo cálculo, fondo C y D con su valor,
+  (sin stock, pedidos sin stock, se venden más rápido que antes, eventos que siguen vendiéndose, pasan a B en el próximo cálculo, fondo C y D con su valor,
   datos por actualizar, consignaciones, temporada).
 - **Libros**: tabla con la categoría de gestión, filtrable por «Qué hacer», búsqueda, orden, solo con aviso; ficha de cada libro
   con gráfico de venta neta por mes, la política en palabras (S y T + L cuando corresponde) y datos técnicos (k, ADI, CV², λ).
@@ -815,7 +822,7 @@ envíos responden al instante.
 - La cuadratura «ya lo bajé a mano» solo funciona el mismo día del cálculo. Corregir una venta ya descontada exige
   corregir también «En bodega».
 - Las ventas con descuento cuentan como demanda normal: una oferta grande sube el pronóstico por un tiempo.
-- El modelo supone que el futuro se parece a los últimos 21 meses (para los eventos existe la clase Coyuntural).
+- El modelo supone que el futuro se parece a los últimos 21 meses (para los eventos existe la clase Coyuntural, que se marca y se quita a mano; el aviso «Sigue vendiéndose» recuerda revisarla).
 - Los dólares dependen de factores de costo estimados por origen.
 - El flete no se calcula por peso: el catálogo no tiene el peso de cada título, así que el costo de cada envío lo anota Roberto.
 - Varios valores son supuestos o criterios y no mediciones: el nivel de servicio de 95 %, que los pedidos lleguen como Poisson, α = 0,15,

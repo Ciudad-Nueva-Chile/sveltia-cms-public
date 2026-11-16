@@ -9,6 +9,8 @@ import re
 
 import pandas as pd
 
+from .config import COYUNTURAL_MESES_CON_VENTA, COYUNTURAL_MESES_REVISION
+
 # ---------- Entradas: nombres legibles ↔ nombres internos ----------
 TIPOS_LEGIBLES = {
     "inventario_inicial": "Conteo inicial",
@@ -293,6 +295,7 @@ def esta_semana(t: pd.DataFrame, por_origen: pd.DataFrame, lineas: pd.DataFrame,
         temporada = temporada[temporada["reemplazado_por"].astype(str) == ""]
     reclasificar = t[t["reclasificar"].astype(bool)]
     acelera = t[t["acelera"].astype(bool)] if "acelera" in t else t.iloc[0:0]
+    eventos = t[t["evento_persiste"].astype(bool)] if "evento_persiste" in t else t.iloc[0:0]
     fondo = t[t["categoria_gestion"].isin(["C", "D"])].sort_values("valor_bodega", ascending=False)
     conteo = conteo or {}
     return {
@@ -314,6 +317,7 @@ def esta_semana(t: pd.DataFrame, por_origen: pd.DataFrame, lineas: pd.DataFrame,
                       for r in temporada.itertuples()],
         "reclasificar": [{"id": r.id, "titulo": r.titulo, "categoria": r.categoria_gestion} for r in reclasificar.itertuples()],
         "acelera": [{"id": r.id, "titulo": r.titulo, "categoria": r.categoria_gestion, "clase": r.clase} for r in acelera.itertuples()],
+        "eventos": [{"id": r.id, "titulo": r.titulo, "meses_con_venta": int(r.meses_con_venta_recientes)} for r in eventos.itertuples()],
         "semana": conteo.get("semana", ""),
         "contar": conteo.get("contar", []),
         "frecuencias": conteo.get("frecuencias", []),
@@ -332,7 +336,7 @@ def esta_semana(t: pd.DataFrame, por_origen: pd.DataFrame, lineas: pd.DataFrame,
     }
 
 
-SECCIONES_FIJAS = ("TE LOS PIDIERON", "BAJAS DE STOCK", "SE VENDEN MÁS RÁPIDO", "PASAN A B", "DATOS POR ACTUALIZAR", "REVISAR EN LA PLANILLA", "CÓMO ANOTAR")
+SECCIONES_FIJAS = ("TE LOS PIDIERON", "BAJAS DE STOCK", "SE VENDEN MÁS RÁPIDO", "EVENTOS QUE SIGUEN", "PASAN A B", "DATOS POR ACTUALIZAR", "REVISAR EN LA PLANILLA", "CÓMO ANOTAR")
 
 
 def es_titulo_seccion(texto: str) -> bool:
@@ -368,6 +372,13 @@ def hoja_esta_semana(s: dict) -> pd.DataFrame:
                              "Revisa si conviene pedir más que el nivel objetivo (el cálculo no lo cambia)")]
         for r in s["acelera"][:25]:
             filas.append((r["titulo"], f"{r['categoria']} · {r['clase'].lower()}: los últimos 3 meses van al doble o más del ritmo anterior"))
+    if s.get("eventos"):
+        filas += [("", ""), (f"EVENTOS QUE SIGUEN VENDIÉNDOSE ({len(s['eventos'])})",
+                             f"Marcados «Coyuntural» y con venta en {COYUNTURAL_MESES_CON_VENTA} o más de los últimos "
+                             f"{COYUNTURAL_MESES_REVISION} meses. Revisa si conviene quitar la marca en Sveltia para que "
+                             "tengan nivel objetivo (el cálculo no la cambia)")]
+        for r in s["eventos"][:25]:
+            filas.append((r["titulo"], f"{r['id']} · venta en {r['meses_con_venta']} de los últimos {COYUNTURAL_MESES_REVISION} meses"))
     if s.get("sin_anotar"):
         filas += [("", ""), (f"BAJAS DE STOCK SIN VENTA ANOTADA ({len(s['sin_anotar'])})", "Si fue una venta, anótala en «Ventas» con su precio y canal")]
         for r in s["sin_anotar"][:25]:

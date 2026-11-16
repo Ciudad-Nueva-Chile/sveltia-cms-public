@@ -795,7 +795,7 @@ def test_no_queda_referencia_al_monto_minimo_de_embarque():
     permitidos_700 = re.compile(r'font-weight:\s*700|width="700"|700px')
     permitidos_minimo = re.compile(
         r"mínimo arrepentimiento|menor arrepentimiento|m[ií]nimo de 21 meses|m[ií]nimo 21 meses|mínimo la ventana|Datos mínimos|Stock mínimo|"
-        r"MINIMO_EMBARQUES|ACELERACION_MINIMO|\bminimo\b.*(float|unidades|recientes)|ultimos >= minimo|`minimo` unidades|min-",
+        r"MINIMO_EMBARQUES|ACELERACION_MINIMO|minimo_meses|\bminimo\b.*(float|unidades|recientes)|ultimos >= minimo|`minimo` unidades|min-",
         re.I)
     fuera = {"node_modules", "_site", ".git", ".venv", "salida", "__pycache__", "libros", "datos_ejemplo", "portadas", ".claude"}
     malos = []
@@ -1025,6 +1025,57 @@ def test_aviso_de_aceleracion_en_el_calculo():
     assert bool(t.loc["x", "acelera"]) and "Se vende más rápido que antes" in t.loc["x", "alertas"]
     assert t.loc["x", "nivel_objetivo"] == demanda.nivel_objetivo(t.loc["x", "tasa_mensual"], 6, 39 / 30, 0.95,
                                                                   [1, 1, 1, 1, 2, 2, 2])   # S no cambia
+
+
+# ---------- Aviso de evento que sigue vendiéndose (clase Coyuntural) ----------
+from inventario import lenguaje  # noqa: E402
+
+
+def test_evento_persiste_cuenta_meses_con_venta_en_los_ultimos_6():
+    tres = np.array([0] * 15 + [4, 0, 1, 0, 2, 0], dtype=float)
+    assert demanda.meses_con_venta_recientes(tres, 6) == 3 and demanda.evento_persiste(tres, 6, 3)
+    dos = np.array([5] * 15 + [0, 9, 0, 0, 9, 0], dtype=float)           # lo anterior a los 6 meses no cuenta
+    assert demanda.meses_con_venta_recientes(dos, 6) == 2 and not demanda.evento_persiste(dos, 6, 3)
+    assert not demanda.evento_persiste(np.array([1, 1], dtype=float), 6, 3)   # serie más corta que la revisión
+
+
+def _calculo_con_ventas(meses_co, meses_in=()):
+    catalogo = _catalogo([{"id": "co", "titulo": "Evento", "origen": "España", "precio_lista": 20000, "clase_manual": "Coyuntural"},
+                          {"id": "in", "titulo": "Fondo", "origen": "España", "precio_lista": 20000}])
+    filas = [("2024-12-01", "co", "inventario_inicial", 40), ("2024-12-01", "in", "inventario_inicial", 40)]
+    filas += [(f"{m}-10", "co", "venta", 2) for m in meses_co] + [(f"{m}-10", "in", "venta", 2) for m in meses_in]
+    r = calcular(catalogo, _mov(filas), pd.DataFrame(columns=["id", "cantidad"]), pd.DataFrame(), Parametros(), pd.Timestamp("2026-08-31"))
+    return r, r.titulos.set_index("id")
+
+
+def test_coyuntural_con_venta_en_3_de_6_meses_recibe_el_aviso_y_no_cambia():
+    from inventario.modelo import AVISO_EVENTO_PERSISTE
+    recientes = ("2026-03", "2026-05", "2026-08")
+    r, t = _calculo_con_ventas(("2025-09", "2025-10") + recientes, meses_in=("2025-09",) + recientes)
+    assert bool(t.loc["co", "evento_persiste"]) and AVISO_EVENTO_PERSISTE in t.loc["co", "alertas"]
+    assert t.loc["co", "meses_con_venta_recientes"] == 3
+    # El aviso no cambia la clase, S ni la política
+    assert t.loc["co", "clase"] == "Coyuntural" and t.loc["co", "nivel_objetivo"] == 0 and t.loc["co", "politica"] == "No reponer"
+    assert t.loc["co", "sugerido"] == 0 and t.loc["co", "categoria_gestion"] == "A"
+    # Un intermitente con las mismas ventas recientes nunca lo recibe
+    assert t.loc["in", "clase"] == "Intermitente" and not bool(t.loc["in", "evento_persiste"])
+    assert "Sigue vendiéndose" not in t.loc["in", "alertas"]
+    # «Esta semana» lo lista con su código y los meses con venta
+    semana = lenguaje.esta_semana(r.titulos, r.pedido_resumen, r.pedido, r.fecha_corte, r.errores)
+    assert semana["eventos"] == [{"id": "co", "titulo": "Evento", "meses_con_venta": 3}]
+    hoja = lenguaje.hoja_esta_semana(semana)
+    i = hoja.iloc[:, 0].tolist().index("EVENTOS QUE SIGUEN VENDIÉNDOSE (1)")
+    assert lenguaje.es_titulo_seccion(hoja.iloc[i, 0])
+    assert tuple(hoja.iloc[i + 1]) == ("Evento", "co · venta en 3 de los últimos 6 meses")
+
+
+def test_coyuntural_con_venta_en_2_de_6_meses_no_recibe_el_aviso():
+    r, t = _calculo_con_ventas(("2025-09", "2025-10", "2025-11", "2026-05", "2026-08"))
+    assert not bool(t.loc["co", "evento_persiste"]) and "Sigue vendiéndose" not in t.loc["co", "alertas"]
+    assert t.loc["co", "clase"] == "Coyuntural" and t.loc["co", "nivel_objetivo"] == 0 and t.loc["co", "politica"] == "No reponer"
+    semana = lenguaje.esta_semana(r.titulos, r.pedido_resumen, r.pedido, r.fecha_corte, r.errores)
+    assert semana["eventos"] == []
+    assert not any(str(a).startswith("EVENTOS QUE SIGUEN") for a in lenguaje.hoja_esta_semana(semana).iloc[:, 0])
 
 
 # ---------- Disponibilidad en el sitio ----------
