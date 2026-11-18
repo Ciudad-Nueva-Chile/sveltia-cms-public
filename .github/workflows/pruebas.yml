@@ -21,7 +21,7 @@ jobs:
       - run: pytest -q
       - name: El modelo corre de punta a punta con los datos de ejemplo
         run: python -m inventario --panel /tmp/datos.json > /dev/null
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
