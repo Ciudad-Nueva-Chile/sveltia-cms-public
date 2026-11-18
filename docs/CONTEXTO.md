@@ -26,7 +26,7 @@ Personas:
 
 | Persona | Rol en el sistema |
 |---|---|
-| Andrés | Diseña y mantiene el sistema; define costos y parámetros |
+| Quien mantiene el sistema | Diseña y mantiene el sistema; define costos y parámetros |
 | Roberto | Opera: edita libros en Sveltia, anota existencias y ventas en la planilla, decide los pedidos |
 | Clientes (lectores, librerías, parroquias, instituciones) | Navegan el sitio y envían solicitudes |
 
@@ -161,7 +161,7 @@ Lo marcado como **Pendiente** es lo que el sitio todavía no cumple.
 | Precio de lista con fecha | Se ve en el catálogo, en cada categoría, en la ficha y en el pie de página. Un título sin precio muestra «Precio a consultar» | Cumple (verificado) |
 | Solicitud sin pago en línea | Sin carro de compras, sin precio por cliente y sin documentos tributarios. Pide RUT con dígito verificador (módulo 11, obligatorio salvo para particulares), razón social, giro, contacto, teléfono y correo (obligatorios), y dirección de entrega y comuna (opcionales: la línea de entrega solo sale en el mensaje si el cliente escribió alguna). El mensaje empieza con «SOLICITUD DE PEDIDO WEB», que es la marca de origen, trae el total referencial a precio de lista con IVA y la fecha de la lista | Cumple |
 | Demanda no atendida | La búsqueda sin resultados ofrece un mensaje que empieza con «LIBRO NO ENCONTRADO» | Cumple |
-| Condiciones para librerías e instituciones | La página no publica los porcentajes de descuento. El párrafo «Forma de pago» lleva un comentario «POR VALIDAR CON LA CONTRAPARTE» (visible en Sveltia, no en el sitio) | Por validar |
+| Condiciones para librerías e instituciones | La página no publica los porcentajes de descuento | Validado |
 | Mapa del sitio | Se arma desde las colecciones (`src/sitemap.njk`): 722 fichas, 16 categorías, patrística, catálogo, inicio y las 2 páginas de texto, 743 direcciones. Deja fuera `/solicitud/` y la 404. Antes usaba `collections.all`, que solo trae la primera página de una plantilla paginada | Cumple (prueba en `pruebas.yml`) |
 | Descripción por ficha | Cada ficha tiene su propia descripción (`descripcion_seo` en `src/libros/libros.11tydata.js`): título, autor, colección con su número, ISBN y la primera frase de la sinopsis, o la edición si no hay sinopsis. Las 722 son distintas | Cumple (prueba en `pruebas.yml`) |
 | Tipografías propias | Fraunces e Inter (Fontsource, licencia OFL, versión fija en `package.json`) se copian de `node_modules` a `/assets/fuentes/` al compilar y se declaran con `@font-face`. Sin dependencia externa | Cumple |
@@ -170,7 +170,7 @@ Lo marcado como **Pendiente** es lo que el sitio todavía no cumple.
 | Sinopsis | El apartado «Sobre el libro» aparece solo si la ficha tiene sinopsis. Hoy ninguna la tiene | Cumple, con contenido pendiente |
 | Cifras de la portada | Número de títulos, de obras de patrística y de áreas salen de las colecciones, no se escriben a mano | Cumple |
 | Modo prueba | Con prefijo de ruta o `SITIO_PRUEBA`, `noindex` y aviso. En `ciudadnueva.cl` ambos desaparecen | Cumple |
-| Valores de ejemplo | WhatsApp, correo, repositorio y servicio de autenticación de Sveltia siguen siendo de ejemplo hasta que la contraparte entregue los reales | Pendiente de la contraparte |
+| Valores de ejemplo | WhatsApp, correo, repositorio y servicio de autenticación de Sveltia siguen siendo de ejemplo hasta que la Fundación entregue los reales | Pendiente de la Fundación |
 
 ---
 
@@ -189,7 +189,7 @@ Lo marcado como **Pendiente** es lo que el sitio todavía no cumple.
 | **Páginas del sitio** | `src/paginas/*.md` | Nosotros, Librerías e instituciones |
 | **Ajustes del sitio** | `src/_data/*.json` | Contacto, WhatsApp, portada, franja de anuncio, categorías, colecciones |
 
-Los parámetros del modelo ya no se editan en Sveltia: están en `config/parametros.yml`, que edita a mano solo quien mantiene el sistema (sección 9.10).
+Los parámetros del modelo ya no se editan en Sveltia: están en `config/parametros.yml`, que edita a mano solo quien mantiene el sistema (9.10).
 
 ---
 
@@ -244,7 +244,7 @@ robot, con permiso de **Editor** solo en esa planilla). Las pestañas automátic
 |---|---|---|---|
 | Código | `id` | Auto | `CN-XXXX`, el mismo del sitio |
 | ISBN, Título, Autor, Editorial, Categoría | `isbn`, `titulo`, `autor`, `origen`, `categoria` | Auto | Del sitio |
-| Categoría de gestión | `categoria_gestion` | Auto | A, B, C, D o «Sin categoría» (sección 9.4) |
+| Categoría de gestión | `categoria_gestion` | Auto | A, B, C, D o «Sin categoría» (9.4) |
 | **Se compra en** | `compra_en` | Roberto | España, Argentina o «España o Argentina» (si está en ambas, el modelo elige) |
 | Precio de venta | `precio_lista` | Auto | Precio con IVA del sitio (se cambia en Sveltia) |
 | **En bodega** | `bodega` | Roberto | Ejemplares físicos en la bodega |
@@ -304,7 +304,7 @@ llegada cuenta como «Pedido en camino». Con estas filas se miden T y L (9.8).
 
 **Esta semana** — resumen para decidir (solo lectura): pedidos por país y cuál conviene, libros que se venden y
 están sin stock, «Te los pidieron y no había», «Se venden más rápido que antes», «Eventos que siguen vendiéndose», «Bajas de stock sin venta anotada»,
-**qué contar esta semana** (sección 9.9), los que pasan a B en el próximo cálculo, los títulos C y D con su valor, datos por
+**qué contar esta semana** (9.9), los que pasan a B en el próximo cálculo, los títulos C y D con su valor, datos por
 actualizar, consignaciones de más de un año, productos de temporada, **«Revisar en la planilla»** y cómo anotar. España se
 muestra en € con su equivalente en US$ (la comparación entre países va en US$).
 
@@ -553,7 +553,7 @@ La política se asigna por categoría. La «decisión manual» de Sveltia manda 
 | C y D | **No reponer** | El sistema solo los muestra con su valor |
 | Sin categoría | **A pedido** | No se mantiene stock |
 
-La regla de B es la lectura del diseño de «lo vendido desde el embarque anterior» y **queda por confirmar con Andrés**. Las
+La regla de B es la lectura del diseño de «lo vendido desde el embarque anterior». Las
 políticas «Stock mínimo» y «Liquidar o revisar» ya no se asignan automáticamente.
 
 **Nivel objetivo S** (solo A Intermitente o Regular): el nivel hasta el que se repone en cada embarque. T y L son
@@ -855,9 +855,7 @@ envíos responden al instante.
 - Contraseña larga y planilla de la Fundación al pasar al oficial; migrar a la cuenta de la Fundación y a `ciudadnueva.cl`.
 - Fotos de los 125 libros con portada tipográfica.
 - Reescribir el historial de git para eliminar las portadas antiguas de Amazon.
-- Confirmar con Andrés las reglas de B y de Estacional (9.7).
 - Cargar en la planilla privada los factores de costo y el tipo de cambio.
-- Validar con la contraparte el párrafo «Forma de pago».
 - Más adelante: WhatsApp Business (catálogo, respuestas), separar ventas en oferta en el pronóstico, medir el error
   del pronóstico con datos reales.
 

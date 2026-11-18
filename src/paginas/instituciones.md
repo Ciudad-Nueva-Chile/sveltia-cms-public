@@ -22,8 +22,6 @@ bajada: Trabajamos directamente con quienes hacen llegar estos libros a sus lect
 
 **Factura electrónica.** Todas nuestras ventas se documentan con factura. Al enviar tu solicitud incluye razón social, RUT y giro.
 
-<!-- POR VALIDAR CON LA CONTRAPARTE: párrafo «Forma de pago» (condiciones de pago y plazo). No publicar porcentajes de descuento. -->
-
 **Forma de pago.** La primera compra se paga por transferencia al confirmarla. Los clientes habituales pueden operar con pago a 30 días.
 
 ## Cómo hacer un pedido
