@@ -8,7 +8,7 @@ import pytest
 from scipy.stats import poisson
 
 from inventario import categorias, demanda, politica, stock
-from inventario.config import Parametros, cargar_parametros
+from inventario.config import HISTORIA_MESES, INICIO_DEMANDA, Parametros, cargar_parametros
 from inventario.modelo import calcular, conteo_ciclico
 
 
@@ -117,8 +117,8 @@ def test_stock_de_seguridad_es_s_menos_la_demanda_del_horizonte():
     filas += [(f"2026-0{m}-10", "x", "venta", c) for m, c in ((1, 5), (3, 1), (5, 8), (7, 2))]
     r = calcular(catalogo, _mov(filas), pd.DataFrame(columns=["id", "cantidad"]), pd.DataFrame(), Parametros(), pd.Timestamp("2026-08-31"))
     t = r.titulos.set_index("id").loc["x"]
-    media = demanda.demanda_horizonte(demanda.sba(r.series.loc["x"].to_numpy(dtype=float), 0.15), 3, 5.5 / 30)
-    assert t["clase"] == "Intermitente" and t["nivel_objetivo"] == demanda.nivel_objetivo(media / (3 + 5.5 / 30), 3, 5.5 / 30, 0.95, [5, 1, 8, 2])
+    media = demanda.demanda_horizonte(demanda.sba(r.series.loc["x"].to_numpy(dtype=float), 0.15), 4, 5.5 / 30)
+    assert t["clase"] == "Intermitente" and t["nivel_objetivo"] == demanda.nivel_objetivo(media / (4 + 5.5 / 30), 4, 5.5 / 30, 0.95, [5, 1, 8, 2])
     assert t["demanda_horizonte"] == pytest.approx(media, abs=0.05)
     assert t["stock_seguridad"] == pytest.approx(t["nivel_objetivo"] - media, abs=0.05)
     assert t["nivel_objetivo"] > int(poisson.ppf(0.95, media))     # los pedidos grandes piden más colchón que la Poisson
@@ -135,12 +135,11 @@ def test_esporadica_repone_lo_vendido_sin_s_ni_stock_de_seguridad():
 
 def test_t_y_l_por_origen():
     p = Parametros()
-    assert p.intervalo_meses("Argentina") == 3 and p.plazo_meses("Argentina") == pytest.approx(5.5 / 30)
+    assert p.intervalo_meses("Argentina") == 4 and p.plazo_meses("Argentina") == pytest.approx(5.5 / 30)
     assert p.intervalo_meses("España") == 6 and p.plazo_meses("España") == pytest.approx(39 / 30)
     assert p.intervalo_meses("Uruguay") == 6            # todo origen distinto de Argentina se trata como España
-    assert p.origen("Argentina").meses_embarque == [2, 5, 8, 11] and not p.origen("España").meses_embarque
-    from inventario.config import HISTORIA_MESES
-    assert p.nivel_servicio == 0.95 and HISTORIA_MESES == 21
+    assert p.origen("Argentina").meses_embarque == [4, 8, 12] and not p.origen("España").meses_embarque
+    assert p.nivel_servicio == 0.95 and HISTORIA_MESES == 20
 
 
 def test_humo_s_con_lambda_t_y_l_conocidos():
@@ -274,32 +273,54 @@ def _ventas_mensuales(desde, hasta, cada=3):
             for i, m in enumerate(pd.period_range(desde, hasta, freq="M")) if i % cada == 0]
 
 
-def test_con_21_meses_o_menos_el_pronostico_usa_la_misma_serie():
+def test_con_20_meses_o_menos_el_pronostico_usa_la_misma_serie():
     catalogo = _catalogo([{"id": "x", "titulo": "x", "origen": "España", "precio_lista": 10000}])
     mov = _mov([("2025-04-01", "x", "inventario_inicial", 30)] + _ventas_mensuales("2025-04", "2026-08"))
     fc = pd.Timestamp("2026-08-31")
     r = calcular(catalogo, mov, pd.DataFrame(columns=["id", "cantidad"]), pd.DataFrame(), Parametros(), fc)
     t = r.titulos.set_index("id")
-    ventana = demanda.venta_neta_mensual(stock.limpiar(mov), ["x"], fc, 21).loc["x"].to_numpy(dtype=float)
-    assert t.loc["x", "meses_pronostico"] == 21
+    ventana = demanda.venta_neta_mensual(stock.limpiar(mov), ["x"], fc, HISTORIA_MESES).loc["x"].to_numpy(dtype=float)
+    assert t.loc["x", "meses_pronostico"] == HISTORIA_MESES == 20
     assert t.loc["x", "tasa_mensual"] == round(demanda.sba(ventana, 0.15), 3)
 
 
-def test_con_36_meses_el_pronostico_incorpora_los_meses_anteriores():
+def test_con_mas_meses_que_la_ventana_el_pronostico_incorpora_los_meses_anteriores():
     catalogo = _catalogo([{"id": "x", "titulo": "x", "origen": "España", "precio_lista": 10000}])
-    # Primeros 15 meses: se vendía todos los meses. Últimos 21 (la ventana): cada 3 meses.
-    antes = [(str(m.start_time.date() + pd.Timedelta(days=9)), "x", "venta", 4) for m in pd.period_range("2023-09", "2024-11", freq="M")]
-    mov = _mov([("2023-09-01", "x", "inventario_inicial", 200)] + antes + _ventas_mensuales("2024-12", "2026-08"))
-    fc = pd.Timestamp("2026-08-31")
+    # Enero a marzo de 2025: se vendía todos los meses. Desde abril (la ventana de 20 meses al corte): cada 3 meses.
+    antes = [(str(m.start_time.date() + pd.Timedelta(days=9)), "x", "venta", 4) for m in pd.period_range("2025-01", "2025-03", freq="M")]
+    mov = _mov([("2025-01-01", "x", "inventario_inicial", 200)] + antes + _ventas_mensuales("2025-04", "2026-11"))
+    fc = pd.Timestamp("2026-11-30")
     r = calcular(catalogo, mov, pd.DataFrame(columns=["id", "cantidad"]), pd.DataFrame(), Parametros(), fc)
     t = r.titulos.set_index("id")
     limpio = stock.limpiar(mov)
-    ventana = demanda.venta_neta_mensual(limpio, ["x"], fc, 21).loc["x"].to_numpy(dtype=float)
-    completa = demanda.venta_neta_mensual(limpio, ["x"], fc, 36).loc["x"].to_numpy(dtype=float)
-    assert t.loc["x", "meses_pronostico"] == 36
-    assert t.loc["x", "clase"] == demanda.clasificar(ventana)[0]                 # la clase sigue usando 21 meses
+    ventana = demanda.venta_neta_mensual(limpio, ["x"], fc, HISTORIA_MESES).loc["x"].to_numpy(dtype=float)
+    completa = demanda.venta_neta_mensual(limpio, ["x"], fc, 23).loc["x"].to_numpy(dtype=float)
+    assert t.loc["x", "meses_pronostico"] == 23
+    assert t.loc["x", "clase"] == demanda.clasificar(ventana)[0]                 # la clase sigue usando la ventana de 20 meses
     assert t.loc["x", "tasa_mensual"] == round(demanda.sba(completa, 0.15), 3)
     assert t.loc["x", "tasa_mensual"] != round(demanda.sba(ventana, 0.15), 3)    # λ cambia con la historia anterior
+
+
+def test_la_demanda_se_cuenta_desde_enero_de_2025_aunque_haya_movimientos_anteriores():
+    """Si el primer movimiento es de junio de 2024, la tasa SBA parte de enero de 2025: los meses anteriores no cuentan
+    como ventas en cero ni como ventas, y los pedidos grandes de 2024 no entran a los tamaños de pedido."""
+    assert INICIO_DEMANDA == "2025-01-01"
+    catalogo = _catalogo([{"id": "x", "titulo": "x", "origen": "España", "precio_lista": 10000}])
+    de_2024 = [(f"2024-{m:02d}-10", "x", "venta", 30) for m in (6, 7, 8, 9, 10, 11, 12)]      # un ritmo muy distinto
+    mov = _mov([("2024-06-01", "x", "inventario_inicial", 500)] + de_2024 + _ventas_mensuales("2025-01", "2026-08"))
+    fc = pd.Timestamp("2026-08-31")
+    r = calcular(catalogo, mov, pd.DataFrame(columns=["id", "cantidad"]), pd.DataFrame(), Parametros(), fc)
+    t = r.titulos.set_index("id").loc["x"]
+    limpio = stock.limpiar(mov)
+    desde_2025 = demanda.venta_neta_mensual(limpio, ["x"], fc, 20).loc["x"].to_numpy(dtype=float)
+    desde_2024 = demanda.venta_neta_mensual(limpio, ["x"], fc, 27).loc["x"].to_numpy(dtype=float)
+    assert t["meses_pronostico"] == 20
+    assert t["tasa_mensual"] == round(demanda.sba(desde_2025, 0.15), 3)
+    assert t["tasa_mensual"] != round(demanda.sba(desde_2024, 0.15), 3)
+    # Los tamaños de pedido del nivel objetivo son solo los de 2025 en adelante (todos de 2 ejemplares)
+    tamanos = [2.0] * int((desde_2025 > 0).sum())
+    T, L = Parametros().intervalo_meses("España"), Parametros().plazo_meses("España")
+    assert t["nivel_objetivo"] == demanda.nivel_objetivo(demanda.sba(desde_2025, 0.15), T, L, 0.95, tamanos)
 
 
 def test_solicitud_web_de_un_c_o_d_pasa_a_b_en_el_proximo_calculo():
@@ -454,8 +475,8 @@ def test_el_costo_fijo_puede_juntar_todo_en_un_solo_pais():
     combos = con_envio.attrs["combinaciones"]
     elegida = next(c for c in combos if c["elegida"])
     assert elegida["envia"] == ["España"]
-    for c in combos:   # el total es siempre libros + envíos: la planilla lo recalcula con fórmulas
-        assert c["total_usd"] == pytest.approx(c["libros_usd"] + c["envio_usd"], abs=0.02)
+    for c in combos:   # el total es siempre libros + envíos + impuestos: la planilla lo recalcula con fórmulas
+        assert c["total_usd"] == pytest.approx(c["libros_usd"] + c["envio_usd"] + c["impuestos_usd"], abs=0.02)
 
 
 def test_el_pedido_chico_se_pide_y_la_tarjeta_da_fecha_libros_y_fob():
@@ -467,7 +488,8 @@ def test_el_pedido_chico_se_pide_y_la_tarjeta_da_fecha_libros_y_fob():
     assert not any(k.startswith(("minimo", "falta")) for k in arg)
     tarjeta = lenguaje.estado_pedido(arg)
     assert tarjeta["titulo"].startswith("Embarque desde Argentina: próximo pedido el ")
-    assert tarjeta["detalle"] == "2 libros por pedir, unos US$ 80 FOB. Peso estimado: 0,3 kg. Envío: US$ 16 (estimado por peso)."
+    assert tarjeta["detalle"] == ("2 libros por pedir, unos US$ 80 FOB. Peso estimado: 0,3 kg. Envío: unos US$ 20 (estimado por peso). "
+                                  "Impuestos: unos US$ 24. Total aproximado: US$ 124.")
     vacia = lenguaje.estado_pedido(arg | {"unidades": 0, "total_usd": 0})
     assert vacia["tono"] == "nada" and "no hay libros que pedir" in vacia["detalle"]
 
@@ -477,10 +499,11 @@ def test_la_hoja_de_pedido_no_compara_contra_ningun_monto():
     t = pd.DataFrame([_titulo("arg", "Argentina", 2, 119000)])
     lineas, resumen = pedido.sugerir(t, COSTOS, Parametros(), pd.Timestamp("2026-10-01"), {"España": 100, "Argentina": 100})
     h = lenguaje.hoja_pedido(lineas, resumen.attrs["combinaciones"], resumen.attrs["envios"], pd.Timestamp("2026-10-01"), por_origen=resumen)
-    assert ["Origen", "Próximo pedido", "Libros por pedir", "Peso estimado (kg)", "Envío (US$)", "De dónde sale", "US$ FOB", "€ FOB (España)"] in h["filas"]
+    assert ["Origen", "Próximo pedido", "Libros por pedir", "Peso estimado (kg)", "Envío (US$)", "De dónde sale", "US$ FOB", "€ FOB (España)",
+            "Impuestos (US$)", "Total aprox. (US$)"] in h["filas"]
     assert ["CONVIENE"] == [f[0] for f in h["filas"] if f and f[0] == "CONVIENE"]        # el comparador sigue
     # «Libros por pedir» lleva formato de número: la celda pudo tener antes una fecha y la planilla conserva ese formato
-    fila = next(i for i, f in enumerate(h["filas"]) if f and f[0] == "Argentina" and len(f) == 8)
+    fila = next(i for i, f in enumerate(h["filas"]) if f and f[0] == "Argentina" and len(f) == 10)
     assert h["filas"][fila][2] == 2 and any(r0 <= fila < r1 and c0 <= 2 < c1 and "yy" not in pat for r0, r1, c0, c1, pat in h["formatos"][2:])
 
 
@@ -496,24 +519,23 @@ def test_proximo_embarque_es_la_ultima_importacion_mas_t():
     assert e["España"][0] is None and e["España"][1] == pd.Timestamp("2026-10-01")  # sin importaciones: vencido
 
 
-def test_argentina_embarca_en_febrero_mayo_agosto_y_noviembre():
+def test_argentina_embarca_en_abril_agosto_y_diciembre():
     from inventario import pedido
     catalogo = _catalogo([{"id": "a", "titulo": "a", "origen": "Argentina", "precio_lista": 1}])
     casos = (  # última llegada, fecha de cálculo, próximo pedido
-        ("2026-03-03", "2026-10-15", "2026-11-01"),    # no es la última llegada más T
-        ("2026-03-03", "2026-11-01", "2026-11-01"),    # noviembre en curso y todavía no llega: toca ahora
-        ("2026-11-10", "2026-11-15", "2027-02-01"),    # el de noviembre ya llegó
-        ("2027-02-20", "2027-03-01", "2027-05-01"),
-        ("2027-05-20", "2027-06-30", "2027-08-01"),    # agosto: el que viaja con los calendarios
-        ("2027-08-10", "2027-08-15", "2027-11-01"),
+        ("2026-03-03", "2026-10-15", "2026-12-01"),    # no es la última llegada más T
+        ("2026-03-03", "2026-12-01", "2026-12-01"),    # diciembre en curso y todavía no llega: toca ahora
+        ("2026-12-10", "2026-12-15", "2027-04-01"),    # el de diciembre ya llegó
+        ("2027-04-20", "2027-05-01", "2027-08-01"),    # agosto: el que viaja con los calendarios
+        ("2027-08-10", "2027-08-15", "2027-12-01"),
     )
     for llegada, corte, esperado in casos:
         mov = _mov([(llegada, "a", "importacion", 3)])
         proximo = pedido.proximos_embarques(mov, catalogo, Parametros(), pd.Timestamp(corte))["Argentina"][1]
         assert proximo == pd.Timestamp(esperado), (llegada, corte)
-        assert proximo.month in (2, 5, 8, 11) and proximo.day == 1
+        assert proximo.month in (4, 8, 12) and proximo.day == 1
     # Sin ninguna importación registrada también cae en uno de esos meses
-    assert pedido.proximos_embarques(_mov([]), catalogo, Parametros(), pd.Timestamp("2026-12-15"))["Argentina"][1] == pd.Timestamp("2027-02-01")
+    assert pedido.proximos_embarques(_mov([]), catalogo, Parametros(), pd.Timestamp("2026-09-15"))["Argentina"][1] == pd.Timestamp("2026-12-01")
 
 
 def test_espana_pide_cada_6_meses_desde_la_ultima_llegada():
@@ -526,15 +548,15 @@ def test_espana_pide_cada_6_meses_desde_la_ultima_llegada():
 def test_t_y_l_de_la_politica_vigente_con_observado_como_comparacion():
     from inventario import importaciones
     p = cargar_parametros()
-    assert (p.intervalo_meses("España"), p.intervalo_meses("Argentina")) == (6, 3)
+    assert (p.intervalo_meses("España"), p.intervalo_meses("Argentina")) == (6, 4)
     assert p.origen("España").plazo_dias == 39 and p.origen("Argentina").plazo_dias == 5.5
-    assert p.origen("Argentina").meses_embarque == [2, 5, 8, 11] and p.nivel_servicio == 0.95 and p.alfa_suavizado == 0.15
+    assert p.origen("Argentina").meses_embarque == [4, 8, 12] and p.nivel_servicio == 0.95 and p.alfa_suavizado == 0.15
     tres = importaciones.efectivos(_embarques("Argentina", ["2026-01-10", "2026-04-10", "2026-07-10"]), p)["Argentina"]
-    assert tres["texto_T"] == "Política: cada 3 meses (febrero, mayo, agosto y noviembre). Observado: cada 3 meses (3 embarques)"
+    assert tres["texto_T"] == "Política: cada 4 meses (abril, agosto y diciembre). Observado: cada 3 meses (3 embarques)"
 
 
 def test_los_calendarios_se_piden_a_argentina():
-    """El pedido anual de calendarios viaja con el embarque de agosto desde Argentina (memoria 4.2.5)."""
+    """El pedido anual de calendarios viaja con el embarque de agosto desde Argentina."""
     from inventario.fuentes import catalogo_desde_sitio
     cat = catalogo_desde_sitio(Path(__file__).resolve().parent.parent / "src" / "libros")
     estacionales = cat[cat["clase_manual"] == "Estacional"]
@@ -601,7 +623,7 @@ def test_el_flete_no_se_suma_dos_veces():
     fob = 10 * 100 * 0.45 + 10 * 100 * 0.40                     # neto de US$ 100 por el factor FOB, no por 0,9
     assert c["libros_usd"] == pytest.approx(fob)
     assert lineas["subtotal_usd"].sum() == pytest.approx(fob)
-    assert c["total_usd"] == pytest.approx(fob + c["envio_usd"], abs=0.02)
+    assert c["total_usd"] == pytest.approx(fob + c["envio_usd"] + c["impuestos_usd"], abs=0.02)
 
 
 def test_sin_cotizacion_el_envio_se_estima_por_peso():
@@ -610,17 +632,46 @@ def test_sin_cotizacion_el_envio_se_estima_por_peso():
     for envios in (None, {}, {"España": 0, "Argentina": ""}):
         _, r = pedido.sugerir(t, COSTOS_EUR, Parametros(), pd.Timestamp("2026-10-01"), envios)
         assert r.attrs["envios_pesos"] == {"España": 4.3, "Argentina": 5.0}          # 10 × 0,43 y 34 × 0,148 = 5,03
-        assert r.attrs["envios"]["Argentina"] == 31.30                                # 5,03 kg → tramo de 5,5 kg
+        assert r.attrs["envios_tarifas"]["Argentina"] == 31.30                        # 5,03 kg → tramo de 5,5 kg
+        assert r.attrs["envios"]["Argentina"] == pytest.approx(31.30 * 1.3, abs=0.01) # la tarifa más sus adicionales
         assert r.attrs["envios"]["España"] == pytest.approx((55.6 + 7.96 * 4.3) * 1100 / 1000, abs=0.01)
         assert r.attrs["envios_fuente"] == {"España": "estimado por peso", "Argentina": "estimado por peso"}
-        assert r.attrs["combinaciones"][0]["envio_usd"] == pytest.approx(r.attrs["envios"]["España"] + 31.30, abs=0.02)
+        assert r.attrs["combinaciones"][0]["envio_usd"] == pytest.approx(r.attrs["envios"]["España"] + 31.30 * 1.3, abs=0.02)
+
+
+def test_impuestos_desde_argentina_salen_del_flete_de_aduana_no_del_facturado():
+    from inventario.pedido import impuestos_envio
+    aduana = {"iva": 0.19, "seguro": 0.02, "arancel": 0, "tasas": 0, "flete_fijo": 40, "flete_por_kg": 5}
+    i = impuestos_envio(aduana, 10, 100, envio_usd=25)        # CIF = 100 + (40 + 5 × 10) + 2
+    assert i == {"arancel": 0.0, "iva": pytest.approx(36.48), "tasas": 0.0, "total": pytest.approx(36.48)}
+
+
+def test_impuestos_desde_espana_salen_del_envio_con_arancel_y_tasas():
+    from inventario.pedido import impuestos_envio
+    aduana = {"iva": 0.19, "seguro": 0.02, "arancel": 0.06, "tasas": 0.01}
+    i = impuestos_envio(aduana, 10, 100, envio_usd=50)        # CIF = 152; arancel 6 %; IVA sobre CIF + arancel
+    assert i["arancel"] == pytest.approx(9.12) and i["iva"] == pytest.approx(30.61, abs=0.01) and i["tasas"] == pytest.approx(1.52)
+    assert i["total"] == pytest.approx(41.25, abs=0.01)
+
+
+def test_los_impuestos_no_cambian_con_la_cotizacion_y_entran_al_total():
+    from inventario import pedido
+    t = pd.DataFrame([_titulo("esp", "España", 10, 119000)])
+    _, sin = pedido.sugerir(t, COSTOS_EUR, Parametros(), pd.Timestamp("2026-10-01"))
+    _, con = pedido.sugerir(t, COSTOS_EUR, Parametros(), pd.Timestamp("2026-10-01"), {"España": 999})
+    a, b = sin.attrs["combinaciones"][0], con.attrs["combinaciones"][0]
+    assert a["impuestos_usd"] > 0 and a["impuestos_usd"] == b["impuestos_usd"]
+    assert b["total_usd"] == pytest.approx(b["libros_usd"] + 999 + b["impuestos_usd"], abs=0.02)
+    fila = con.set_index("origen").loc["España"]
+    assert fila["total_aprox_usd"] == pytest.approx(fila["total_usd"] + 999 + fila["impuestos_usd"], abs=0.02)
 
 
 def test_la_cotizacion_anotada_reemplaza_al_estimado():
     from inventario import pedido
     t = pd.DataFrame([_titulo("esp", "España", 10, 119000), _titulo("arg", "Argentina", 10, 119000)])
     _, r = pedido.sugerir(t, COSTOS_EUR, Parametros(), pd.Timestamp("2026-10-01"), {"España": 100, "Argentina": 0})
-    assert r.attrs["envios"]["España"] == 100 and r.attrs["envios"]["Argentina"] == tarifa_arg(1.48)
+    assert r.attrs["envios"]["España"] == 100
+    assert r.attrs["envios"]["Argentina"] == pytest.approx(tarifa_arg(1.48) * 1.3, abs=0.01)
     assert r.attrs["envios_fuente"] == {"España": "cotización anotada", "Argentina": "estimado por peso"}
     fila = r.set_index("origen").loc["España"]
     assert fila["envio_usd"] == 100 and fila["envio_fuente"] == "cotización anotada"
@@ -794,7 +845,7 @@ def test_no_queda_referencia_al_monto_minimo_de_embarque():
     raiz = Path(__file__).resolve().parent.parent
     permitidos_700 = re.compile(r'font-weight:\s*700|width="700"|700px')
     permitidos_minimo = re.compile(
-        r"mínimo arrepentimiento|menor arrepentimiento|m[ií]nimo de 21 meses|m[ií]nimo 21 meses|mínimo la ventana|Datos mínimos|Stock mínimo|"
+        r"mínimo arrepentimiento|menor arrepentimiento|m[ií]nimo de 2[01] meses|m[ií]nimo 2[01] meses|mínimo la ventana|Datos mínimos|Stock mínimo|"
         r"MINIMO_EMBARQUES|ACELERACION_MINIMO|minimo_meses|\bminimo\b.*(float|unidades|recientes)|ultimos >= minimo|`minimo` unidades|min-",
         re.I)
     fuera = {"node_modules", "_site", ".git", ".venv", "salida", "__pycache__", "libros", "datos_ejemplo", "portadas", ".claude"}
@@ -881,7 +932,8 @@ def test_hoja_pedido_formulas_con_separador_de_la_planilla():
     combos[1]["estimados"] = {"España": 58.0, "Argentina": 31.3}
     h = lenguaje.hoja_pedido(pd.DataFrame(), combos, {"España": 50, "Argentina": 31.3}, "2026-10-05", sep=";",
                              anotados={"España": 50, "Argentina": 0}, estimados={"España": 62.1, "Argentina": 31.3},
-                             pesos={"España": 4.3, "Argentina": 5.0})
+                             pesos={"España": 4.3, "Argentina": 5.0}, tarifas={"España": 62.1, "Argentina": 24.1},
+                             impuestos={"España": {"iva": 20, "arancel": 0, "tasas": 1, "total": 21}})
     filas = h["filas"]
     assert filas[4][1:3] == ["Desde España", "Desde Argentina"]
     assert filas[5][:3] == [lenguaje.ETIQUETA_ENVIO, 50, ""]              # sin cotización, la celda amarilla queda vacía
@@ -889,8 +941,10 @@ def test_hoja_pedido_formulas_con_separador_de_la_planilla():
     assert filas[7][:3] == [lenguaje.ETIQUETA_ESTIMADO, 62.1, 31.3]
     assert filas[8][1] == "=IF(N(B6)>0;B6;B8)"
     assert filas[9][1] == '=IF(N(B6)>0;"cotización anotada";"estimado por peso")'
-    assert filas[12][3] == "=IF(N($B$6)>0;$B$6;F13)" and filas[12][4] == "=C13+D13" and filas[12][5:7] == [62.1, ""]
-    assert filas[13][3] == "=IF(N($B$6)>0;$B$6;F14)+IF(N($C$6)>0;$C$6;G14)" and filas[13][5:7] == [58.0, 31.3]
+    assert filas[10][:3] == ["Del estimado: tarifa (US$)", 62.1, 24.1] and filas[11][:3] == ["Del estimado: adicionales (US$)", 0, 7.2]
+    assert filas[12][:3] == ["Impuestos: IVA (US$, aprox.)", 20, 0] and filas[14][:3] == ["Impuestos: tasas (US$, aprox.)", 1, 0]
+    assert filas[17][3] == "=IF(N($B$6)>0;$B$6;G18)" and filas[17][5] == "=C18+D18+E18" and filas[17][6:8] == [62.1, ""]
+    assert filas[18][3] == "=IF(N($B$6)>0;$B$6;G19)+IF(N($C$6)>0;$C$6;H19)" and filas[18][6:8] == [58.0, 31.3]
     conviene = next(f for f in filas if f[0] == "CONVIENE")[1]
     assert ";" in conviene and "," not in conviene
     assert h["editables"] == [(5, 1), (5, 2)]

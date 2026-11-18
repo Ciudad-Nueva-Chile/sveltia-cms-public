@@ -47,7 +47,7 @@ jobs:
           print(f"URLs en el mapa: {mapa.count('<url>')} · categorías en el mapa: {en_mapa} de {paginas} · fichas: {len(fichas)} · descripciones repetidas: {repetidas}")
           errores = []
           if en_mapa != paginas or en_mapa < 16:
-              errores.append(f"el mapa trae {en_mapa} categorías y hay {paginas} páginas de categoría (la memoria espera 16)")
+              errores.append(f"el mapa trae {en_mapa} categorías y hay {paginas} páginas de categoría (se esperan 16 categorías)")
           if repetidas:
               errores.append(f"{repetidas} fichas repiten la descripción de otra")
           if fuera:

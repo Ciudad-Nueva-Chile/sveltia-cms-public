@@ -6,7 +6,7 @@ del análisis real (la mayoría de los títulos se vende de forma esporádica, u
 o estacionales), pero ninguna cifra corresponde a la operación de la Fundación.
 
 Uso:
-    python herramientas/generar_ejemplo.py --libros ../PDT/prototipo-web/src/libros
+    python herramientas/generar_ejemplo.py --libros src/libros
     python herramientas/generar_ejemplo.py            # reutiliza datos_ejemplo/Catalogo.csv
 """
 from __future__ import annotations
@@ -161,7 +161,7 @@ def generar(catalogo: pd.DataFrame, rng) -> tuple[pd.DataFrame, pd.DataFrame, pd
 
 
 # Desde estas fechas los embarques se anotan en la pestaña «Importaciones» (fecha de pedido y de llegada, país real).
-# España tiene 5 embarques (se usan T y L medidos); Argentina 2 (se usan los de la memoria y se informa el medido).
+# España tiene 5 embarques (se usan T y L medidos); Argentina 2 (se usan los de config/parametros.yml y se informa el medido).
 IMPORTACIONES_DESDE = {"España": pd.Timestamp("2025-07-01"), "Argentina": pd.Timestamp("2026-04-01")}
 PLAZO_EJEMPLO = {"España": 7, "Argentina": 6}   # días entre pedido y llegada, inventados
 

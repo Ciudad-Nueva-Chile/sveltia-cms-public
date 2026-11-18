@@ -421,7 +421,8 @@ def ciclo_planilla(fuente: FuenteSheets, catalogo: pd.DataFrame, p, fecha_corte=
     hp = lenguaje.hoja_pedido(r.pedido, r.pedido_resumen.attrs["combinaciones"], r.pedido_resumen.attrs["envios"],
                               r.fecha_corte, fuente.separador, r.pedido_resumen,
                               r.pedido_resumen.attrs["envios_anotados"], r.pedido_resumen.attrs["envios_estimados"],
-                              r.pedido_resumen.attrs["envios_pesos"])
+                              r.pedido_resumen.attrs["envios_pesos"], r.pedido_resumen.attrs["envios_tarifas"],
+                              r.pedido_resumen.attrs["envios_impuestos"])
     fuente.escribir("Pedido", hp["filas"], solo_lectura=True, secciones=True, celdas_editables=hp["editables"],
                     negritas=hp["negritas"], formatos_rango=hp["formatos"],
                     anchos={0: 230, 1: 300, 2: 120, 3: 320, 4: 110, 5: 130, 6: 380, 7: 90})

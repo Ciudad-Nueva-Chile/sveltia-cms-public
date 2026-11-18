@@ -1,4 +1,4 @@
-"""Qué hacer con cada título según su categoría de gestión (memoria, sección 4.2.5, Tabla 4.26).
+"""Qué hacer con cada título según su categoría de gestión.
 
 La «decisión manual» del catálogo (Sveltia) siempre manda sobre estas reglas:
 
@@ -6,13 +6,12 @@ La «decisión manual» del catálogo (Sveltia) siempre manda sobre estas reglas
     A Estacional                Temporada           un pedido anual que debe llegar antes de septiembre
     A Coyuntural                No reponer          se atiende por reacción
     B                           Reponer lo vendido  lo vendido desde el embarque anterior, sin stock de seguridad
-    C y D                       No reponer          solo se muestran con su valor (destino: secciones 5.2 y 5.3)
+    C y D                       No reponer          solo se muestran con su valor
     Sin categoría               A pedido            no se mantiene stock
 
-POR CONFIRMAR CON ANDRÉS:
-- B: cantidad = unidades vendidas desde el embarque anterior, es decir, la última llegada registrada del origen donde se
-  compra (o la del propio título, si es más reciente; sin ninguna, desde el inicio de la ventana), menos lo que ya viene en
-  camino.
+Cantidades:
+- B: unidades vendidas desde el embarque anterior, es decir, la última llegada registrada del origen donde se compra (o la
+  del propio título, si es más reciente; sin ninguna, desde el inicio de la ventana), menos lo que ya viene en camino.
 - Estacional: se pide entre junio y agosto, hasta la venta neta de la última temporada completa (septiembre a marzo).
 """
 from __future__ import annotations

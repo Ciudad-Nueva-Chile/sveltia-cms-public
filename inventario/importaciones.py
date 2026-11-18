@@ -11,7 +11,7 @@ cantidad, FOB total y gastos de internación del embarque (opcionales; con ellos
    se completa solo con la suma de esas filas. Para los demás queda lo que anote Roberto; cuando llega un embarque de un
    libro sin otras filas abiertas, lo que llegó se resta de su «Pedido en camino».
 3. El próximo embarque de cada país parte de su última llegada registrada aquí.
-4. T y L medidos (memoria, sección 4.2.5, para contrastar los valores del análisis de lote):
+4. T y L medidos, para contrastar los valores de la política:
        T = mediana de los días entre fechas de llegada distintas del país, en sus últimos 5 embarques
        L = mediana de (fecha de llegada − fecha de pedido), en las filas que tienen ambas
    Son solo un aviso comparativo: el nivel objetivo S y la fecha del próximo embarque usan siempre los T y L de la
@@ -32,7 +32,7 @@ DIAS_MES = 30.44          # días por mes para pasar T de días a meses
 
 
 def pais(nombre) -> str:
-    """Todo país distinto de Argentina se trata como España (criterio de la memoria)."""
+    """Todo país distinto de Argentina se trata como España."""
     return "Argentina" if str(nombre).strip() == "Argentina" else "España"
 
 

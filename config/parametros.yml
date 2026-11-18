@@ -1,29 +1,37 @@
 # Parámetros del modelo de inventario.
-# Se edita a mano, solo por quien mantiene el sistema. Roberto no necesita tocar este archivo.
-# Solo van aquí las decisiones que pueden cambiar. Los valores fijos de la memoria (ventana de 21 meses, cortes ADI y CV²,
-# frecuencias de conteo, días de consignación) son constantes en inventario/config.py. Los factores de costo, el tipo de cambio
-# y la cotización de cada envío viven en la planilla privada.
+# Se edita a mano, solo por quien mantiene el sistema. Quien administra el inventario no necesita tocar este archivo.
+# Solo van aquí las decisiones que pueden cambiar. Los valores fijos del método (ventana de 20 meses, inicio de la demanda,
+# cortes ADI y CV², frecuencias de conteo, días de consignación) son constantes en inventario/config.py. Los factores de
+# costo, el tipo de cambio y la cotización de cada envío viven en la planilla privada.
 
-# Nivel de servicio: CRITERIO de la memoria (sección 4.2.5), no resultado de una optimización, porque el costo del quiebre
-# no puede estimarse con el registro. Es el percentil de la venta en T + L (modelo compuesto: pedidos Poisson por tamaño de
-# pedido registrado, inventario/demanda.py) con que se calcula el nivel objetivo S.
+# Nivel de servicio: CRITERIO, no resultado de una optimización, porque el costo del quiebre no puede estimarse con el
+# registro. Es el percentil de la venta en T + L (modelo compuesto: pedidos Poisson por tamaño de pedido registrado,
+# inventario/demanda.py) con que se calcula el nivel objetivo S.
 nivel_servicio: 0.95
 
-# α de SBA: SUPUESTO ABIERTO, dentro del rango 0,05 a 0,20 evaluado por Syntetos, Boylan y Croston (2005) (memoria, 4.1.4).
+# α de SBA: SUPUESTO ABIERTO, dentro del rango 0,05 a 0,20 que evaluaron Syntetos, Boylan y Croston (2005).
 alfa_suavizado: 0.15
 
-# Embarques por origen (memoria, sección 4.2.5). Todo origen distinto de Argentina se trata como España.
-# intervalo_embarque_meses (T): España 6 meses, por la ecuación (12) de la memoria y mínimo arrepentimiento en 108 escenarios.
-#   Argentina 3 meses, decisión de noviembre de 2026.
-# meses_embarque: meses fijos en que toca el pedido. Argentina en febrero, mayo, agosto y noviembre; el de agosto viaja junto
+# Embarques por origen. Todo origen distinto de Argentina se trata como España.
+# intervalo_embarque_meses (T): España 6 meses, el de menor arrepentimiento en 108 escenarios simulados.
+#   Argentina 4 meses, el de menor arrepentimiento con el costo del envío que incluye los adicionales (noviembre de 2026).
+# meses_embarque: meses fijos en que toca el pedido. Argentina en abril, agosto y diciembre; el de agosto viaja junto
 #   con el pedido anual de calendarios (debe llegar antes de septiembre) y su costo fijo se paga una sola vez. El próximo es el
 #   siguiente de esos meses. Sin meses_embarque (España), el próximo es la última llegada de «Importaciones» más T.
 # plazo_dias (L): plazo de reposición. Argentina 5,5 días (declarado y observado). España 39 días: mediana observada de
 #   5 envíos entre la factura y la llegada (20 a 85 días), en vez de los 7 declarados.
 # peso_medio_kg: peso de un ejemplar cuando la ficha no trae «Peso (kg)».
-# envio: costo estimado de un envío según su peso, sin IVA, impuestos ni recargos. Se usa cuando la celda amarilla de «Pedido
-#   sugerido» está vacía o en 0; una cotización anotada siempre manda.
-#   España: fijo + por_kg × kilos, en euros, convertido con el tipo de cambio de «Configuración» (memoria 4.2.5).
+# envio: costo aproximado de un envío según su peso. Se usa cuando la celda amarilla de «Pedido sugerido» está vacía o en 0;
+#   una cotización anotada siempre manda.
+#   adicionales: lo que se factura por sobre la tarifa (combustible y otros cargos del transporte), como proporción de la tarifa.
+#     Argentina: 30 % ponderado entre lo facturado y la tarifa en 6 envíos (19 a 46 %); DHL cambia el combustible cada semana.
+# aduana: impuestos aproximados del envío. Los paga el importador al internar, aparte del transporte.
+#   iva sobre CIF + arancel; seguro: lo presume Aduana como % del FOB y solo sirve de base, no se paga.
+#   flete_fijo + flete_por_kg: flete que declara DHL a Aduana desde Argentina (regresión de 5 DIN), distinto del facturado. Sin
+#     ellos, el flete de aduana es el costo del envío (España: va en la factura).
+#   arancel: 0 con certificado de origen (ACE-35 o declaración UE). Sin él, 6 % del CIF: hay que evitarlo.
+#   tasas: tasa de aforo y otras de la vía postal, como proporción del CIF. Por DHL no se han cobrado aparte.
+#   España: fijo + por_kg × kilos, en euros, convertido con el tipo de cambio de «Configuración».
 #   Argentina: tarifa DHL de la Cámara Argentina del Libro, en dólares: el valor del peso redondeado hacia arriba al paso_kg.
 origenes:
   - nombre: España
@@ -34,15 +42,18 @@ origenes:
       moneda: EUR
       fijo: 55.6
       por_kg: 7.96
-      fuente: "Memoria 4.2.5: regresión del flete y el seguro contra el peso de los envíos documentados"
+      fuente: "Regresión de lo facturado contra el peso de los 4 envíos postales. Por DHL costó 52 % más"
+    aduana: {iva: 0.19, seguro: 0.02, arancel: 0, tasas: 0.015}
   - nombre: Argentina
-    intervalo_embarque_meses: 3
-    meses_embarque: [2, 5, 8, 11]
+    intervalo_embarque_meses: 4
+    meses_embarque: [4, 8, 12]
     plazo_dias: 5.5
     peso_medio_kg: 0.148
+    aduana: {iva: 0.19, seguro: 0.02, arancel: 0, tasas: 0, flete_fijo: 41.2, flete_por_kg: 5.41}
     envio:
       moneda: USD
       fuente: "Tarifas CAL - 2026 proposal aprobada global.xlsx, hoja AR TDExport, bloque Paquetes, Zona 1"
+      adicionales: 0.30
       fecha: "2026"
       paso_kg: 0.5
       # Sobre el último valor de la tabla (300 kg), incremento por paso de la misma hoja

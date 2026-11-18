@@ -51,7 +51,7 @@ crea la pestaña **Inventario** con las existencias que dan los movimientos carg
     Σ FOB × dólar del día de llegada / Σ precio neto de esos libros.
   - **Costo en bodega / precio neto**: igual, sumando los «Gastos de internación $» del embarque (flete, seguro, agente
     y aranceles, sin IVA; se anotan una vez por factura o DIN).
-  - Sin embarques con esos datos queda el valor escrito a mano (al principio, los de la memoria, sección 4.1.5).
+  - Sin embarques con esos datos queda el valor escrito a mano (al principio, los que se anotaron a mano al crear la planilla).
     «Cómo se obtuvo» dice el origen de cada valor y «Factores vigentes desde» la fecha del último embarque usado: «Esta
     semana» avisa si pasa de 12 meses.
 - **Inventario**: la crea el primer cálculo. Desde entonces Roberto corrige ahí las llegadas, conteos y consignaciones.
@@ -65,7 +65,8 @@ crea la pestaña **Inventario** con las existencias que dan los movimientos carg
 - **Pedido sugerido**: Roberto anota en las celdas amarillas la cotización de cada envío (el flete no se calcula por peso).
   La recomendación de dónde comprar se recalcula al instante, y el próximo cálculo arma la lista con esa opción.
   Si una celda queda vacía o en 0 se estima por peso (ejemplares × el «Peso (kg)» de la ficha o el promedio, con la tarifa de
-  `config/parametros.yml`), y la hoja dice «estimado por peso» o «cotización anotada». Un envío estimado de más de 50 kg o
+  `config/parametros.yml` más sus adicionales), y la hoja dice «estimado por peso» o «cotización anotada». Aparte se muestran
+  el IVA, el arancel y las tasas aproximados; todo el comparador es una aproximación. Un envío estimado de más de 50 kg o
   US$ 3.000 FOB se avisa, para pedir cotización.
   Cada origen muestra la fecha de su próximo pedido, cuántos libros hay que pedir y su valor FOB aproximado.
 

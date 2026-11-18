@@ -1,4 +1,4 @@
-"""Pedido por embarque programado y elección de dónde comprar cada libro (memoria, sección 4.2.5).
+"""Pedido por embarque programado y elección de dónde comprar cada libro.
 
 1. Cada origen tiene un embarque cada T meses (`intervalo_embarque_meses`). El próximo es la fecha de su última
    importación más T. Sin importaciones registradas, el embarque se considera vencido (pedir ahora).
@@ -10,12 +10,14 @@
 4. Se comparan las combinaciones de envíos que cubren TODAS las necesidades (Todo desde España, Todo desde Argentina,
    Dividir). En cada una, cada libro va al origen con menor valor FOB entre los que envían:
        Total = Σ cantidad × valor FOB + Σ costo de cada envío que se hace
+       + Σ impuestos de cada envío
    El flete entra una sola vez: en «Envíos», no en «Libros».
    El costo de cada envío es la cotización que anota Roberto en «Pedido sugerido». Si la celda está vacía o en 0, se estima
-   por peso: ejemplares × peso (el de la ficha o el promedio del origen), con la tarifa de `config/parametros.yml`, sin IVA,
-   impuestos ni recargos. Se elige el menor Total (empate: menos envíos).
-5. El pedido que toca se pide aunque sea chico: el costo fijo del embarque ya está en el cálculo de T (memoria 4.2.5).
-6. Fecha del próximo pedido: con meses fijos (`meses_embarque`; Argentina, febrero, mayo, agosto y noviembre, el de agosto
+   por peso: ejemplares × peso (el de la ficha o el promedio del origen), con la tarifa de `config/parametros.yml` más sus
+   adicionales. Los impuestos (IVA, arancel y tasas) siempre se estiman, con el costo estimado del envío. Todo es aproximado.
+   Se elige el menor Total (empate: menos envíos).
+5. El pedido que toca se pide aunque sea chico: el costo fijo del embarque ya está en el cálculo de T.
+6. Fecha del próximo pedido: con meses fijos (`meses_embarque`; Argentina, abril, agosto y diciembre, el de agosto
    junto con los calendarios), el
    siguiente de esos meses; el mes en curso cuenta mientras no haya llegado su embarque. Sin meses fijos (España), la
    última llegada de «Importaciones» más T.
@@ -81,7 +83,7 @@ def costos_unitarios(precio_lista: float, costos: pd.DataFrame, compra: str, edi
 
 
 def tarifa_envio(envio: dict | None, kg: float) -> float:
-    """Costo de un envío de `kg` kilos, en la moneda de la tarifa. Sin IVA, impuestos ni recargos.
+    """Costo de un envío de `kg` kilos, en la moneda de la tarifa, antes de adicionales e impuestos.
 
     Con tabla (`tarifa`), el valor del peso redondeado hacia arriba al paso; pasado el último valor, `incremento_sobre_tabla`
     por paso. Sin tabla, `fijo` + `por_kg` × kilos."""
@@ -94,6 +96,18 @@ def tarifa_envio(envio: dict | None, kg: float) -> float:
             return float(tabla[n - 1])
         return float(tabla[-1]) + (n - len(tabla)) * float(envio.get("incremento_sobre_tabla", 0))
     return float(envio.get("fijo", 0)) + float(envio.get("por_kg", 0)) * kg
+
+
+def impuestos_envio(aduana: dict | None, kg: float, fob_usd: float, envio_usd: float) -> dict:
+    """Arancel, IVA y tasas aproximados de un envío, en dólares. Salen sobre el CIF: FOB + flete de aduana + seguro presunto."""
+    if not aduana or fob_usd + envio_usd <= 0:
+        return {"arancel": 0.0, "iva": 0.0, "tasas": 0.0, "total": 0.0}
+    flete = (float(aduana["flete_fijo"]) + float(aduana.get("flete_por_kg", 0)) * kg) if "flete_fijo" in aduana else envio_usd
+    cif = fob_usd + flete + float(aduana.get("seguro", 0)) * fob_usd
+    arancel = float(aduana.get("arancel", 0)) * cif
+    iva = float(aduana.get("iva", 0)) * (cif + arancel)
+    tasas = float(aduana.get("tasas", 0)) * cif
+    return {"arancel": round(arancel, 2), "iva": round(iva, 2), "tasas": round(tasas, 2), "total": round(arancel + iva + tasas, 2)}
 
 
 def peso_por_ejemplar(f, origen) -> float:
@@ -178,14 +192,18 @@ def sugerir(titulos: pd.DataFrame, costos: pd.DataFrame, p: Parametros, fecha_co
         te = pd.to_numeric(f["tipo_cambio_eur"], errors="coerce").dropna()
         return float(tc.iloc[0] / te.iloc[0]) if len(tc) and len(te) and te.iloc[0] else NAN
 
-    def estimado_usd(o: str, kg: float) -> float:
-        """Costo estimado por peso, en dólares. Los euros se convierten con «Configuración»; sin tipo de cambio, 0 (se avisa)."""
+    def tarifa_usd(o: str, kg: float) -> float:
+        """Tarifa por peso, en dólares. Los euros se convierten con «Configuración»; sin tipo de cambio, 0 (se avisa)."""
         envio = p.origen(o).envio or {}
         monto = tarifa_envio(envio, kg)
         if envio.get("moneda", "USD") != "EUR":
             return round(monto, 2)
         k = eur_por_usd(o)
         return 0.0 if math.isnan(k) or not k else round(monto / k, 2)
+
+    def estimado_usd(o: str, kg: float) -> float:
+        """Costo estimado por peso, en dólares: la tarifa más sus adicionales."""
+        return round(tarifa_usd(o, kg) * (1 + float((p.origen(o).envio or {}).get("adicionales", 0))), 2)
 
     configurados = [o.nombre for o in p.origenes]
 
@@ -205,20 +223,26 @@ def sugerir(titulos: pd.DataFrame, costos: pd.DataFrame, p: Parametros, fecha_co
         return min(con_fob, key=lambda o: ops[o][1]) if con_fob else en[0]
 
     def evaluar(activos: tuple) -> dict:
-        lineas, libros, cubre, pesos = [], 0.0, True, {}
+        lineas, libros, cubre, pesos, fobs = [], 0.0, True, {}, {}
         for f, cant, ops in necesidades:
             o = mejor_en(ops, activos)
             if o is None:
                 cubre = False
                 continue
             lineas.append((f, cant, o, ops))
-            libros += 0.0 if math.isnan(ops[o][1]) else ops[o][1] * cant    # solo FOB: el flete va en «Envíos»
+            fob = 0.0 if math.isnan(ops[o][1]) else ops[o][1] * cant
+            libros += fob    # solo FOB: el flete va en «Envíos»
+            fobs[o] = fobs.get(o, 0.0) + fob
             pesos[o] = pesos.get(o, 0.0) + cant * peso_por_ejemplar(f, p.origen(o))
         envia = [o for o in activos if any(l[2] == o for l in lineas)]
         estimados = {o: estimado_usd(o, pesos.get(o, 0.0)) for o in envia}
+        tarifas = {o: tarifa_usd(o, pesos.get(o, 0.0)) for o in envia}
+        impuestos = {o: impuestos_envio(p.origen(o).aduana, pesos.get(o, 0.0), fobs.get(o, 0.0), estimados[o]) for o in envia}
         envio = sum(anotados.get(o, 0.0) or estimados[o] for o in envia)
+        cargos = sum(i["total"] for i in impuestos.values())
         return {"activos": activos, "envia": envia, "lineas": lineas, "cubre": cubre, "pesos": pesos, "estimados": estimados,
-                "libros": libros, "envio": envio, "total": libros + envio}
+                "tarifas": tarifas, "impuestos": impuestos, "libros": libros, "envio": envio, "cargos": cargos,
+                "total": libros + envio + cargos}
 
     evaluadas = [evaluar(c) for n in range(1, len(origenes) + 1) for c in itertools.combinations(origenes, n)]
     unicas = {}
@@ -278,6 +302,7 @@ def sugerir(titulos: pd.DataFrame, costos: pd.DataFrame, p: Parametros, fecha_co
         peso = round(mejor["pesos"].get(o, 0.0), 1)
         anotado = anotados.get(o, 0.0)
         envio_o = anotado or mejor["estimados"].get(o, 0.0) if lineas_o else 0.0
+        impuestos_o = mejor["impuestos"].get(o, {}).get("total", 0.0) if lineas_o else 0.0
         aviso = ""
         if lineas_o and not anotado and (peso > LIMITE_KG or total > LIMITE_FOB_USD):
             aviso = (f"El envío estimado desde {o} supera {LIMITE_KG} kg o US$ {LIMITE_FOB_USD:,} FOB".replace(",", ".")
@@ -285,6 +310,7 @@ def sugerir(titulos: pd.DataFrame, costos: pd.DataFrame, p: Parametros, fecha_co
         resumen.append({"origen": o, "estado": estado, "titulos": len(lineas_o), "unidades": sum(l["cantidad"] for l in lineas_o),
                         "total_usd": total, "peso_kg": peso, "envio_usd": round(envio_o, 2),
                         "envio_fuente": (COTIZACION if anotado else ESTIMADO) if lineas_o else "", "aviso_envio": aviso,
+                        "impuestos_usd": impuestos_o, "total_aprox_usd": round(total + envio_o + impuestos_o, 2),
                         "total_eur": "" if math.isnan(eur_de(o)) else round(total * eur_de(o), 2),
                         "ultima_importacion": ultima.date().isoformat() if ultima is not None else "",
                         "proximo_embarque": proximo.date().isoformat(), "intervalo_meses": p.intervalo_meses(o),
@@ -296,12 +322,14 @@ def sugerir(titulos: pd.DataFrame, costos: pd.DataFrame, p: Parametros, fecha_co
     resumen.attrs["envios_estimados"] = {o: mejor["estimados"].get(o, 0.0) for o in usados}
     resumen.attrs["envios"] = {o: anotados.get(o, 0.0) or mejor["estimados"].get(o, 0.0) for o in usados}
     resumen.attrs["envios_pesos"] = {o: round(mejor["pesos"].get(o, 0.0), 1) for o in usados}
+    resumen.attrs["envios_tarifas"] = {o: mejor["tarifas"].get(o, 0.0) for o in usados}
+    resumen.attrs["envios_impuestos"] = {o: mejor["impuestos"].get(o, impuestos_envio(None, 0, 0, 0)) for o in usados}
     resumen.attrs["envios_fuente"] = {o: COTIZACION if anotados.get(o, 0.0) > 0 else ESTIMADO for o in usados}
     resumen.attrs["combinaciones"] = [{
         "nombre": nombre_combinacion(e["envia"]), "envia": e["envia"], "elegida": e is mejor, "valida": True,
         "libros_ahora": sum(l[1] for l in e["lineas"]), "libros_usd": round(e["libros"], 2),
         "estimados": e["estimados"], "pesos": {o: round(k, 1) for o, k in e["pesos"].items()},
-        "envio_usd": round(e["envio"], 2), "total_usd": round(e["total"], 2),
+        "envio_usd": round(e["envio"], 2), "impuestos_usd": round(e["cargos"], 2), "total_usd": round(e["total"], 2),
     } for e in combinaciones]
     columnas = ["cuando", "origen", "id", "isbn", "titulo", "categoria", "cantidad", "motivo", "costo_unitario_usd", "subtotal_usd",
                 "subtotal_eur"]

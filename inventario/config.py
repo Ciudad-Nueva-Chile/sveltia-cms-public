@@ -3,7 +3,7 @@
 Dos tipos de valores:
 - Decisiones que pueden cambiar (nivel de servicio, α de SBA y, por origen, T, L y meses fijos de pedido): se leen de
   config/parametros.yml, que edita a mano solo quien mantiene el sistema.
-- Valores fijos de la memoria del proyecto (sección 4.2.5 y Tabla 4.26): son constantes de este archivo, con su cita.
+- Valores fijos del método: son constantes de este archivo, cada una con su explicación.
 """
 from __future__ import annotations
 
@@ -13,26 +13,29 @@ from pathlib import Path
 import yaml
 
 RAIZ = Path(__file__).resolve().parent.parent
-DIAS_POR_MES = 30  # la memoria expresa el plazo de reposición como días / 30
+DIAS_POR_MES = 30  # el plazo de reposición se expresa en meses como días / 30
 CATEGORIAS = ("A", "B", "C", "D")
 
-# ---------- Constantes de la memoria ----------
-# Ventana de clasificación: los últimos 21 meses hasta la fecha de cálculo (la memoria observa diciembre de 2024 a agosto
-# de 2026). Sobre ella se cuentan k, ADI y CV², y se asignan la clase de demanda y la categoría A, B, C o D.
-HISTORIA_MESES = 21
-# Cortes de Syntetos, Boylan y Croston (2005), memoria sección 2.4.3. Solo informativos: separan Regular de Intermitente
-# y ubican cada libro en el gráfico ADI–CV².
+# ---------- Constantes del método ----------
+# Ventana de clasificación: los últimos 20 meses hasta la fecha de cálculo. Sobre ella se cuentan k, ADI y CV², y se
+# asignan la clase de demanda y la categoría A, B, C o D.
+HISTORIA_MESES = 20
+# La demanda se cuenta desde enero de 2025, inicio de la gestión actual; los movimientos anteriores solo sirven para las
+# existencias.
+INICIO_DEMANDA = "2025-01-01"
+# Cortes de Syntetos, Boylan y Croston (2005). Solo informativos: separan Regular de Intermitente y ubican cada libro en
+# el gráfico ADI–CV².
 CORTE_ADI = 1.32
 CORTE_CV2 = 0.49
-# Frecuencia de conteo físico por categoría, memoria Tabla 4.26 (estructura de Flores y Whybark, 1987):
-# A mensual, B cada 6 meses, C y D una vez al año.
+# Frecuencia de conteo físico por categoría (estructura de Flores y Whybark, 1987): conteo mensual para A, semestral para B
+# y anual para C y D.
 CONTEOS_POR_ANIO = {"A": 12, "B": 2, "C": 1, "D": 1}
-# Una consignación abierta más de un año se avisa para cobrarla, pedir la devolución o renovarla (memoria, sección 4.1.3).
+# Una consignación abierta más de un año se avisa para cobrarla, pedir la devolución o renovarla.
 DIAS_CONSIGNACION_ANTIGUA = 365
 
 # ---------- Aviso de aceleración (no cambia S) ----------
-# La memoria (sección 4.2.5) supone que los próximos meses se parecen a la ventana observada; un título que se acelera
-# (por ejemplo, por un acontecimiento) rompe ese supuesto antes de que SBA lo refleje. Se avisa si el ritmo de los últimos
+# El cálculo supone que los próximos meses se parecen a la ventana observada; un título que se acelera (por ejemplo, por
+# un acontecimiento) rompe ese supuesto antes de que SBA lo refleje. Se avisa si el ritmo de los últimos
 # 3 meses es al menos 2 veces el de los 18 meses anteriores, con 3 o más unidades netas en esos 3 meses.
 ACELERACION_MESES_RECIENTES = 3
 ACELERACION_MESES_PREVIOS = 18
@@ -40,9 +43,9 @@ ACELERACION_FACTOR = 2
 ACELERACION_MINIMO_UNIDADES = 3
 
 # ---------- Aviso de evento que sigue vendiéndose (no cambia la clase, S ni la política) ----------
-# La clase Coyuntural se marca a mano y no tiene nivel objetivo. La memoria (sección 4.2.7) lo describe así: el aviso
-# salta cuando una obra coyuntural registra venta neta positiva en 3 o más de los últimos 6 meses. Quitar la marca en
-# Sveltia lo decide Roberto; el cálculo solo avisa.
+# La clase Coyuntural se marca a mano y no tiene nivel objetivo. El aviso salta cuando una obra coyuntural registra venta
+# neta positiva en 3 o más de los últimos 6 meses. Quitar la marca en Sveltia lo decide quien administra el catálogo; el
+# cálculo solo avisa.
 COYUNTURAL_MESES_REVISION = 6
 COYUNTURAL_MESES_CON_VENTA = 3
 
@@ -56,13 +59,14 @@ MESES_LISTA_PRECIOS = 12    # la lista de precios del sitio (fecha de vigencia e
 class Origen:
     nombre: str
     intervalo_embarque_meses: float = 6     # T: meses entre embarques
-    plazo_dias: float = 39                  # L: plazo de reposición observado, en días (memoria 4.1.1)
+    plazo_dias: float = 39                  # L: plazo de reposición observado, en días
     meses_embarque: list | None = None      # meses fijos del pedido (p. ej. [2, 8]); vacío = última llegada + T
     peso_medio_kg: float = 0                # peso de un ejemplar si la ficha no trae «Peso (kg)»
     envio: dict | None = None               # costo estimado del envío según su peso: tarifa por tramos o fijo + por kilo
+    aduana: dict | None = None              # impuestos aproximados del envío: IVA, seguro presunto, arancel, tasas, flete de aduana
 
 
-def _origenes_memoria() -> list[Origen]:
+def _origenes_configurados() -> list[Origen]:
     """Los orígenes de config/parametros.yml: un solo lugar para T, L y la tarifa."""
     return cargar_parametros().origenes
 
@@ -72,10 +76,10 @@ class Parametros:
     """Las decisiones de config/parametros.yml."""
     nivel_servicio: float = 0.95            # criterio, no optimización
     alfa_suavizado: float = 0.15            # supuesto abierto
-    origenes: list[Origen] = field(default_factory=_origenes_memoria)
+    origenes: list[Origen] = field(default_factory=_origenes_configurados)
 
     def origen(self, nombre: str) -> Origen:
-        """Parámetros del origen. Todo origen distinto de Argentina se trata como España (criterio de la memoria)."""
+        """Parámetros del origen. Todo origen distinto de Argentina se trata como España."""
         for o in self.origenes:
             if o.nombre == nombre:
                 return o

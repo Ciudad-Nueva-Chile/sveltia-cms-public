@@ -96,8 +96,8 @@ def main():
         print("  Registro de movimientos: ya tiene datos, se deja como está")
 
     # Configuración (oculta): costos por origen. Con --con-ejemplo lleva valores inventados; sin él, vacía.
-    # Los factores reales (costo en bodega y FOB sobre el precio neto) y el tipo de cambio los carga Andrés en la
-    # planilla privada a partir de la memoria. Nunca se escriben en el repositorio.
+    # Los factores reales (costo en bodega y FOB sobre el precio neto) y el tipo de cambio los carga quien mantiene el
+    # sistema en la planilla privada. Nunca se escriben en el repositorio.
     hoja = f.hoja("Costos")
     if hoja is None or a.reemplazar or len(hoja.get_all_values()) <= 1:
         cfg = leer_csv("Costos", ("fob_sobre_precio_neto", "costo_sobre_precio_neto", "tipo_cambio", "tipo_cambio_eur")) if hay("Costos") else pd.DataFrame(

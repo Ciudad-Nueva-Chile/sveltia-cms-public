@@ -1,6 +1,6 @@
 """Demanda por título: serie mensual de venta neta, clase de demanda, pronóstico SBA y nivel objetivo.
 
-Sigue la memoria del proyecto (Tabla 4.8 y sección 4.2.5).
+Sigue el método descrito en el README.
 
 Serie: venta neta por mes (venta + factura de consignación − devoluciones) más la venta perdida anotada en «Ventas».
 La salida en guía no es venta: decide entre C y D (categorias.py).
@@ -14,7 +14,7 @@ Estacional y Coyuntural se marcan a mano en el catálogo y mandan sobre lo calcu
 ADI y CV² (Syntetos, Boylan y Croston, 2005) quedan como indicadores informativos.
 
 Pronóstico: SBA (Croston corregido por Syntetos y Boylan), solo para Intermitente y Regular.
-Nivel objetivo: percentil `nivel_servicio` de la venta en T + L con un modelo compuesto (memoria, sección 4.2.5): los
+Nivel objetivo: percentil `nivel_servicio` de la venta en T + L con un modelo compuesto: los
 pedidos llegan como una Poisson de media λ × (T + L) / tamaño medio, y cada pedido trae un número de ejemplares que se
 sortea de los tamaños de pedido registrados (Teunter, Syntetos y Babai, 2010). Las librerías piden varios ejemplares de una
 vez, y una Poisson de ejemplares sueltos subestima ese riesgo. Sin tamaños registrados, o con todos de 1, el modelo es esa
@@ -90,7 +90,7 @@ def clasificar(serie: np.ndarray, corte_adi: float = 1.32, corte_cv2: float = 0.
 
 
 def sba(serie: np.ndarray, alfa: float = 0.15) -> float:
-    """Pronóstico mensual con el método de Syntetos y Boylan (Croston corregido), ecuaciones (3) a (5) de la memoria."""
+    """Pronóstico mensual con el método de Syntetos y Boylan (Croston corregido), con α de suavizado."""
     tamano = intervalo = None
     desde_ultima = 0
     for x in serie:

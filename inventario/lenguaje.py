@@ -176,7 +176,7 @@ def que_incluye(c: dict) -> str:
 
 def hoja_pedido(lineas: pd.DataFrame, combinaciones: list[dict], envios: dict, fecha_corte, sep: str = ",",
                 por_origen: pd.DataFrame | None = None, anotados: dict | None = None, estimados: dict | None = None,
-                pesos: dict | None = None) -> dict:
+                pesos: dict | None = None, tarifas: dict | None = None, impuestos: dict | None = None) -> dict:
     """«Pedido sugerido»: arriba, desde dónde conviene comprar (con el costo de cada envío editable y la recomendación
     recalculada por fórmulas); al medio, el próximo pedido de cada origen con cuántos libros y su valor FOB;
     abajo, la lista de qué pedir.
@@ -185,33 +185,39 @@ def hoja_pedido(lineas: pd.DataFrame, combinaciones: list[dict], envios: dict, f
     """
     origenes = list(envios)
     anotados = anotados if anotados is not None else envios
-    estimados, pesos = estimados or {}, pesos or {}
+    estimados, pesos, tarifas, impuestos = estimados or {}, pesos or {}, tarifas or {}, impuestos or {}
+    cargo = lambda o, c: impuestos.get(o, {}).get(c, 0)
     col = {o: _letra(1 + i) for i, o in enumerate(origenes)}
     filas = [["PEDIDO SUGERIDO", f"Calculado con los datos al {fecha(fecha_corte)}"], [""],
              ["1. DESDE DÓNDE CONVIENE COMPRAR"],
-             ["«Libros» es el valor FOB y «Envíos» el costo del envío; el flete se cuenta una sola vez. Anota la cotización de cada envío (en dólares): reemplaza al estimado por peso. Sin IVA, impuestos ni recargos. La recomendación de abajo se recalcula al instante."],
+             ["Todos los montos son aproximados. «Libros» es el valor FOB, «Envíos» el transporte y «Impuestos» el IVA, el arancel y las tasas al internar; el flete se cuenta una sola vez. Anota la cotización de cada envío (en dólares): reemplaza al estimado por peso, que es la tarifa más sus adicionales (combustible y otros). La recomendación se recalcula sola."],
              [""] + [f"Desde {o}" for o in origenes],
              [ETIQUETA_ENVIO] + [anotados.get(o, 0) or "" for o in origenes],
              ["Peso estimado (kg)"] + [pesos.get(o, 0) for o in origenes],
              [ETIQUETA_ESTIMADO] + [estimados.get(o, 0) for o in origenes],
              ["Costo que se usa (US$)"] + [formula(f"=IF(N({col[o]}6)>0,{col[o]}6,{col[o]}8)", sep) for o in origenes],
              ["De dónde sale"] + [formula(f'=IF(N({col[o]}6)>0,"cotización anotada","estimado por peso")', sep) for o in origenes],
+             ["Del estimado: tarifa (US$)"] + [tarifas.get(o, 0) for o in origenes],
+             ["Del estimado: adicionales (US$)"] + [round(estimados.get(o, 0) - tarifas.get(o, 0), 2) for o in origenes],
+             ["Impuestos: IVA (US$, aprox.)"] + [cargo(o, "iva") for o in origenes],
+             ["Impuestos: arancel (US$, aprox.)"] + [cargo(o, "arancel") for o in origenes],
+             ["Impuestos: tasas (US$, aprox.)"] + [cargo(o, "tasas") for o in origenes],
              [""],
-             ["Opción", "Qué incluye", "Libros FOB (US$)", "Envíos (US$)", "Total (US$)"] + [f"Estimado desde {o} (US$)" for o in origenes]]
+             ["Opción", "Qué incluye", "Libros FOB (US$)", "Envíos (US$)", "Impuestos (US$)", "Total aprox. (US$)"] + [f"Estimado desde {o} (US$)" for o in origenes]]
     fila_envio = 6  # número de fila (desde 1) de la cotización
     fila_opciones = len(filas) - 1
     primera = len(filas) + 1
     for c in combinaciones:
         r = len(filas) + 1
         # Cada combinación pesa distinto: su estimado va en las columnas de la derecha; la cotización anotada lo reemplaza
-        columna_est = {o: _letra(5 + i) for i, o in enumerate(origenes)}
+        columna_est = {o: _letra(6 + i) for i, o in enumerate(origenes)}
         envio = ("=" + "+".join(formula(f"IF(N(${col[o]}$6)>0,${col[o]}$6,{columna_est[o]}{r})", sep) for o in c["envia"])) if c["envia"] else 0
-        filas.append([c["nombre"], que_incluye(c), c["libros_usd"], envio, f"=C{r}+D{r}"]
+        filas.append([c["nombre"], que_incluye(c), c["libros_usd"], envio, c.get("impuestos_usd", 0), f"=C{r}+D{r}+E{r}"]
                      + [c.get("estimados", {}).get(o, "") for o in origenes])
     ultima = len(filas)
     elegida = next((c["nombre"] for c in combinaciones if c["elegida"]), "")
     if combinaciones:
-        rango = f"E{primera}:E{ultima}"
+        rango = f"F{primera}:F{ultima}"
         fila_conviene = len(filas) + 1
         filas.append(["CONVIENE", formula(f"=IFERROR(INDEX(A{primera}:A{ultima},MATCH(MIN({rango}),{rango},0)),\"\")", sep)])
         filas.append(["", formula(f'=IF(B{fila_conviene}="{elegida}","La lista de abajo corresponde a esta opción.",'
@@ -223,12 +229,12 @@ def hoja_pedido(lineas: pd.DataFrame, combinaciones: list[dict], envios: dict, f
         filas.append(["", "No hay nada que pedir en los próximos embarques."])
     registros = por_origen.to_dict("records") if por_origen is not None and len(por_origen) else []
     filas += [[""], ["2. EMBARQUES"], ["Origen", "Próximo pedido", "Libros por pedir", "Peso estimado (kg)", "Envío (US$)", "De dónde sale",
-                                       "US$ FOB", "€ FOB (España)"]]
+                                       "US$ FOB", "€ FOB (España)", "Impuestos (US$)", "Total aprox. (US$)"]]
     negritas_extra = [len(filas) - 1]
     primer_embarque = len(filas)
     for o in registros:
         filas.append([o["origen"], fecha(o["proximo_embarque"]), int(o["unidades"]), o.get("peso_kg", ""), o.get("envio_usd", ""),
-                      o.get("envio_fuente", ""), o["total_usd"], o.get("total_eur", "")])
+                      o.get("envio_fuente", ""), o["total_usd"], o.get("total_eur", ""), o.get("impuestos_usd", ""), o.get("total_aprox_usd", "")])
         if o.get("aviso_envio"):
             filas.append(["", o["aviso_envio"]])
     fin_embarques = len(filas)
@@ -243,10 +249,11 @@ def hoja_pedido(lineas: pd.DataFrame, combinaciones: list[dict], envios: dict, f
         "editables": [(fila_envio - 1, 1 + i) for i in range(len(origenes))],
         "negritas": [4, fila_opciones, encabezado] + negritas_extra,
         "formatos": [(fila_envio - 1, fila_envio + 3, 1, 1 + len(origenes), "#,##0.0"),
-                     (primera - 1, ultima, 2, 5, "#,##0"), (primera - 1, ultima, 5, 5 + len(origenes), "#,##0.0"),
+                     (fila_envio + 4, fila_envio + 9, 1, 1 + len(origenes), "#,##0.0"),
+                     (primera - 1, ultima, 2, 6, "#,##0"), (primera - 1, ultima, 6, 6 + len(origenes), "#,##0.0"),
                      # Formato explícito: la planilla conserva el de lo que hubo antes en la celda (una fecha, por ejemplo)
                      (primer_embarque, fin_embarques, 2, 3, "0"), (primer_embarque, fin_embarques, 3, 5, "#,##0.0"),
-                     (primer_embarque, fin_embarques, 6, 8, "#,##0"),
+                     (primer_embarque, fin_embarques, 6, 10, "#,##0"),
                      (encabezado + 1, len(filas), 2, 3, "0")],
     }
 
@@ -265,7 +272,10 @@ def estado_pedido(o) -> dict:
         detalle = f"{int(o['unidades'])} libros por pedir, unos {monto(o)} FOB."
         if o.get("envio_fuente"):
             peso = str(o.get("peso_kg", "")).replace(".", ",")
-            detalle += f" Peso estimado: {peso} kg. Envío: US$ {miles(o.get('envio_usd', 0))} ({o['envio_fuente']})."
+            detalle += f" Peso estimado: {peso} kg. Envío: unos US$ {miles(o.get('envio_usd', 0))} ({o['envio_fuente']})."
+            if o.get("impuestos_usd"):
+                detalle += (f" Impuestos: unos US$ {miles(o['impuestos_usd'])}. "
+                            f"Total aproximado: US$ {miles(o.get('total_aprox_usd', 0))}.")
         if o.get("aviso_envio"):
             detalle += f" {o['aviso_envio']}"
         return {"tono": "ok", "titulo": titulo, "detalle": detalle}
@@ -353,7 +363,7 @@ def hoja_esta_semana(s: dict) -> pd.DataFrame:
         filas.append((p["titulo"], p["detalle"]))
     elegida = next((c for c in s.get("combinaciones", []) if c["elegida"]), None)
     if elegida and len(s["combinaciones"]) > 1:
-        filas.append(("Conviene", f"{elegida['nombre']}: unos US$ {miles(elegida['total_usd'])} contando los envíos"
+        filas.append(("Conviene", f"{elegida['nombre']}: unos US$ {miles(elegida['total_usd'])} contando envíos e impuestos"
                       + _fuente_envios(elegida, s) + ". La comparación está en «Pedido sugerido»."))
     if s.get("ahorro_usd", 0) > 0:
         filas.append(("Dónde comprar", f"Comprar cada libro en la editorial que conviene ahorra unos US$ {miles(s['ahorro_usd'])} frente a comprarlo en su propia editorial."))

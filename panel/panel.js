@@ -99,15 +99,15 @@
     if (!C.length) { $("#comparacion").innerHTML = ""; return; }
     var origenes = Object.keys(S.envios || {});
     $("#comparacion").innerHTML = '<article class="tarjeta comparacion"><header><h2>Desde dónde conviene comprar</h2>' +
-      "<p>Anota la cotización de cada envío (courier, despacho y trámites) y la recomendación se recalcula al instante. Vacía o en 0, se estima por peso, sin IVA, impuestos ni recargos.</p></header>" +
+      "<p>Anota la cotización de cada envío (courier, despacho y trámites) y la recomendación se recalcula al instante. Vacía o en 0, se estima por peso: la tarifa más sus adicionales (combustible y otros). Todos los montos son aproximados.</p></header>" +
       '<div class="envios">' + origenes.map(function (o) {
         var anotado = +(S.envios_anotados || {})[o] || 0, estimado = +(S.envios_estimados || {})[o] || 0;
         return "<label>Envío desde " + esc(o) + ' <span>US$</span><input type="number" min="0" step="10" inputmode="decimal" data-origen="' + esc(o) +
           '" data-peso="' + coma((S.envios_pesos || {})[o] || 0) + '" placeholder="' + coma(estimado) + '" value="' + (anotado || "") + '"><small class="fuente-envio"></small></label>';
       }).join("") + "</div>" +
-      '<div class="tabla-envoltura" style="border:0"><table class="tabla-comp"><thead><tr><th>Opción</th><th>Qué incluye</th><th class="num">Libros FOB</th><th class="num">Envíos</th><th class="num">Total</th></tr></thead><tbody></tbody></table></div>' +
+      '<div class="tabla-envoltura" style="border:0"><table class="tabla-comp"><thead><tr><th>Opción</th><th>Qué incluye</th><th class="num">Libros FOB</th><th class="num">Envíos</th><th class="num">Impuestos</th><th class="num">Total aprox.</th></tr></thead><tbody></tbody></table></div>' +
       '<p class="veredicto" aria-live="polite"></p>' +
-      '<p class="nota">En US$. «Libros» es el valor FOB de todo lo que hay que pedir y «Envíos» el costo del envío: el flete se cuenta una sola vez. Solo se comparan las combinaciones que cubren todo. ' +
+      '<p class="nota">En US$. «Libros» es el valor FOB de todo lo que hay que pedir, «Envíos» el transporte e «Impuestos» el IVA, el arancel y las tasas al internar: es una aproximación, y si el IVA se recupera como crédito fiscal, no es costo. Solo se comparan las combinaciones que cubren todo. ' +
       (C.length === 1 ? "Hoy hay una sola, porque varios títulos se compran en un solo país. " : "") +
       "Los costos que anotes aquí no se guardan: para que el cálculo los use, anótalos en la planilla (pestaña «Pedido sugerido»).</p></article>";
     var inputs = $("#comparacion").querySelectorAll("input[data-origen]");
@@ -121,7 +121,7 @@
       });
       var filas = C.map(function (c) {
         var envio = c.envia.reduce(function (s, o) { return s + (costo[o] || (c.estimados || {})[o] || 0); }, 0);
-        return { c: c, envio: envio, total: c.libros_usd + envio };
+        return { c: c, envio: envio, total: c.libros_usd + envio + (c.impuestos_usd || 0) };
       });
       var validas = filas.filter(function (f) { return f.c.valida; });
       var mejor = validas.reduce(function (a, b) { return !a || b.total < a.total - 0.005 ? b : a; }, null);
@@ -129,7 +129,7 @@
         var cls = f === mejor ? "mejor" : (f.c.valida ? "" : "invalida");
         return '<tr class="' + cls + '"><td>' + esc(f.c.nombre) + (f === mejor ? "<small>Conviene</small>" : "") + "</td><td>" + esc(f.c.incluye) + "</td>" +
           '<td class="num">' + usd(f.c.libros_usd) + "</td>" +
-          '<td class="num">' + usd(f.envio) + '</td><td class="num"><b>' + usd(f.total) + "</b></td></tr>";
+          '<td class="num">' + usd(f.envio) + '</td><td class="num">' + usd(f.c.impuestos_usd || 0) + '</td><td class="num"><b>' + usd(f.total) + "</b></td></tr>";
       }).join("");
       var elegida = C.find(function (c) { return c.elegida; });
       var v = $("#comparacion .veredicto");
@@ -361,7 +361,7 @@
     return '<span class="clave-abc"><i style="background:' + (COLOR_CAT[k] || "var(--texto-3)") + '"></i>' + esc(k) + "</span>";
   }
 
-  // Tabla 4.24 de la memoria: por categoría, títulos, con existencias, ejemplares, valor y % del valor
+  // Resumen por categoría: títulos, con existencias, ejemplares, valor y % del valor
   function pintarCategorias() {
     var filas = D.categorias || [];
     $("#tabla-categorias").innerHTML = '<table class="tabla"><thead><tr><th>Categoría</th><th>Criterio</th><th class="num">Títulos</th>' +

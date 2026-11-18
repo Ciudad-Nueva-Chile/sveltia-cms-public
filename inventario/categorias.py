@@ -1,7 +1,7 @@
-"""Categorías de gestión A, B, C y D de la memoria (sección 4.2.5, Tabla 4.24).
+"""Categorías de gestión A, B, C y D.
 
 Adaptan las categorías AA, BB, CC y DD de Flores y Whybark (1987). Como la criticidad no puede evaluarse título por
-título con el registro disponible, la memoria usa la recurrencia de la demanda y la salida de bodega:
+título con el registro disponible, se usa la recurrencia de la demanda y la salida de bodega:
 
     A   clase Intermitente, Regular, Estacional o Coyuntural
     B   clase Esporádica (venta neta en uno o dos meses de la ventana)
@@ -9,7 +9,7 @@ título con el registro disponible, la memoria usa la recurrencia de la demanda 
     D   con existencias, sin venta neta ni salida en guía
     Sin categoría   sin existencias y sin demanda (se exhibe igual en el sitio)
 
-Prioridad: primero la demanda (A y B), después C y D. La categoría se recalcula en cada ejecución con los últimos 21
+Prioridad: primero la demanda (A y B), después C y D. La categoría se recalcula en cada ejecución con los últimos 20
 meses: no hay una revisión aparte.
 """
 from __future__ import annotations
@@ -40,7 +40,7 @@ def categoria(clase: str, bodega: float, salida_guia: bool) -> str:
 
 def resumen_categorias(t: pd.DataFrame) -> pd.DataFrame:
     """Por categoría: títulos, títulos con existencias, ejemplares, valor a precio de venta y % del valor
-    (estructura de la Tabla 4.24 de la memoria)."""
+    """
     t = t.assign(_bodega=t["bodega"].clip(lower=0))
     t = t.assign(_valor=t["_bodega"] * t["precio_lista"])
     total = float(t["_valor"].sum()) or 1.0

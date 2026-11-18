@@ -1,4 +1,4 @@
-"""Cálculo completo (memoria, sección 4.2.5): de las tablas de entrada a los resultados por título, el pedido por
+"""Cálculo completo: de las tablas de entrada a los resultados por título, el pedido por
 embarque, las categorías de gestión, el conteo cíclico y el resumen."""
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ from . import demanda, pedido, politica, stock
 from . import ventas as ventas_mod
 from . import importaciones as importaciones_mod
 from .config import (CATEGORIAS, CONTEOS_POR_ANIO, CORTE_ADI, CORTE_CV2, DIAS_CONSIGNACION_ANTIGUA,
-                     HISTORIA_MESES, MESES_FACTORES, MESES_LISTA_PRECIOS, MESES_TIPO_CAMBIO, Parametros,
+                     HISTORIA_MESES, INICIO_DEMANDA, MESES_FACTORES, MESES_LISTA_PRECIOS, MESES_TIPO_CAMBIO, Parametros,
                      ACELERACION_FACTOR, ACELERACION_MESES_PREVIOS, ACELERACION_MESES_RECIENTES, ACELERACION_MINIMO_UNIDADES,
                      COYUNTURAL_MESES_CON_VENTA, COYUNTURAL_MESES_REVISION)
 
@@ -28,7 +28,7 @@ class Resultado:
     fecha_corte: pd.Timestamp
     ventas: dict = field(default_factory=dict)          # indicadores de la pestaña «Ventas»
     perdidas: list = field(default_factory=list)        # pedidos sin stock recientes
-    categorias: pd.DataFrame = field(default_factory=pd.DataFrame)   # Tabla 4.24: por categoría
+    categorias: pd.DataFrame = field(default_factory=pd.DataFrame)   # por categoría
     matriz: dict = field(default_factory=dict)          # categoría × clase → títulos
     conteo: dict = field(default_factory=dict)          # qué contar esta semana y frecuencias
     caducidad: list = field(default_factory=list)       # datos externos por actualizar
@@ -77,7 +77,7 @@ def avisos_caducidad(costos: pd.DataFrame, fecha_corte: pd.Timestamp, fecha_list
 
 
 def conteo_ciclico(t: pd.DataFrame, p: Parametros, fecha_corte: pd.Timestamp) -> dict:
-    """Qué contar esta semana, con la frecuencia de conteo por categoría (memoria, Tabla 4.26).
+    """Qué contar esta semana, con la frecuencia de conteo por categoría: mensual para A, semestral para B y anual para C y D.
 
     Los títulos con existencias de cada categoría se reparten en turnos de 52 / conteos_por_anio semanas, en orden de
     código, de modo que cada uno se cuenta con su frecuencia.
@@ -122,9 +122,11 @@ def calcular(catalogo: pd.DataFrame, movimientos: pd.DataFrame, transito: pd.Dat
     ventana = demanda.meses_ventana(fecha_corte, HISTORIA_MESES)
     inicio_ventana = ventana[0].start_time
     serie = demanda.venta_neta_mensual(mov, ids, fecha_corte, HISTORIA_MESES)
-    # Pronóstico (λ con SBA): toda la serie mensual disponible, desde el mes del primer movimiento registrado hasta la fecha
-    # de cálculo, con al menos la ventana de clasificación. Con 21 meses de historia o menos es la misma serie.
-    primer_mes = mov["fecha"].min().to_period("M") if len(mov) else fecha_corte.to_period("M")
+    # Pronóstico (λ con SBA): toda la serie mensual disponible, desde el mes del primer movimiento registrado (o enero de
+    # 2025, si es anterior: antes no se cuenta demanda) hasta la fecha de cálculo, con al menos la ventana de clasificación.
+    # Con 20 meses de historia o menos es la misma serie.
+    inicio_demanda = pd.Timestamp(INICIO_DEMANDA)
+    primer_mes = max(mov["fecha"].min(), inicio_demanda).to_period("M") if len(mov) else fecha_corte.to_period("M")
     meses_pronostico = max(HISTORIA_MESES, (fecha_corte.to_period("M") - primer_mes).n + 1)
     serie_pronostico = (serie if meses_pronostico == HISTORIA_MESES
                         else demanda.venta_neta_mensual(mov, ids, fecha_corte, meses_pronostico))
@@ -156,8 +158,8 @@ def calcular(catalogo: pd.DataFrame, movimientos: pd.DataFrame, transito: pd.Dat
     temp_ini, temp_fin = politica.ultima_temporada(fecha_corte)
     mes_temporada = politica.es_mes_de_pedido_temporada(fecha_corte)
 
-    # Tamaños de pedido de cada título para el modelo compuesto del nivel objetivo (toda la historia registrada)
-    tamanos = demanda.tamanos_de_pedido(mov, fecha_corte)
+    # Tamaños de pedido de cada título para el modelo compuesto del nivel objetivo (la demanda registrada desde enero de 2025)
+    tamanos = demanda.tamanos_de_pedido(mov[mov["fecha"] >= inicio_demanda], fecha_corte)
 
     # Próximo embarque y última llegada de cada origen. B repone lo vendido desde esa llegada, el embarque anterior.
     embarques = pedido.proximos_embarques(mov, catalogo, p, fecha_corte, importaciones_mod.ultimas_llegadas(importaciones),

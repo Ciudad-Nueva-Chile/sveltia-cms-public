@@ -19,7 +19,7 @@ Argentina): patrística, espiritualidad, vidas de santos y pensamiento social cr
 1. **Vender mejor**: un sitio web con el catálogo completo (unos 720 títulos), fichas con portada, precio y sinopsis,
    búsqueda y una «solicitud de pedido» que el cliente envía por WhatsApp o correo.
 2. **Comprar mejor**: un modelo de inventario que, a partir de lo que Roberto anota en una planilla, clasifica los
-   libros en las categorías A, B, C y D de la memoria, estima la demanda de los que se reponen y sugiere cuánto
+   libros en las categorías A, B, C y D, estima la demanda de los que se reponen y sugiere cuánto
    importar en cada embarque y desde qué país.
 
 Personas:
@@ -151,10 +151,9 @@ Reglas que ordenan todo:
 - **Scripts**: `sitio.js` (menú, carrusel, solicitud), `catalogo.js` (búsqueda sin tildes, filtros, orden),
   `solicitud.js` (lista y mensaje).
 
-### 4.4 Lo que el sitio debe cumplir frente a la memoria
+### 4.4 Condiciones que cumple el sitio
 
-Estas condiciones salen de los requerimientos RF-01 a RF-08 y RNF-01 a RNF-05 de la memoria (secciones 4.2.1, 4.2.2 y
-4.3.1 a 4.3.4). Lo marcado como **Pendiente** es lo que el sitio todavía no cumple.
+Lo marcado como **Pendiente** es lo que el sitio todavía no cumple.
 
 | Condición | Detalle | Estado |
 |---|---|---|
@@ -167,7 +166,7 @@ Estas condiciones salen de los requerimientos RF-01 a RF-08 y RNF-01 a RNF-05 de
 | Descripción por ficha | Cada ficha tiene su propia descripción (`descripcion_seo` en `src/libros/libros.11tydata.js`): título, autor, colección con su número, ISBN y la primera frase de la sinopsis, o la edición si no hay sinopsis. Las 722 son distintas | Cumple (prueba en `pruebas.yml`) |
 | Tipografías propias | Fraunces e Inter (Fontsource, licencia OFL, versión fija en `package.json`) se copian de `node_modules` a `/assets/fuentes/` al compilar y se declaran con `@font-face`. Sin dependencia externa | Cumple |
 | `robots.txt` y panel | `src/robots.njk` bloquea `/admin/` y `/inventario/`, y solo fuera del modo prueba agrega la línea `Sitemap` con el dominio real. El panel lleva `noindex` | Cumple |
-| Portadas | 597 fichas con imagen y 125 con portada tipográfica (la memoria cuenta 682 y 40: la diferencia son las portadas de Amazon eliminadas). De las 14 fichas con ISBN desplazado, 10 tienen una portada elegida por título y 4 usan la tipográfica (CN-0682, 0695, 0697 y 0704). La publicación de las imágenes requiere autorización de la editorial | Informado |
+| Portadas | 597 fichas con imagen y 125 con portada tipográfica (se eliminaron las portadas obtenidas de Amazon). De las 14 fichas con ISBN desplazado, 10 tienen una portada elegida por título y 4 usan la tipográfica (CN-0682, 0695, 0697 y 0704). La publicación de las imágenes requiere autorización de la editorial | Informado |
 | Sinopsis | El apartado «Sobre el libro» aparece solo si la ficha tiene sinopsis. Hoy ninguna la tiene | Cumple, con contenido pendiente |
 | Cifras de la portada | Número de títulos, de obras de patrística y de áreas salen de las colecciones, no se escriben a mano | Cumple |
 | Modo prueba | Con prefijo de ruta o `SITIO_PRUEBA`, `noindex` y aviso. En `ciudadnueva.cl` ambos desaparecen | Cumple |
@@ -457,25 +456,27 @@ vuelve); su antigüedad alimenta el aviso de consignaciones de más de 365 días
 
 Hay dos ventanas:
 
-- **Clasificación** (k, ADI, CV², clase de demanda y categoría): siempre los últimos 21 meses calendario hasta la fecha de
-  cálculo (`HISTORIA_MESES`, constante de `config.py`; la memoria observa diciembre de 2024 a agosto de 2026). La ventana avanza
-  sola cada mes.
+- **Clasificación** (k, ADI, CV², clase de demanda y categoría): siempre los últimos 20 meses calendario hasta la fecha de
+  cálculo (`HISTORIA_MESES`, constante de `config.py`). La ventana avanza sola cada mes.
 - **Pronóstico** (λ con SBA, 9.6): toda la serie disponible, desde el mes del primer movimiento registrado hasta la fecha de
-  cálculo, con un mínimo de 21 meses. Con 21 meses de historia o menos es la misma serie. «Análisis técnico» muestra cuántos
+  cálculo, con un mínimo de 20 meses. Con 20 meses de historia o menos es la misma serie. «Análisis técnico» muestra cuántos
   meses usó (`meses_pronostico`).
+- **Inicio de la demanda** (`INICIO_DEMANDA` = enero de 2025, constante de `config.py`): la demanda se cuenta desde el inicio
+  de la gestión actual. Los movimientos anteriores solo sirven para las existencias: no entran a la serie del pronóstico
+  (los meses previos no cuentan como ventas ni como meses en cero) ni a los tamaños de pedido del nivel objetivo (9.7).
 
 En ambas, la serie mensual es:
 ```
 dₜ = máx(0,  venta + consignacion_liquidada − devolucion_cliente + venta_perdida)
 ```
-Es la **venta neta** de la memoria (Tabla 4.8, sobre facturas), más la **venta perdida** anotada en «Ventas», que corrige
+Es la **venta neta** (sobre facturas), más la **venta perdida** anotada en «Ventas», que corrige
 la demanda censurada. La **salida en guía no es venta**: un título que solo salió en consignación no tiene venta neta y
 queda en C (9.4); cuenta cuando la librería lo factura.
 
 ### 9.4 Categorías de gestión A, B, C y D (`categorias.py`)
 
-Las categorías A, B, C y D de la memoria adaptan las categorías AA, BB, CC y DD de Flores y Whybark (1987), con una
-diferencia que la memoria justifica en su sección 4.2.5: en lugar de combinar valor de uso con criticidad, usan la **recurrencia de la demanda** y la **salida de bodega**,
+Las categorías A, B, C y D adaptan las categorías AA, BB, CC y DD de Flores y Whybark (1987), con una diferencia: en lugar
+de combinar valor de uso con criticidad, usan la **recurrencia de la demanda** y la **salida de bodega**,
 porque la criticidad no puede evaluarse título por título con el registro disponible. **Reemplazan a la clasificación ABC
 por valor**, que deja de usarse en la política, la planilla y el panel.
 
@@ -489,14 +490,14 @@ por valor**, que deja de usarse en la política, la planilla y el panel.
 
 - **Prioridad:** primero la demanda (A y B), después C y D.
 - **Qué no es C ni D:** un título con venta, aunque sea en un solo mes, es B. D queda para lo que no tuvo venta ni salida.
-- **Se recalcula en cada ejecución** con los últimos 21 meses: no hay una revisión aparte de la clasificación.
+- **Se recalcula en cada ejecución** con los últimos 20 meses: no hay una revisión aparte de la clasificación.
 - **Solicitudes del canal:** si un título C o D recibe una solicitud del canal web (fila de «Ventas» con canal Web / WhatsApp
   y estado «No había stock»), en el cálculo en que se anota sigue en C o D con el aviso «Título C o D con solicitud del canal:
   pasa a B en el próximo cálculo». Desde el cálculo siguiente esa solicitud cuenta como venta neta y el título queda en B.
   Una venta concretada por el canal web es venta neta y lo deja en B de inmediato.
 - **Indicadores por categoría:** títulos, títulos con existencias, ejemplares, valor a precio de venta y porcentaje del valor.
 - **Qué hace con C y D el sistema:** solo los muestra con su valor. Su destino (consignación sin liquidar en C, fondo sin
-  movimiento en D) se decide en la memoria, no en el código.
+  movimiento en D) se decide por fuera del código.
 
 ### 9.5 Clase de demanda (`demanda.clasificar`)
 
@@ -513,7 +514,7 @@ especial») y mandan sobre lo calculado. La clase «Puntual» desaparece: se fun
 
 La marca Coyuntural no se quita sola, así que un título marcado nunca tiene nivel objetivo aunque se siga vendiendo todos
 los meses. Para eso está el aviso «Sigue vendiéndose» (9.9): salta cuando el título tiene venta neta positiva en 3 o más de
-los últimos 6 meses (memoria, sección 4.2.7). El aviso no cambia la clase, S ni la política: Roberto decide si quita la
+los últimos 6 meses. El aviso no cambia la clase, S ni la política: Roberto decide si quita la
 marca en Sveltia, y desde el cálculo siguiente el título se clasifica por sus ventas como cualquier otro.
 
 ADI y CV² (Syntetos, Boylan y Croston, 2005) se siguen calculando como indicadores informativos, con los cortes 1,32 y
@@ -558,7 +559,7 @@ políticas «Stock mínimo» y «Liquidar o revisar» ya no se asignan automáti
 **Nivel objetivo S** (solo A Intermitente o Regular): el nivel hasta el que se repone en cada embarque. T y L son
 siempre los de la política (`config/parametros.yml`) del país de la **edición** del libro (origen editorial). Los observados en
 «Importaciones» solo se muestran como comparación (9.8). Es el **percentil
-95 de la venta en T + L según un modelo compuesto** (memoria 4.2.5, actualizado el 27-10-2026): los pedidos llegan como una
+95 de la venta en T + L según un modelo compuesto**: los pedidos llegan como una
 Poisson y cada pedido trae un número de ejemplares sorteado de los tamaños de pedido registrados del título (líneas de
 venta, factura de consignación y venta perdida; Teunter, Syntetos y Babai, 2010). El percentil se calcula exacto con la
 recursión de Panjer (`demanda._percentil_compuesto`), sin simulación:
@@ -571,20 +572,20 @@ Sugeridoᵢ = máx(0, S − Posiciónᵢ)                                Posici�
 ```
 Si un título no tiene tamaños registrados, o todos sus pedidos fueron de un ejemplar, el modelo da exactamente lo mismo que
 una Poisson de ejemplares (hay una prueba de esto). «Análisis técnico» muestra `demanda_horizonte` y `stock_seguridad`, y la
-ficha del panel dice «Nivel objetivo S = N (modelo compuesto al 95 % para T meses entre embarques más el plazo: 3 en los libros argentinos, 6 en los españoles)». Se eligió porque
-en una prueba fuera de muestra sobre los 21 meses atendió más demanda que Poisson, binomial negativa y remuestreo de meses
-por el mismo capital (memoria 4.2.5): en Argentina el 44 % de las líneas de venta trae más de un ejemplar.
+ficha del panel dice «Nivel objetivo S = N (modelo compuesto al 95 % para T meses entre embarques más el plazo)», con la T del origen (4 en los libros argentinos, 6 en los españoles). Se eligió porque
+en una prueba fuera de muestra sobre 21 meses de historia atendió más demanda que Poisson, binomial negativa y remuestreo de meses
+por el mismo capital: en Argentina el 44 % de las líneas de venta trae más de un ejemplar.
 Un stock negativo es un error de datos: se avisa («Stock negativo») y cuenta como 0, para no inflar el pedido.
 
-**Reglas por confirmar con Andrés** (marcadas así en `politica.py`):
+**Reglas de cantidad** (en `politica.py`):
 - B sin ninguna llegada registrada del origen ni del título: cuenta lo vendido desde el inicio de la ventana.
 - Estacional: «Pedir» entre junio y agosto, hasta la venta neta de la última temporada completa (septiembre a marzo), menos
   la posición. El resto del año solo se avisa.
 - Estacional con ficha nueva cada año (ANGELES 2026 → ANGELES 2027): en Sveltia, el campo «Reemplaza a (código)» liga la ficha
   nueva con la anterior. El pedido usa la venta de la última temporada de ambas y la ficha anterior deja de pedirse. Una ficha
   de temporada sin ventas ni reemplazo avisa «Temporada sin historia», y un reemplazo cuyo código no tiene ventas también avisa.
-- **T** es el intervalo entre embarques del origen, en meses (`intervalo_embarque_meses`): 3 meses desde Argentina, en febrero, mayo, agosto y noviembre (`meses_embarque`), y 6 meses desde España. Todo origen
-  distinto de Argentina se trata como España. El de España sale del modelo de reposición coordinada de la memoria (sección 4.2.5, ecuación 12, mínimo arrepentimiento en 108 escenarios), con tasa de costo de capital de 15 % anual dentro de un rango de 10 % a 20 %. El de Argentina es una decisión de noviembre de 2026.
+- **T** es el intervalo entre embarques del origen, en meses (`intervalo_embarque_meses`): 4 meses desde Argentina, en abril, agosto y diciembre (`meses_embarque`), y 6 meses desde España. Todo origen
+  distinto de Argentina se trata como España. El de España sale de un modelo de reposición coordinada (mínimo arrepentimiento en 108 escenarios simulados), con tasa de costo de capital de 15 % anual dentro de un rango de 10 % a 20 %. El de Argentina es el de menor arrepentimiento con el costo del envío que incluye los adicionales (noviembre de 2026); es sensible al costo de los envíos chicos y debe revisarse con la primera factura de un envío bajo 10 kg.
 - **L** es el plazo de reposición, en días (`plazo_dias`): Argentina 5,5 y España 39 (mediana observada).
 - **El nivel de servicio de 95 % es un criterio y no el resultado de una optimización**, porque el costo del quiebre no
   puede estimarse con el registro. Fuera de muestra, con S al 95 %, los títulos intermitentes atendieron el 93 % de la demanda
@@ -595,7 +596,7 @@ Un stock negativo es un error de datos: se avisa («Stock negativo») y cuenta c
 
 Los pedidos se hacen en **embarques programados** por origen, no cada vez que un título baja de un punto:
 
-- **Argentina**: en febrero, mayo, agosto y noviembre (`meses_embarque`), el de agosto junto con el pedido anual de calendarios, para
+- **Argentina**: en abril, agosto y diciembre (`meses_embarque`), el de agosto junto con el pedido anual de calendarios, para
   que el envío se pague una sola vez. El próximo pedido es el siguiente de esos meses, no la última llegada más T. El mes en
   curso cuenta mientras su embarque no haya llegado.
 - **España**: cada 6 meses desde su última llegada registrada en «Importaciones». Si no tiene llegadas ahí, se usa la última
@@ -606,9 +607,9 @@ Los pedidos se hacen en **embarques programados** por origen, no cada vez que un
 T observado = mediana de los días entre fechas de llegada distintas del país, en sus últimos 5 embarques   (÷ 30,44 → meses)
 L observado = mediana de (fecha de llegada − fecha de pedido), en las filas que tienen ambas                (÷ 30 → meses)
 ```
-S y la fecha del próximo embarque usan **siempre** los T y L de la política de la memoria (`config/parametros.yml`: Argentina
-3 meses, en febrero, mayo, agosto y noviembre, y 5,5 días, España 6 meses y 39 días). Lo observado se muestra cuando hay **3 o más embarques** con datos del país,
-por ejemplo «Política: cada 3 meses (febrero, mayo, agosto y noviembre). Observado: cada 3 meses (4 embarques) · plazo 5,5 días. Observado: 6 días (3
+S y la fecha del próximo embarque usan **siempre** los T y L de la política (`config/parametros.yml`: Argentina
+4 meses, en abril, agosto y diciembre, y 5,5 días, España 6 meses y 39 días). Lo observado se muestra cuando hay **3 o más embarques** con datos del país,
+por ejemplo «Política: cada 4 meses (abril, agosto y diciembre). Observado: cada 3 meses (4 embarques) · plazo 5,5 días. Observado: 6 días (3
 embarques)». Se ve en «Análisis técnico» (columna `t_y_l`), en «Esta semana», en «Pedido sugerido» y en el panel. Si lo
 observado se aleja de la política, quien mantiene el sistema decide si actualiza `parametros.yml`.
 
@@ -618,8 +619,7 @@ neto_USDᵢ     = precio_listaᵢ / 1,19 / tipo_cambio
 FOBᵢ,o        = neto_USDᵢ × «FOB / precio neto»            → lo que se le paga a la editorial
 Costoᵢ,o      = neto_USDᵢ × «Costo en bodega / precio neto» → solo para valorizar: ya trae el flete histórico, no se compara
 ```
-La memoria mide estos factores por origen en su sección 4.1.5 (economía del negocio) y los usa en 4.2.5 para valorizar
-la reposición. **Sus valores reales y el tipo de cambio no se escriben en este repositorio**: viven en la pestaña
+Estos factores se miden por origen y sirven para valorizar la reposición. **Sus valores reales y el tipo de cambio no se escriben en este repositorio**: viven en la pestaña
 Configuración de la planilla privada. Precio neto = precio con IVA / 1,19. Cada cálculo los actualiza:
 ```
 tipo_cambio          = dólar observado del Banco Central del último día hábil (mindicador.cl)
@@ -628,7 +628,7 @@ Costo / precio neto  = Σ (FOB en pesos + gastos de internación) / Σ (precio_l
 ```
 con los últimos 3 embarques llegados del país y la edición de la fila (la fila general usa las ediciones sin fila propia).
 Un embarque es una factura o DIN; los gastos se anotan una vez por embarque y se reparten entre ediciones según el FOB.
-Sin embarques con datos queda el valor escrito a mano (al inicio, los de la memoria).
+Sin embarques con datos queda el valor escrito a mano (al inicio, el que se anotó al crear la planilla).
 
 La importación se atribuye al origen del título (su editorial), porque el registro no dice desde dónde llegó, y todo origen
 distinto de Argentina se cuenta como España. Sin importaciones registradas, el embarque se considera vencido. Un embarque
@@ -641,22 +641,29 @@ comparan las combinaciones de envíos que **cubren todas las necesidades** (Todo
 ```
 Total(E) = Σ necesidades × FOBᵢ,o  +  Σ_{o que envía} costo del envío desde o
 ```
-**El flete se cuenta una sola vez**: «Libros» es el valor FOB y «Envíos» el costo del envío. El factor «Costo en bodega / precio
-neto» ya trae el flete histórico, así que no entra en el comparador.
+**El flete se cuenta una sola vez**: «Libros» es el valor FOB, «Envíos» el transporte e «Impuestos» el IVA, el arancel y las tasas al
+internar. El factor «Costo en bodega / precio neto» ya trae el flete histórico, así que no entra en el comparador. **Todos los montos
+del comparador son aproximados.**
 
 El costo de cada envío es la celda amarilla de «Pedido sugerido» que **anota Roberto** con la cotización real («cotización
-anotada»). Vacía o en 0, se usa el **estimado por peso**, sin IVA, impuestos ni recargos:
+anotada»). Vacía o en 0, se usa el **estimado por peso**, que es la tarifa más sus adicionales:
 ```
 Pesoₒ    = Σ cantidad × peso      peso = «Peso (kg)» de la ficha o, si no tiene, 0,148 kg desde Argentina y 0,43 kg desde España
-Argentina: tarifa DHL de la Cámara Argentina del Libro (Excel, hoja AR TDExport, Paquetes, Zona 1), peso redondeado hacia arriba a 0,5 kg
-España:    € 55,6 + € 7,96 × Peso (memoria 4.2.5), convertido con el tipo de cambio de «Configuración»
+Argentina: tarifa DHL de la Cámara Argentina del Libro (Excel, hoja AR TDExport, Paquetes, Zona 1), peso redondeado hacia arriba a 0,5 kg,
+           × (1 + adicionales). La nota de esa hoja deja fuera combustible, cargos aduaneros, impuestos y liberación de carga
+España:    € 55,6 + € 7,96 × Peso, convertido con el tipo de cambio de «Configuración». Sale de lo facturado, así que ya
+           trae los adicionales. Es la vía postal: el único envío por DHL costó 52 % más
+Impuestos: CIF = FOB + flete de aduana + seguro presunto (2 % del FOB, no se paga)
+           Flete de aduana: Argentina, el que DHL declara en la DIN (fijo + por kilo, distinto y mayor que lo facturado). España, el envío
+           Arancel = 0 con certificado de origen; IVA = 19 % × (CIF + arancel); tasas = 1,5 % del CIF por la vía postal
+           Se calculan con el envío estimado aunque haya cotización. Si el IVA se recupera como crédito fiscal, ese monto no es costo
 ```
 La tabla está en `config/parametros.yml` con su fuente. Sobre 10 kg se copió la lista de 0,5 en 0,5 kg de la misma hoja, porque su
 tabla de incrementos está redondeada y se aparta del listado hasta en US$ 0,11 a 50 kg. Cada combinación tiene su propio peso, así
 que su estimado va en las columnas de la derecha de la tabla. Se elige la combinación de menor Total (empate: menos envíos). Un envío
 estimado de más de 50 kg o US$ 3.000 FOB se avisa, para pedir cotización.
 
-**El pedido que toca se pide aunque sea chico**: el costo del envío ya está en la elección de T (memoria 4.2.5). El embarque
+**El pedido que toca se pide aunque sea chico**: el costo del envío ya está en la elección de T. El embarque
 tampoco se completa solo ni tiene castigos numéricos de postergar o adelantar.
 
 Resultados: líneas «Ahora» (se piden en el embarque) y «Próximo embarque» (lo que espera), con el motivo («Se vende y queda
@@ -706,51 +713,53 @@ vigencia». Las fechas salen de las columnas «vigente desde» de la pestaña Co
 
 | Parámetro | Valor | Usado en | Procedencia |
 |---|---|---|---|
-| `nivel_servicio` | 0,95 | 9.7 | **Criterio** de la memoria, no optimización |
+| `nivel_servicio` | 0,95 | 9.7 | **Criterio**, no optimización |
 | `alfa_suavizado` | 0,15 | 9.6 | **Supuesto abierto** (rango 0,05 a 0,20) |
-| `origenes[].intervalo_embarque_meses` (T) | España 6 y Argentina 3 | 4.2.5 | España: ecuación (12) y mínimo arrepentimiento en 108 escenarios. Argentina: decisión de noviembre de 2026 |
-| `origenes[].meses_embarque` | Argentina [2, 5, 8, 11] | 4.2.5 | El embarque de agosto viaja con los calendarios |
+| `origenes[].intervalo_embarque_meses` (T) | España 6 y Argentina 4 | 9.7 | España: mínimo arrepentimiento en 108 escenarios simulados. Argentina: el de menor arrepentimiento con el envío que incluye adicionales |
+| `origenes[].meses_embarque` | Argentina [4, 8, 12] | 9.8 | El embarque de agosto viaja con los calendarios |
 | `origenes[].peso_medio_kg` | Argentina 0,148 y España 0,43 | 9.8 | Peso de un ejemplar si la ficha no trae «Peso (kg)» |
-| `origenes[].envio` | Argentina: tarifa DHL de la CAL. España: € 55,6 + € 7,96 por kilo | 9.8 | Costo del envío estimado por peso |
+| `origenes[].envio` | Argentina: tarifa DHL de la CAL + 30 % de adicionales. España: € 55,6 + € 7,96 por kilo | 9.8 | Costo aproximado del envío por peso |
+| `origenes[].aduana` | IVA 19 %, seguro presunto 2 %, arancel 0, tasas postales 1,5 %, flete de aduana desde Argentina | 9.8 | Impuestos aproximados del envío |
 | `origenes[].plazo_dias` (L) | Argentina 5,5 y España 39 | 9.7 | Argentina declarado y observado; España, mediana de 5 envíos entre factura y llegada |
 
-**Constantes de la memoria** (`inventario/config.py`, cada una con su cita):
+**Constantes del método** (`inventario/config.py`, cada una con su explicación):
 
 | Constante | Valor | Usado en | Procedencia |
 |---|---|---|---|
-| `HISTORIA_MESES` | 21 | 9.3 | Ventana de clasificación de la memoria |
+| `HISTORIA_MESES` | 20 | 9.3 | Ventana de clasificación |
+| `INICIO_DEMANDA` | enero de 2025 | 9.3 | Inicio de la gestión actual: la demanda se cuenta desde aquí; los movimientos anteriores solo sirven para las existencias |
 | `CORTE_ADI` / `CORTE_CV2` | 1,32 / 0,49 | 9.5 | Syntetos, Boylan y Croston (2005), solo informativos |
-| `CONTEOS_POR_ANIO` | A 12, B 2, C 1 y D 1 | 9.9 | Tabla 4.26 |
+| `CONTEOS_POR_ANIO` | A 12, B 2, C 1 y D 1 | 9.9 | Conteo mensual para A, semestral para B y anual para C y D |
 | `DIAS_CONSIGNACION_ANTIGUA` | 365 | 9.9 | Criterio de operación |
 | `MESES_TIPO_CAMBIO` / `MESES_FACTORES` / `MESES_LISTA_PRECIOS` | 6 / 12 / 12 | 9.9 | Umbrales de los avisos de caducidad |
-| `ACELERACION_MESES_RECIENTES` / `ACELERACION_MESES_PREVIOS` / `ACELERACION_FACTOR` / `ACELERACION_MINIMO_UNIDADES` | 3 / 18 / 2 / 3 | 9.9 | Aviso de aceleración (memoria, sección 4.2.5: el modelo supone que el futuro se parece a la ventana) |
-| `COYUNTURAL_MESES_REVISION` / `COYUNTURAL_MESES_CON_VENTA` | 6 / 3 | 9.9 | Aviso «Sigue vendiéndose» de la clase Coyuntural (memoria, sección 4.2.7). Parámetros técnicos: no están en Sveltia ni en la planilla |
+| `ACELERACION_MESES_RECIENTES` / `ACELERACION_MESES_PREVIOS` / `ACELERACION_FACTOR` / `ACELERACION_MINIMO_UNIDADES` | 3 / 18 / 2 / 3 | 9.9 | Aviso de aceleración (el modelo supone que el futuro se parece a la ventana) |
+| `COYUNTURAL_MESES_REVISION` / `COYUNTURAL_MESES_CON_VENTA` | 6 / 3 | 9.9 | Aviso «Sigue vendiéndose» de la clase Coyuntural. Parámetros técnicos: no están en Sveltia ni en la planilla |
 
 
 En la planilla (porque son sensibles o cambian seguido): factores de costo y tipo de cambio (Configuración) y
-cotización de cada envío (Pedido sugerido). **Esos valores reales no se escriben en este repositorio**: los carga Andrés en la
-planilla privada a partir de las mediciones de la memoria.
+cotización de cada envío (Pedido sugerido). **Esos valores reales no se escriben en este repositorio**: los carga quien mantiene el sistema en la
+planilla privada.
 
 ### 9.11 Ejemplo completo con un libro (datos sintéticos)
 
 Un libro español, A, que también se consigue vía Argentina. Precio de lista $23.800 y tipo de cambio 950 (valores de
-ejemplo, no los reales). Demanda de los últimos 21 meses:
-`0 1 0 3 0 0 2 0 1 0 0 2 0 1 0 0 3 0 1 0 2` (16 ejemplares en 9 meses).
+ejemplo, no los reales). Demanda de los últimos 20 meses:
+`1 0 3 0 0 2 0 1 0 0 2 0 1 0 0 3 0 1 0 2` (16 ejemplares en 9 meses).
 
 | Paso | Cálculo | Resultado |
 |---|---|---|
-| Clase | k = 9 meses con demanda, que son 3 o más | **Intermitente** (ADI = 21/9 = 2,33 y CV² = 0,195 solo informativos) |
+| Clase | k = 9 meses con demanda, que son 3 o más | **Intermitente** (ADI = 20/9 = 2,22 y CV² = 0,195 solo informativos) |
 | Categoría | Clase Intermitente | **A** |
-| Pronóstico | SBA con α = 0,15 | **λ = 0,66 ejemplares/mes** |
+| Pronóstico | SBA con α = 0,15 | **λ = 0,75 ejemplares/mes** |
 | Horizonte | T = 6 meses (España) más L = 39/30 de mes | 7,3 meses |
-| Venta esperada | 0,66 × 7,3 | 4,82 ejemplares |
-| Pedidos | 9 pedidos registrados de 1, 3, 2, 1, 2, 1, 3, 1 y 2 ejemplares: tamaño medio 1,78 | 4,82 / 1,78 = 2,71 pedidos esperados |
-| Nivel objetivo | percentil 95 del modelo compuesto (Panjer) | **S = 11** (con Poisson de ejemplares serían 9) |
-| Pedido | Bodega 3, En camino 0, Sugerido = 11 − 3 | **pedir 8 en el próximo embarque** |
+| Venta esperada | 0,75 × 7,3 | 5,47 ejemplares |
+| Pedidos | 9 pedidos registrados de 1, 3, 2, 1, 2, 1, 3, 1 y 2 ejemplares: tamaño medio 1,78 | 5,47 / 1,78 = 3,08 pedidos esperados |
+| Nivel objetivo | percentil 95 del modelo compuesto (Panjer) | **S = 12** (con Poisson de ejemplares serían 10) |
+| Pedido | Bodega 3, En camino 0, Sugerido = 12 − 3 | **pedir 9 en el próximo embarque** |
 | Costos | neto = 23.800 / 1,19 = $20.000, que son US$ 21,05 | |
 | España | FOB 0,45 es **US$ 9,47**. Costo en bodega 0,60 es US$ 12,63 | |
 | Vía Argentina | FOB 0,50 es **US$ 10,53**. Costo en bodega 0,57 es US$ 12,00 | El comparador usa FOB: España, US$ 9,47 |
-| Con T de Argentina | T = 3 meses más 5,5/30: media 0,66 × 3,18 = 2,10, es decir S = 6 | El plazo del origen cambia el nivel objetivo |
+| Con T de Argentina | T = 4 meses más 5,5/30: media 0,75 × 4,18 = 3,14, es decir S = 8 | El plazo del origen cambia el nivel objetivo |
 | Decisión | Por valor FOB conviene comprar desde España. Si no se hace ese envío y la combinación cubre todo, el título se compra en Argentina | Depende de la combinación de menor Total, con el envío estimado por peso |
 
 ---
@@ -770,8 +779,8 @@ ejemplo, no los reales). Demanda de los últimos 21 meses:
   datos por actualizar, consignaciones, temporada).
 - **Libros**: tabla con la categoría de gestión, filtrable por «Qué hacer», búsqueda, orden, solo con aviso; ficha de cada libro
   con gráfico de venta neta por mes, la política en palabras (S y T + L cuando corresponde) y datos técnicos (k, ADI, CV², λ).
-- **Análisis**: indicadores (incluidos los de ventas), la tabla por categoría con la estructura de la
-  Tabla 4.24 de la memoria (títulos, con existencias, ejemplares, valor y % del valor), dispersión ADI–CV² coloreada por
+- **Análisis**: indicadores (incluidos los de ventas), la tabla por categoría (títulos,
+  con existencias, ejemplares, valor y % del valor), dispersión ADI–CV² coloreada por
   categoría con los cortes, matriz clase × categoría y tabla técnica.
 - Colores de datos validados para daltonismo; modo oscuro; adaptable a celular. El panel lleva `noindex` y su ruta está
   bloqueada en `robots.txt`.
@@ -822,7 +831,7 @@ envíos responden al instante.
 - La cuadratura «ya lo bajé a mano» solo funciona el mismo día del cálculo. Corregir una venta ya descontada exige
   corregir también «En bodega».
 - Las ventas con descuento cuentan como demanda normal: una oferta grande sube el pronóstico por un tiempo.
-- El modelo supone que el futuro se parece a los últimos 21 meses (para los eventos existe la clase Coyuntural, que se marca y se quita a mano; el aviso «Sigue vendiéndose» recuerda revisarla).
+- El modelo supone que el futuro se parece a los últimos 20 meses (para los eventos existe la clase Coyuntural, que se marca y se quita a mano; el aviso «Sigue vendiéndose» recuerda revisarla).
 - Los dólares dependen de factores de costo estimados por origen.
 - El flete no se calcula por peso: el catálogo no tiene el peso de cada título, así que el costo de cada envío lo anota Roberto.
 - Varios valores son supuestos o criterios y no mediciones: el nivel de servicio de 95 %, que los pedidos lleguen como Poisson, α = 0,15,
@@ -856,8 +865,8 @@ envíos responden al instante.
 
 | Término | Significado |
 |---|---|
-| A, B, C, D | Categorías de gestión de la memoria (adaptan AA a DD de Flores y Whybark): recurrencia de la demanda y salida de bodega (sección 9.4). Se recalculan en cada ejecución |
-| Disponible, Agotado, Bajo pedido | Únicas etiquetas de disponibilidad que muestra el sitio (sección 4.4). Nunca cantidades |
+| A, B, C, D | Categorías de gestión (adaptan AA a DD de Flores y Whybark): recurrencia de la demanda y salida de bodega (9.4). Se recalculan en cada ejecución |
+| Disponible, Agotado, Bajo pedido | Únicas etiquetas de disponibilidad que muestra el sitio (4.4). Nunca cantidades |
 | ADI | Average Demand Interval: meses promedio entre meses con venta |
 | CV² | Coeficiente de variación al cuadrado del tamaño de la demanda |
 | SBA | Syntetos–Boylan Approximation: Croston corregido para demanda intermitente |
@@ -865,7 +874,7 @@ envíos responden al instante.
 | Modelo compuesto | Venta = suma de pedidos, con el número de pedidos Poisson y el tamaño de cada uno sorteado de los registrados. Con él se calcula S (percentil 95) |
 | Nivel de servicio | Probabilidad de no quedarse sin stock durante el horizonte de protección |
 | S (nivel objetivo) | Nivel de existencias hasta el que se repone en cada embarque |
-| Embarque programado | Importación que se hace cada T meses por origen (3 meses desde Argentina, en febrero, mayo, agosto y noviembre; 6 desde España) |
+| Embarque programado | Importación que se hace cada T meses por origen (4 meses desde Argentina, en abril, agosto y diciembre; 6 desde España) |
 | FOB | Valor de la mercadería en origen, sin flete ni impuestos |
 | Costo puesto en bodega | FOB + flete + seguro + impuestos, por ejemplar |
 | Demanda censurada | Demanda no observada porque no había stock |
