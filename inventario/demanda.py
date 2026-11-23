@@ -164,7 +164,7 @@ def demanda_horizonte(tasa_mensual: float, intervalo_meses: float, plazo_meses: 
     return tasa_mensual * (intervalo_meses + plazo_meses)
 
 
-def nivel_objetivo(tasa_mensual: float, intervalo_meses: float, plazo_meses: float, nivel: float = 0.95,
+def nivel_objetivo(tasa_mensual: float, intervalo_meses: float, plazo_meses: float, nivel: float = 0.90,
                    tamanos: list[float] | None = None) -> int:
     """S = percentil `nivel` de la demanda en T + L, cuya media es λ × (T + L).
 

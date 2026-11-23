@@ -74,7 +74,7 @@ def _origenes_configurados() -> list[Origen]:
 @dataclass
 class Parametros:
     """Las decisiones de config/parametros.yml."""
-    nivel_servicio: float = 0.95            # criterio, no optimización
+    nivel_servicio: float = 0.90            # criterio, no optimización
     alfa_suavizado: float = 0.15            # supuesto abierto
     origenes: list[Origen] = field(default_factory=_origenes_configurados)
 

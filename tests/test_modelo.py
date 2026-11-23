@@ -118,10 +118,10 @@ def test_stock_de_seguridad_es_s_menos_la_demanda_del_horizonte():
     r = calcular(catalogo, _mov(filas), pd.DataFrame(columns=["id", "cantidad"]), pd.DataFrame(), Parametros(), pd.Timestamp("2026-08-31"))
     t = r.titulos.set_index("id").loc["x"]
     media = demanda.demanda_horizonte(demanda.sba(r.series.loc["x"].to_numpy(dtype=float), 0.15), 4, 5.5 / 30)
-    assert t["clase"] == "Intermitente" and t["nivel_objetivo"] == demanda.nivel_objetivo(media / (4 + 5.5 / 30), 4, 5.5 / 30, 0.95, [5, 1, 8, 2])
+    assert t["clase"] == "Intermitente" and t["nivel_objetivo"] == demanda.nivel_objetivo(media / (4 + 5.5 / 30), 4, 5.5 / 30, 0.90, [5, 1, 8, 2])
     assert t["demanda_horizonte"] == pytest.approx(media, abs=0.05)
     assert t["stock_seguridad"] == pytest.approx(t["nivel_objetivo"] - media, abs=0.05)
-    assert t["nivel_objetivo"] > int(poisson.ppf(0.95, media))     # los pedidos grandes piden más colchón que la Poisson
+    assert t["nivel_objetivo"] > int(poisson.ppf(0.90, media))     # los pedidos grandes piden más colchón que la Poisson
 
 
 def test_esporadica_repone_lo_vendido_sin_s_ni_stock_de_seguridad():
@@ -139,7 +139,7 @@ def test_t_y_l_por_origen():
     assert p.intervalo_meses("España") == 6 and p.plazo_meses("España") == pytest.approx(39 / 30)
     assert p.intervalo_meses("Uruguay") == 6            # todo origen distinto de Argentina se trata como España
     assert p.origen("Argentina").meses_embarque == [4, 8, 12] and not p.origen("España").meses_embarque
-    assert p.nivel_servicio == 0.95 and HISTORIA_MESES == 20
+    assert p.nivel_servicio == 0.90 and HISTORIA_MESES == 20
 
 
 def test_humo_s_con_lambda_t_y_l_conocidos():
@@ -148,7 +148,7 @@ def test_humo_s_con_lambda_t_y_l_conocidos():
     for origen, lam in (("España", 0.5), ("Argentina", 0.5), ("España", 2.3)):
         media = lam * (p.intervalo_meses(origen) + p.plazo_meses(origen))
         assert demanda.nivel_objetivo(lam, p.intervalo_meses(origen), p.plazo_meses(origen), p.nivel_servicio) == \
-            int(poisson.ppf(0.95, media))
+            int(poisson.ppf(0.90, media))
 
 
 # ---------- Categorías A, B, C y D ----------
@@ -253,7 +253,7 @@ def test_calculo_completo_categorias_politica_y_s():
     assert t.loc["aa", "clase"] == "Intermitente" and t.loc["aa", "politica"] == "Reponer"
     lam = t.loc["aa", "tasa_mensual"]
     p = Parametros()
-    esperado = int(poisson.ppf(0.95, demanda.sba(r.series.loc["aa"].to_numpy(dtype=float), 0.15) * (6 + 39 / 30)))
+    esperado = int(poisson.ppf(0.90, demanda.sba(r.series.loc["aa"].to_numpy(dtype=float), 0.15) * (6 + 39 / 30)))
     assert lam > 0 and t.loc["aa", "nivel_objetivo"] == esperado
     assert t.loc["aa", "sugerido"] == esperado              # bodega 2 − 6 ventas = −4: se avisa y cuenta como 0
     assert "Stock negativo" in t.loc["aa", "alertas"]
@@ -320,7 +320,7 @@ def test_la_demanda_se_cuenta_desde_enero_de_2025_aunque_haya_movimientos_anteri
     # Los tamaños de pedido del nivel objetivo son solo los de 2025 en adelante (todos de 2 ejemplares)
     tamanos = [2.0] * int((desde_2025 > 0).sum())
     T, L = Parametros().intervalo_meses("España"), Parametros().plazo_meses("España")
-    assert t["nivel_objetivo"] == demanda.nivel_objetivo(demanda.sba(desde_2025, 0.15), T, L, 0.95, tamanos)
+    assert t["nivel_objetivo"] == demanda.nivel_objetivo(demanda.sba(desde_2025, 0.15), T, L, 0.90, tamanos)
 
 
 def test_solicitud_web_de_un_c_o_d_pasa_a_b_en_el_proximo_calculo():
@@ -550,7 +550,7 @@ def test_t_y_l_de_la_politica_vigente_con_observado_como_comparacion():
     p = cargar_parametros()
     assert (p.intervalo_meses("España"), p.intervalo_meses("Argentina")) == (6, 4)
     assert p.origen("España").plazo_dias == 39 and p.origen("Argentina").plazo_dias == 5.5
-    assert p.origen("Argentina").meses_embarque == [4, 8, 12] and p.nivel_servicio == 0.95 and p.alfa_suavizado == 0.15
+    assert p.origen("Argentina").meses_embarque == [4, 8, 12] and p.nivel_servicio == 0.90 and p.alfa_suavizado == 0.15
     tres = importaciones.efectivos(_embarques("Argentina", ["2026-01-10", "2026-04-10", "2026-07-10"]), p)["Argentina"]
     assert tres["texto_T"] == "Política: cada 4 meses (abril, agosto y diciembre). Observado: cada 3 meses (3 embarques)"
 
@@ -1077,7 +1077,7 @@ def test_aviso_de_aceleracion_en_el_calculo():
     r = calcular(catalogo, _mov(filas), pd.DataFrame(columns=["id", "cantidad"]), pd.DataFrame(), Parametros(), pd.Timestamp("2026-08-31"))
     t = r.titulos.set_index("id")
     assert bool(t.loc["x", "acelera"]) and "Se vende más rápido que antes" in t.loc["x", "alertas"]
-    assert t.loc["x", "nivel_objetivo"] == demanda.nivel_objetivo(t.loc["x", "tasa_mensual"], 6, 39 / 30, 0.95,
+    assert t.loc["x", "nivel_objetivo"] == demanda.nivel_objetivo(t.loc["x", "tasa_mensual"], 6, 39 / 30, 0.90,
                                                                   [1, 1, 1, 1, 2, 2, 2])   # S no cambia
 
 

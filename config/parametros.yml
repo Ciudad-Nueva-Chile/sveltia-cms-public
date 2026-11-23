@@ -7,7 +7,7 @@
 # Nivel de servicio: CRITERIO, no resultado de una optimización, porque el costo del quiebre no puede estimarse con el
 # registro. Es el percentil de la venta en T + L (modelo compuesto: pedidos Poisson por tamaño de pedido registrado,
 # inventario/demanda.py) con que se calcula el nivel objetivo S.
-nivel_servicio: 0.95
+nivel_servicio: 0.90
 
 # α de SBA: SUPUESTO ABIERTO, dentro del rango 0,05 a 0,20 que evaluaron Syntetos, Boylan y Croston (2005).
 alfa_suavizado: 0.15

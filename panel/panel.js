@@ -314,7 +314,7 @@
     if (t.tasa_mensual > 0) partes.push("Se vende <b>" + esc(t.se_vende) + "</b> según SBA.");
     var r = "Qué hacer: <b>" + esc(t.que_hacer.toLowerCase()) + "</b>";
     if (t.politica === "Reponer") {
-      r += ". Nivel objetivo S = <b>" + t.nivel_objetivo + "</b> (modelo compuesto al 95 % para " + coma(t.intervalo_meses) + " meses entre embarques más el plazo). Hoy hay " +
+      r += ". Nivel objetivo S = <b>" + t.nivel_objetivo + "</b> (modelo compuesto al 90 % para " + coma(t.intervalo_meses) + " meses entre embarques más el plazo). Hoy hay " +
         t.bodega + (t.transito ? " y vienen " + t.transito : "") + ".";
     } else if (t.politica === "Reponer lo vendido") {
       r += ". Vendió " + t.vendido_desde_importacion + " desde el último embarque" + (t.transito ? " y vienen " + t.transito : "") + ".";

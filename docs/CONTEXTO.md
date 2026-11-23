@@ -357,7 +357,7 @@ inventario/
 ├── stock.py              efectos de cada movimiento y existencias
 ├── demanda.py            serie mensual, clase por meses con demanda, ADI y CV² informativos, pronóstico SBA
 ├── categorias.py         categorías de gestión A, B, C y D
-├── politica.py           política por categoría y nivel objetivo S (modelo compuesto al 95 %)
+├── politica.py           política por categoría y nivel objetivo S (modelo compuesto al 90 %)
 ├── pedido.py             pedido por embarque programado y dónde comprar: combinaciones de envíos con costo por peso
 ├── modelo.py             une todo: calcular() → Resultado
 ├── lenguaje.py           todos los textos en lenguaje simple y las hojas armadas
@@ -566,13 +566,13 @@ recursión de Panjer (`demanda._percentil_compuesto`), sin simulación:
 ```
 media     = λ × (T + L)                                          demanda esperada del horizonte
 pedidos   = media / tamaño medio de pedido del título
-S         = percentil( nivel_servicio, compuesto(pedidos ~ Poisson, tamaño ~ tamaños registrados) )   nivel_servicio = 0,95
+S         = percentil( nivel_servicio, compuesto(pedidos ~ Poisson, tamaño ~ tamaños registrados) )   nivel_servicio = 0,90
 SS        = S − media                                            stock de seguridad
 Sugeridoᵢ = máx(0, S − Posiciónᵢ)                                Posición = máx(Bodega, 0) + En camino
 ```
 Si un título no tiene tamaños registrados, o todos sus pedidos fueron de un ejemplar, el modelo da exactamente lo mismo que
 una Poisson de ejemplares (hay una prueba de esto). «Análisis técnico» muestra `demanda_horizonte` y `stock_seguridad`, y la
-ficha del panel dice «Nivel objetivo S = N (modelo compuesto al 95 % para T meses entre embarques más el plazo)», con la T del origen (4 en los libros argentinos, 6 en los españoles). Se eligió porque
+ficha del panel dice «Nivel objetivo S = N (modelo compuesto al 90 % para T meses entre embarques más el plazo)», con la T del origen (4 en los libros argentinos, 6 en los españoles). Se eligió porque
 en una prueba fuera de muestra sobre 21 meses de historia atendió más demanda que Poisson, binomial negativa y remuestreo de meses
 por el mismo capital: en Argentina el 44 % de las líneas de venta trae más de un ejemplar.
 Un stock negativo es un error de datos: se avisa («Stock negativo») y cuenta como 0, para no inflar el pedido.
@@ -587,10 +587,14 @@ Un stock negativo es un error de datos: se avisa («Stock negativo») y cuenta c
 - **T** es el intervalo entre embarques del origen, en meses (`intervalo_embarque_meses`): 4 meses desde Argentina, en abril, agosto y diciembre (`meses_embarque`), y 6 meses desde España. Todo origen
   distinto de Argentina se trata como España. El de España sale de un modelo de reposición coordinada (mínimo arrepentimiento en 108 escenarios simulados), con tasa de costo de capital de 15 % anual dentro de un rango de 10 % a 20 %. El de Argentina es el de menor arrepentimiento con el costo del envío que incluye los adicionales (noviembre de 2026); es sensible al costo de los envíos chicos y debe revisarse con la primera factura de un envío bajo 10 kg.
 - **L** es el plazo de reposición, en días (`plazo_dias`): Argentina 5,5 y España 39 (mediana observada).
-- **El nivel de servicio de 95 % es un criterio y no el resultado de una optimización**, porque el costo del quiebre no
-  puede estimarse con el registro. Fuera de muestra, con S al 95 %, los títulos intermitentes atendieron el 93 % de la demanda
-  desde Argentina y el 84 % desde España: el 95 % es la probabilidad de no agotarse en el ciclo, no la parte de la demanda
-  que se atiende.
+- **El nivel de servicio de 90 % es un criterio y no el resultado de una optimización**, porque el costo del quiebre no
+  puede estimarse con el registro. Se eligió en noviembre de 2026 comparando niveles de 70 a 98 % en una prueba fuera de muestra
+  sobre los 20 meses de la ventana: con S al 90 %, los títulos intermitentes atendieron el 87 % de la venta desde Argentina y
+  el 77 % desde España (con 95 % habrían sido el 92 % y el 83 %, con más capital en S; sin colchón, el 63 % y el 49 %). El
+  nivel es la probabilidad de no agotarse en el ciclo, no la parte de la demanda que se atiende. Con 90 %, el stock de
+  seguridad (S menos la venta esperada) es el 57 % de S; con 95 % era el 65 %. No hay un punto de quiebre claro entre 85 y
+  95 %, y por debajo de 90 % el servicio desde España cae con rapidez. Las muestras son chicas (21 y 16 títulos, 17 y 14
+  períodos que se solapan).
 
 ### 9.8 Pedido por embarque y dónde comprar (`pedido.sugerir`)
 
@@ -713,7 +717,7 @@ vigencia». Las fechas salen de las columnas «vigente desde» de la pestaña Co
 
 | Parámetro | Valor | Usado en | Procedencia |
 |---|---|---|---|
-| `nivel_servicio` | 0,95 | 9.7 | **Criterio**, no optimización |
+| `nivel_servicio` | 0,90 | 9.7 | **Criterio**, no optimización |
 | `alfa_suavizado` | 0,15 | 9.6 | **Supuesto abierto** (rango 0,05 a 0,20) |
 | `origenes[].intervalo_embarque_meses` (T) | España 6 y Argentina 4 | 9.7 | España: mínimo arrepentimiento en 108 escenarios simulados. Argentina: el de menor arrepentimiento con el envío que incluye adicionales |
 | `origenes[].meses_embarque` | Argentina [4, 8, 12] | 9.8 | El embarque de agosto viaja con los calendarios |
@@ -754,12 +758,12 @@ ejemplo, no los reales). Demanda de los últimos 20 meses:
 | Horizonte | T = 6 meses (España) más L = 39/30 de mes | 7,3 meses |
 | Venta esperada | 0,75 × 7,3 | 5,47 ejemplares |
 | Pedidos | 9 pedidos registrados de 1, 3, 2, 1, 2, 1, 3, 1 y 2 ejemplares: tamaño medio 1,78 | 5,47 / 1,78 = 3,08 pedidos esperados |
-| Nivel objetivo | percentil 95 del modelo compuesto (Panjer) | **S = 12** (con Poisson de ejemplares serían 10) |
-| Pedido | Bodega 3, En camino 0, Sugerido = 12 − 3 | **pedir 9 en el próximo embarque** |
+| Nivel objetivo | percentil 90 del modelo compuesto (Panjer) | **S = 10** (con Poisson de ejemplares serían 9) |
+| Pedido | Bodega 3, En camino 0, Sugerido = 10 − 3 | **pedir 7 en el próximo embarque** |
 | Costos | neto = 23.800 / 1,19 = $20.000, que son US$ 21,05 | |
 | España | FOB 0,45 es **US$ 9,47**. Costo en bodega 0,60 es US$ 12,63 | |
 | Vía Argentina | FOB 0,50 es **US$ 10,53**. Costo en bodega 0,57 es US$ 12,00 | El comparador usa FOB: España, US$ 9,47 |
-| Con T de Argentina | T = 4 meses más 5,5/30: media 0,75 × 4,18 = 3,14, es decir S = 8 | El plazo del origen cambia el nivel objetivo |
+| Con T de Argentina | T = 4 meses más 5,5/30: media 0,75 × 4,18 = 3,14, es decir S = 7 | El plazo del origen cambia el nivel objetivo |
 | Decisión | Por valor FOB conviene comprar desde España. Si no se hace ese envío y la combinación cubre todo, el título se compra en Argentina | Depende de la combinación de menor Total, con el envío estimado por peso |
 
 ---
@@ -834,7 +838,7 @@ envíos responden al instante.
 - El modelo supone que el futuro se parece a los últimos 20 meses (para los eventos existe la clase Coyuntural, que se marca y se quita a mano; el aviso «Sigue vendiéndose» recuerda revisarla).
 - Los dólares dependen de factores de costo estimados por origen.
 - El flete no se calcula por peso: el catálogo no tiene el peso de cada título, así que el costo de cada envío lo anota Roberto.
-- Varios valores son supuestos o criterios y no mediciones: el nivel de servicio de 95 %, que los pedidos lleguen como Poisson, α = 0,15,
+- Varios valores son supuestos o criterios y no mediciones: el nivel de servicio de 90 %, que los pedidos lleguen como Poisson, α = 0,15,
   y las reglas de reposición de B y de Estacional. Cada uno está marcado como tal en 9.7 a 9.10.
 - El intervalo entre embarques depende de una tasa de costo de capital de 15 % que es de criterio y no medida.
 - Una sola contraseña para el panel: quitar el acceso a una persona exige cambiarla para todos.
@@ -869,7 +873,7 @@ envíos responden al instante.
 | CV² | Coeficiente de variación al cuadrado del tamaño de la demanda |
 | SBA | Syntetos–Boylan Approximation: Croston corregido para demanda intermitente |
 | Poisson | Distribución de conteos de eventos independientes. Describe cuántos pedidos llegan en el modelo compuesto del nivel objetivo S |
-| Modelo compuesto | Venta = suma de pedidos, con el número de pedidos Poisson y el tamaño de cada uno sorteado de los registrados. Con él se calcula S (percentil 95) |
+| Modelo compuesto | Venta = suma de pedidos, con el número de pedidos Poisson y el tamaño de cada uno sorteado de los registrados. Con él se calcula S (percentil 90) |
 | Nivel de servicio | Probabilidad de no quedarse sin stock durante el horizonte de protección |
 | S (nivel objetivo) | Nivel de existencias hasta el que se repone en cada embarque |
 | Embarque programado | Importación que se hace cada T meses por origen (4 meses desde Argentina, en abril, agosto y diciembre; 6 desde España) |
